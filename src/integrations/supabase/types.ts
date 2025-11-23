@@ -14,7 +14,131 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          created_at: string
+          end_time: string
+          event_type_id: string
+          guest_email: string
+          guest_name: string
+          guest_notes: string | null
+          host_user_id: string
+          id: string
+          meeting_link: string | null
+          scheduled_date: string
+          start_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          event_type_id: string
+          guest_email: string
+          guest_name: string
+          guest_notes?: string | null
+          host_user_id: string
+          id?: string
+          meeting_link?: string | null
+          scheduled_date: string
+          start_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          event_type_id?: string
+          guest_email?: string
+          guest_name?: string
+          guest_notes?: string | null
+          host_user_id?: string
+          id?: string
+          meeting_link?: string | null
+          scheduled_date?: string
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_types: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          duration: number
+          id: string
+          is_active: boolean
+          location_type: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          duration?: number
+          id?: string
+          is_active?: boolean
+          location_type?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          duration?: number
+          id?: string
+          is_active?: boolean
+          location_type?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
