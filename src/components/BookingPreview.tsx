@@ -70,8 +70,8 @@ const BookingPreview = () => {
 
                 {selectedTime && (
                   <div className="pt-6 border-t border-border animate-fade-in">
-                    <Button variant="hero" size="lg" className="w-full">
-                      Confirm Booking
+                    <Button variant="hero" size="lg" className="w-full" asChild>
+                      <a href="/booking">Try It Live</a>
                     </Button>
                   </div>
                 )}
