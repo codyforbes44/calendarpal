@@ -33,11 +33,11 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <Button variant="hero" size="lg" className="text-base px-8">
-                Get Started Free
+              <Button variant="hero" size="lg" className="text-base px-8" asChild>
+                <a href="/booking">Try Booking Now</a>
               </Button>
-              <Button variant="outline" size="lg" className="text-base">
-                Watch Demo
+              <Button variant="outline" size="lg" className="text-base" asChild>
+                <a href="/availability">Set Availability</a>
               </Button>
             </div>
 

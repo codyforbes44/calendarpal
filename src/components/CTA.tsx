@@ -27,12 +27,14 @@ const CTA = () => {
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 pt-4">
-            <Button variant="hero" size="lg" className="text-base px-8">
-              Get Started Free
-              <ArrowRight className="w-5 h-5 ml-2" />
+            <Button variant="hero" size="lg" className="text-base px-8" asChild>
+              <a href="/booking">
+                Try Booking Now
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </a>
             </Button>
-            <Button variant="outline" size="lg" className="text-base">
-              Talk to Sales
+            <Button variant="outline" size="lg" className="text-base" asChild>
+              <a href="/availability">Set Availability</a>
             </Button>
           </div>
 
