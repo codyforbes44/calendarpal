@@ -35,6 +35,9 @@ const Navigation = () => {
                 <a href="/availability" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                   Availability
                 </a>
+                <a href="/settings" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  Settings
+                </a>
               </>
             ) : (
               <>

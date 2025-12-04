@@ -1,80 +1,30 @@
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Clock, Plus, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-
-interface TimeRange {
-  start: string;
-  end: string;
-}
-
-interface DayAvailability {
-  day: string;
-  enabled: boolean;
-  ranges: TimeRange[];
-}
-
-const defaultAvailability: DayAvailability[] = [
-  { day: "Monday", enabled: true, ranges: [{ start: "09:00", end: "17:00" }] },
-  { day: "Tuesday", enabled: true, ranges: [{ start: "09:00", end: "17:00" }] },
-  { day: "Wednesday", enabled: true, ranges: [{ start: "09:00", end: "17:00" }] },
-  { day: "Thursday", enabled: true, ranges: [{ start: "09:00", end: "17:00" }] },
-  { day: "Friday", enabled: true, ranges: [{ start: "09:00", end: "17:00" }] },
-  { day: "Saturday", enabled: false, ranges: [{ start: "10:00", end: "14:00" }] },
-  { day: "Sunday", enabled: false, ranges: [{ start: "10:00", end: "14:00" }] },
-];
+import { useAvailability } from "@/hooks/useAvailability";
 
 const AvailabilitySettings = () => {
-  const [availability, setAvailability] = useState<DayAvailability[]>(defaultAvailability);
+  const {
+    availability,
+    loading,
+    saving,
+    toggleDay,
+    updateTimeRange,
+    addTimeRange,
+    removeTimeRange,
+    saveAvailability,
+  } = useAvailability();
 
-  const toggleDay = (index: number) => {
-    setAvailability(prev => prev.map((day, i) => 
-      i === index ? { ...day, enabled: !day.enabled } : day
-    ));
-  };
-
-  const updateTimeRange = (dayIndex: number, rangeIndex: number, field: 'start' | 'end', value: string) => {
-    setAvailability(prev => prev.map((day, i) => {
-      if (i === dayIndex) {
-        const newRanges = [...day.ranges];
-        newRanges[rangeIndex] = { ...newRanges[rangeIndex], [field]: value };
-        return { ...day, ranges: newRanges };
-      }
-      return day;
-    }));
-  };
-
-  const addTimeRange = (dayIndex: number) => {
-    setAvailability(prev => prev.map((day, i) => {
-      if (i === dayIndex) {
-        return {
-          ...day,
-          ranges: [...day.ranges, { start: "09:00", end: "17:00" }]
-        };
-      }
-      return day;
-    }));
-  };
-
-  const removeTimeRange = (dayIndex: number, rangeIndex: number) => {
-    setAvailability(prev => prev.map((day, i) => {
-      if (i === dayIndex && day.ranges.length > 1) {
-        return {
-          ...day,
-          ranges: day.ranges.filter((_, idx) => idx !== rangeIndex)
-        };
-      }
-      return day;
-    }));
-  };
-
-  const handleSave = () => {
-    toast.success("Availability settings saved!");
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -85,8 +35,8 @@ const AvailabilitySettings = () => {
             Define when you're available for meetings
           </p>
         </div>
-        <Button variant="hero" onClick={handleSave}>
-          Save Changes
+        <Button variant="hero" onClick={saveAvailability} disabled={saving}>
+          {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
 
@@ -102,8 +52,8 @@ const AvailabilitySettings = () => {
                     onCheckedChange={() => toggleDay(dayIndex)}
                     id={`day-${dayIndex}`}
                   />
-                  <Label 
-                    htmlFor={`day-${dayIndex}`} 
+                  <Label
+                    htmlFor={`day-${dayIndex}`}
                     className="text-base font-semibold cursor-pointer"
                   >
                     {day.day}
@@ -130,14 +80,18 @@ const AvailabilitySettings = () => {
                       <Input
                         type="time"
                         value={range.start}
-                        onChange={(e) => updateTimeRange(dayIndex, rangeIndex, 'start', e.target.value)}
+                        onChange={(e) =>
+                          updateTimeRange(dayIndex, rangeIndex, "start", e.target.value)
+                        }
                         className="w-32"
                       />
                       <span className="text-muted-foreground">to</span>
                       <Input
                         type="time"
                         value={range.end}
-                        onChange={(e) => updateTimeRange(dayIndex, rangeIndex, 'end', e.target.value)}
+                        onChange={(e) =>
+                          updateTimeRange(dayIndex, rangeIndex, "end", e.target.value)
+                        }
                         className="w-32"
                       />
                       {day.ranges.length > 1 && (
