@@ -1,12 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Menu, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Menu, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+  const [isPro, setIsPro] = useState(false);
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (!user) {
+        setIsPro(false);
+        return;
+      }
+      
+      try {
+        const { data } = await supabase.functions.invoke("check-subscription");
+        setIsPro(data?.subscribed || false);
+      } catch (error) {
+        console.error("Error checking subscription:", error);
+      }
+    };
+
+    checkSubscription();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -55,9 +76,17 @@ const Navigation = () => {
           {/* Desktop CTA buttons */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                Sign Out
-              </Button>
+              <>
+                {isPro && (
+                  <Badge variant="default" className="bg-gradient-to-r from-primary to-primary/80 gap-1">
+                    <Crown className="w-3 h-3" />
+                    Pro
+                  </Badge>
+                )}
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              </>
             ) : (
               <>
                 <Button variant="ghost" size="sm" asChild>
@@ -107,16 +136,26 @@ const Navigation = () => {
                 {/* Mobile CTA Buttons */}
                 <div className="p-4 border-t border-border space-y-2">
                   {user ? (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        handleSignOut();
-                        setOpen(false);
-                      }}
-                    >
-                      Sign Out
-                    </Button>
+                    <>
+                      {isPro && (
+                        <div className="flex justify-center mb-2">
+                          <Badge variant="default" className="bg-gradient-to-r from-primary to-primary/80 gap-1">
+                            <Crown className="w-3 h-3" />
+                            Pro Member
+                          </Badge>
+                        </div>
+                      )}
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          handleSignOut();
+                          setOpen(false);
+                        }}
+                      >
+                        Sign Out
+                      </Button>
+                    </>
                   ) : (
                     <>
                       <Button variant="outline" className="w-full" asChild>
