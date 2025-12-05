@@ -1,7 +1,8 @@
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Check, X, Minus } from "lucide-react";
 
 const plans = [
   {
@@ -125,6 +126,195 @@ const Pricing = () => {
                 </CardFooter>
               </Card>
             ))}
+          </div>
+
+          {/* Feature Comparison Table */}
+          <div className="mt-24 max-w-5xl mx-auto">
+            <h2 className="font-display text-2xl font-bold text-center mb-12">
+              Compare Plans
+            </h2>
+            
+            <div className="border border-border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="w-[280px] font-semibold">Features</TableHead>
+                    <TableHead className="text-center font-semibold">Free</TableHead>
+                    <TableHead className="text-center font-semibold bg-primary/5">Pro</TableHead>
+                    <TableHead className="text-center font-semibold">Enterprise</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {/* Scheduling */}
+                  <TableRow className="bg-muted/30">
+                    <TableCell colSpan={4} className="font-semibold text-sm">Scheduling</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Event types</TableCell>
+                    <TableCell className="text-center">1</TableCell>
+                    <TableCell className="text-center bg-primary/5">Unlimited</TableCell>
+                    <TableCell className="text-center">Unlimited</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Bookings per month</TableCell>
+                    <TableCell className="text-center">Unlimited</TableCell>
+                    <TableCell className="text-center bg-primary/5">Unlimited</TableCell>
+                    <TableCell className="text-center">Unlimited</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Scheduling window</TableCell>
+                    <TableCell className="text-center">7 days</TableCell>
+                    <TableCell className="text-center bg-primary/5">Unlimited</TableCell>
+                    <TableCell className="text-center">Unlimited</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Buffer times</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Minimum notice</TableCell>
+                    <TableCell className="text-center">24 hours</TableCell>
+                    <TableCell className="text-center bg-primary/5">Custom</TableCell>
+                    <TableCell className="text-center">Custom</TableCell>
+                  </TableRow>
+
+                  {/* Integrations */}
+                  <TableRow className="bg-muted/30">
+                    <TableCell colSpan={4} className="font-semibold text-sm">Integrations</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Google Calendar</TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Outlook Calendar</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Zoom integration</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Custom integrations</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>API access</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+
+                  {/* Customization */}
+                  <TableRow className="bg-muted/30">
+                    <TableCell colSpan={4} className="font-semibold text-sm">Customization</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Custom branding</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Remove MeetFlow branding</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>White-label solution</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+
+                  {/* Team Features */}
+                  <TableRow className="bg-muted/30">
+                    <TableCell colSpan={4} className="font-semibold text-sm">Team Features</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Team members</TableCell>
+                    <TableCell className="text-center">1</TableCell>
+                    <TableCell className="text-center bg-primary/5">Up to 10</TableCell>
+                    <TableCell className="text-center">Unlimited</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Round-robin scheduling</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Collective scheduling</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+
+                  {/* Analytics & Reporting */}
+                  <TableRow className="bg-muted/30">
+                    <TableCell colSpan={4} className="font-semibold text-sm">Analytics & Reporting</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Basic analytics</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Advanced reporting</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+
+                  {/* Support & Security */}
+                  <TableRow className="bg-muted/30">
+                    <TableCell colSpan={4} className="font-semibold text-sm">Support & Security</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Email support</TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Priority support</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Dedicated support</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>SSO authentication</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>SLA guarantee</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
           {/* FAQ Section */}
