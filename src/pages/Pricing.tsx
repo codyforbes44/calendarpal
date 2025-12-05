@@ -16,7 +16,7 @@ const plans = [
     description: "Perfect for getting started",
     features: [
       "1 event type",
-      "Unlimited bookings",
+      "10 bookings per month",
       "Basic calendar integration",
       "Email notifications",
       "7-day scheduling window",
@@ -262,7 +262,7 @@ const Pricing = () => {
                   </TableRow>
                   <TableRow>
                     <TableCell>Bookings per month</TableCell>
-                    <TableCell className="text-center">Unlimited</TableCell>
+                    <TableCell className="text-center">10</TableCell>
                     <TableCell className="text-center bg-primary/5">Unlimited</TableCell>
                     <TableCell className="text-center">Unlimited</TableCell>
                   </TableRow>
