@@ -44,6 +44,9 @@ const Navigation = () => {
                 <a href="/#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                   Features
                 </a>
+                <a href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  Pricing
+                </a>
                 <a href="/booking" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                   Book Demo
                 </a>
