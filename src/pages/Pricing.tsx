@@ -421,6 +421,99 @@ const Pricing = () => {
             </div>
           </div>
 
+          {/* Competitor Comparison */}
+          <div className="mt-24 max-w-4xl mx-auto">
+            <h2 className="font-display text-2xl font-bold text-center mb-4">
+              Why choose MeetFlow?
+            </h2>
+            <p className="text-muted-foreground text-center mb-12">
+              See how we stack up against the competition
+            </p>
+            
+            <div className="border border-border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="w-[200px] font-semibold">Feature</TableHead>
+                    <TableHead className="text-center font-semibold bg-primary/10">
+                      <span className="text-primary">MeetFlow</span>
+                    </TableHead>
+                    <TableHead className="text-center font-semibold">Calendly</TableHead>
+                    <TableHead className="text-center font-semibold">Cal.com</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">Starting Price</TableCell>
+                    <TableCell className="text-center bg-primary/5 font-semibold text-primary">$12/mo</TableCell>
+                    <TableCell className="text-center">$12/mo</TableCell>
+                    <TableCell className="text-center">$12/mo</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Free Trial</TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Unlimited Bookings</TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Custom Branding</TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center text-xs text-muted-foreground">Pro plan only</TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Team Scheduling</TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center text-xs text-muted-foreground">Teams plan</TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Modern UI/UX</TableCell>
+                    <TableCell className="text-center bg-primary/5">
+                      <div className="flex items-center justify-center gap-1">
+                        <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                        <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                        <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Star className="w-4 h-4 text-muted-foreground fill-muted-foreground" />
+                        <Star className="w-4 h-4 text-muted-foreground fill-muted-foreground" />
+                        <Star className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Star className="w-4 h-4 text-muted-foreground fill-muted-foreground" />
+                        <Star className="w-4 h-4 text-muted-foreground fill-muted-foreground" />
+                        <Star className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Priority Support</TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center text-xs text-muted-foreground">Enterprise only</TableCell>
+                    <TableCell className="text-center text-xs text-muted-foreground">Enterprise only</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium">Money-Back Guarantee</TableCell>
+                    <TableCell className="text-center bg-primary/5 font-medium text-primary">30 days</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
           {/* Testimonials Section */}
           <div className="mt-24 max-w-6xl mx-auto">
             <h2 className="font-display text-2xl font-bold text-center mb-4">
