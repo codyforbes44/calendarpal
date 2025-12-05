@@ -7,12 +7,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const logStep = (step: string, details?: unknown) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    logStep("Function started");
+
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
@@ -20,67 +27,62 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-
-    if (userError || !user) {
-      console.error("Auth error:", userError);
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 401,
-      });
+    const { data } = await supabaseClient.auth.getUser(token);
+    const user = data.user;
+    
+    if (!user?.email) {
+      throw new Error("User not authenticated or email not available");
     }
+    logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { priceId, isYearly } = await req.json();
-    console.log("Creating checkout for user:", user.id, "priceId:", priceId, "isYearly:", isYearly);
+    const { isYearly } = await req.json();
+    logStep("Request params", { isYearly });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
 
-    // Get or create Stripe customer
-    const { data: profile } = await supabaseClient
-      .from("profiles")
-      .select("stripe_customer_id, email, full_name")
-      .eq("user_id", user.id)
-      .single();
-
-    let customerId = profile?.stripe_customer_id;
-
-    if (!customerId) {
-      console.log("Creating new Stripe customer");
-      const customer = await stripe.customers.create({
-        email: user.email,
-        name: profile?.full_name || undefined,
-        metadata: { supabase_user_id: user.id },
+    // Check if customer exists by email
+    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    let customerId: string | undefined;
+    
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+      logStep("Found existing customer", { customerId });
+      
+      // Check for existing active subscription
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "active",
+        limit: 1,
       });
-      customerId = customer.id;
-
-      // Save customer ID to profile
-      await supabaseClient
-        .from("profiles")
-        .update({ stripe_customer_id: customerId })
-        .eq("user_id", user.id);
+      
+      if (subscriptions.data.length > 0) {
+        logStep("User already has active subscription");
+        return new Response(JSON.stringify({ error: "You already have an active subscription" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
     }
 
-    // Determine which price to use
+    // Price IDs for Pro plan
     const monthlyPriceId = "price_1SanVv2MfT7OzvjxIHQptGbC";
     const yearlyPriceId = "price_1SanW22MfT7OzvjxGjnTXarN";
-    const finalPriceId = priceId || (isYearly ? yearlyPriceId : monthlyPriceId);
-
-    console.log("Using price ID:", finalPriceId);
+    const finalPriceId = isYearly ? yearlyPriceId : monthlyPriceId;
+    
+    logStep("Creating checkout session", { priceId: finalPriceId });
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
+      customer_email: customerId ? undefined : user.email,
       line_items: [{ price: finalPriceId, quantity: 1 }],
       mode: "subscription",
       success_url: `${req.headers.get("origin")}/dashboard?checkout=success`,
       cancel_url: `${req.headers.get("origin")}/pricing?checkout=cancelled`,
-      subscription_data: {
-        metadata: { supabase_user_id: user.id },
-      },
     });
 
-    console.log("Checkout session created:", session.id);
+    logStep("Checkout session created", { sessionId: session.id });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -88,7 +90,7 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    console.error("Checkout error:", errorMessage);
+    logStep("ERROR", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
