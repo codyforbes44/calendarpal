@@ -3,7 +3,7 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Check, X, Minus, Quote } from "lucide-react";
+import { Check, X, Minus, Quote, ShieldCheck } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -182,6 +182,19 @@ const Pricing = () => {
                 </CardFooter>
               </Card>
             ))}
+          </div>
+
+          {/* Money-Back Guarantee */}
+          <div className="mt-12 flex justify-center">
+            <div className="inline-flex items-center gap-3 px-6 py-4 bg-primary/5 border border-primary/20 rounded-2xl">
+              <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full">
+                <ShieldCheck className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">30-Day Money-Back Guarantee</p>
+                <p className="text-sm text-muted-foreground">Not satisfied? Get a full refund, no questions asked.</p>
+              </div>
+            </div>
           </div>
 
           {/* Feature Comparison Table */}
