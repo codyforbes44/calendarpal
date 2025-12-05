@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Clock, MoreVertical, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { SkeletonEventType } from "@/components/ui/skeleton-card";
+import EmptyState from "@/components/EmptyState";
 
 interface EventType {
   id: string;
@@ -48,10 +50,12 @@ const EventTypesList = () => {
   if (loading) {
     return (
       <Card className="p-6">
-        <h2 className="text-xl font-bold mb-4">Event Types</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Event Types</h2>
+        </div>
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+            <SkeletonEventType key={i} />
           ))}
         </div>
       </Card>
@@ -69,19 +73,20 @@ const EventTypesList = () => {
       </div>
 
       {eventTypes.length === 0 ? (
-        <div className="text-center py-12">
-          <Clock className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
-          <p className="text-muted-foreground mb-4">No event types yet</p>
-          <Button variant="hero" onClick={() => navigate("/events/new")}>
-            Create Your First Event
-          </Button>
-        </div>
+        <EmptyState
+          icon={Clock}
+          title="No event types yet"
+          description="Create your first event type to start accepting bookings from others."
+          actionLabel="Create Your First Event"
+          onAction={() => navigate("/events/new")}
+          tip="Event types define the meetings you offer, like '30-min Call' or 'Product Demo'"
+        />
       ) : (
         <div className="space-y-3">
           {eventTypes.map((eventType) => (
             <div
               key={eventType.id}
-              className="p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+              className="p-4 border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all cursor-pointer"
               onClick={() => navigate(`/events/${eventType.id}`)}
             >
               <div className="flex items-start justify-between">
@@ -106,7 +111,7 @@ const EventTypesList = () => {
                     <span>{eventType.duration} minutes</span>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </div>
