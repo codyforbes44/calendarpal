@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/badge";
 
 const plans = [
   {
-    name: "Starter",
-    monthlyPrice: 12,
-    yearlyPrice: 10,
+    name: "Free",
+    monthlyPrice: 0,
+    yearlyPrice: 0,
     description: "Perfect for getting started",
     features: [
       "1 event type",
@@ -26,8 +26,8 @@ const plans = [
   },
   {
     name: "Pro",
-    monthlyPrice: 28,
-    yearlyPrice: 22,
+    monthlyPrice: 12,
+    yearlyPrice: 10,
     description: "For professionals and small teams",
     features: [
       "Unlimited event types",
@@ -67,6 +67,7 @@ const Pricing = () => {
 
   const getPrice = (plan: typeof plans[0]) => {
     if (plan.monthlyPrice === null) return "Custom";
+    if (plan.monthlyPrice === 0) return "$0";
     const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
     return `$${price}`;
   };
@@ -243,7 +244,7 @@ const Pricing = () => {
                 <TableHeader>
                   <TableRow className="bg-muted/50">
                     <TableHead className="w-[280px] font-semibold">Features</TableHead>
-                    <TableHead className="text-center font-semibold">Starter</TableHead>
+                    <TableHead className="text-center font-semibold">Free</TableHead>
                     <TableHead className="text-center font-semibold bg-primary/5">Pro</TableHead>
                     <TableHead className="text-center font-semibold">Enterprise</TableHead>
                   </TableRow>
