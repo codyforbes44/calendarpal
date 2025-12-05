@@ -11,17 +11,28 @@ import ShareModal from "@/components/ShareModal";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Share2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hasEventTypes, setHasEventTypes] = useState(false);
   const [hasAvailability, setHasAvailability] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+
+  useEffect(() => {
+    const checkoutStatus = searchParams.get("checkout");
+    if (checkoutStatus === "success") {
+      toast.success("Welcome to Pro! Your subscription is now active.");
+      searchParams.delete("checkout");
+      setSearchParams(searchParams);
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     if (user) {
