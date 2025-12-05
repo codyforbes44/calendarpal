@@ -1,12 +1,16 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Check, X, Minus, Quote, ShieldCheck, Lock, CreditCard, Users, Star } from "lucide-react";
+import { Check, X, Minus, Quote, ShieldCheck, Lock, CreditCard, Users, Star, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const plans = [
   {
@@ -64,6 +68,45 @@ const plans = [
 
 const Pricing = () => {
   const [isYearly, setIsYearly] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleCheckout = async (planName: string) => {
+    if (planName === "Free") {
+      navigate("/auth");
+      return;
+    }
+
+    if (planName === "Enterprise") {
+      window.location.href = "mailto:sales@meetflow.com?subject=Enterprise%20Plan%20Inquiry";
+      return;
+    }
+
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+
+    setLoadingPlan(planName);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { isYearly },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error("Failed to start checkout. Please try again.");
+    } finally {
+      setLoadingPlan(null);
+    }
+  };
 
   const getPrice = (plan: typeof plans[0]) => {
     if (plan.monthlyPrice === null) return "Custom";
@@ -176,9 +219,17 @@ const Pricing = () => {
                   <Button 
                     className="w-full" 
                     variant={plan.popular ? "default" : "outline"}
-                    asChild
+                    onClick={() => handleCheckout(plan.name)}
+                    disabled={loadingPlan === plan.name}
                   >
-                    <a href="/auth">{plan.cta}</a>
+                    {loadingPlan === plan.name ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      plan.cta
+                    )}
                   </Button>
                 </CardFooter>
               </Card>
