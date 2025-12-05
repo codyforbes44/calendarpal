@@ -7,8 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const plans = [
   {
-    name: "Free",
-    price: "$0",
+    name: "Starter",
+    price: "$12",
+    period: "/month",
     description: "Perfect for getting started",
     features: [
       "1 event type",
@@ -22,7 +23,7 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "$12",
+    price: "$28",
     period: "/month",
     description: "For professionals and small teams",
     features: [
@@ -140,7 +141,7 @@ const Pricing = () => {
                 <TableHeader>
                   <TableRow className="bg-muted/50">
                     <TableHead className="w-[280px] font-semibold">Features</TableHead>
-                    <TableHead className="text-center font-semibold">Free</TableHead>
+                    <TableHead className="text-center font-semibold">Starter</TableHead>
                     <TableHead className="text-center font-semibold bg-primary/5">Pro</TableHead>
                     <TableHead className="text-center font-semibold">Enterprise</TableHead>
                   </TableRow>
