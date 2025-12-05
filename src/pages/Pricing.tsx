@@ -39,7 +39,7 @@ const plans = [
       "Team scheduling",
       "Analytics dashboard",
     ],
-    cta: "Start Free Trial",
+    cta: "Get Started",
     popular: true,
   },
   {
