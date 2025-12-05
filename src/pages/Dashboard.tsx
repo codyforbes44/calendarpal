@@ -6,9 +6,10 @@ import DashboardStats from "@/components/dashboard/DashboardStats";
 import UpcomingMeetings from "@/components/dashboard/UpcomingMeetings";
 import EventTypesList from "@/components/dashboard/EventTypesList";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import ShareModal from "@/components/ShareModal";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus } from "lucide-react";
+import { Plus, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
@@ -19,6 +20,7 @@ const Dashboard = () => {
   const [hasEventTypes, setHasEventTypes] = useState(false);
   const [hasAvailability, setHasAvailability] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -115,10 +117,18 @@ const Dashboard = () => {
               Here's what's happening with your schedule today
             </p>
           </div>
-          <Button variant="hero" size="lg" onClick={() => navigate("/events/new")}>
-            <Plus className="w-5 h-5 mr-2" />
-            New Event Type
-          </Button>
+          <div className="flex gap-3">
+            {profile?.username && (
+              <Button variant="outline" size="lg" onClick={() => setShowShareModal(true)}>
+                <Share2 className="w-5 h-5 mr-2" />
+                Share
+              </Button>
+            )}
+            <Button variant="hero" size="lg" onClick={() => navigate("/events/new")}>
+              <Plus className="w-5 h-5 mr-2" />
+              New Event Type
+            </Button>
+          </div>
         </div>
 
         {showOnboarding && (
@@ -137,6 +147,15 @@ const Dashboard = () => {
           <EventTypesList />
         </div>
       </div>
+
+      {profile?.username && (
+        <ShareModal
+          open={showShareModal}
+          onOpenChange={setShowShareModal}
+          username={profile.username}
+          fullName={profile.full_name}
+        />
+      )}
     </div>
   );
 };

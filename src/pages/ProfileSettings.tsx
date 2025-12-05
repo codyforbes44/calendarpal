@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { User, Link, Copy, Check, ExternalLink, Globe } from "lucide-react";
+import { User, Link, Copy, Check, ExternalLink, Globe, Share2 } from "lucide-react";
 import TimezoneSelector from "@/components/TimezoneSelector";
 import { getLocalTimezone } from "@/lib/timezones";
+import ShareModal from "@/components/ShareModal";
 
 const ProfileSettings = () => {
   const { user } = useAuth();
@@ -23,6 +24,7 @@ const ProfileSettings = () => {
   });
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -275,6 +277,17 @@ const ProfileSettings = () => {
                   </Button>
                 </div>
 
+                <div className="flex gap-3 mt-4">
+                  <Button
+                    variant="hero"
+                    className="flex-1"
+                    onClick={() => setShowShareModal(true)}
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share Link
+                  </Button>
+                </div>
+
                 <p className="text-sm text-muted-foreground mt-3">
                   Share this link with others so they can book meetings with you.
                 </p>
@@ -283,6 +296,15 @@ const ProfileSettings = () => {
           </div>
         </div>
       </div>
+
+      {profile.username && (
+        <ShareModal
+          open={showShareModal}
+          onOpenChange={setShowShareModal}
+          username={profile.username}
+          fullName={profile.full_name}
+        />
+      )}
     </div>
   );
 };
