@@ -15,6 +15,7 @@ import EventForm from "./pages/EventForm";
 import PublicBooking from "./pages/PublicBooking";
 import ProfileSettings from "./pages/ProfileSettings";
 import GuestBookingManage from "./pages/GuestBookingManage";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/book/:username" element={<PublicBooking />} />
