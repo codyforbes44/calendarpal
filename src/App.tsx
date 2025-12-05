@@ -14,6 +14,7 @@ import Availability from "./pages/Availability";
 import EventForm from "./pages/EventForm";
 import PublicBooking from "./pages/PublicBooking";
 import ProfileSettings from "./pages/ProfileSettings";
+import GuestBookingManage from "./pages/GuestBookingManage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/booking" element={<Booking />} />
             <Route path="/book/:username" element={<PublicBooking />} />
             <Route path="/book/:username/:eventSlug" element={<PublicBooking />} />
+            <Route path="/booking/:bookingId/manage" element={<GuestBookingManage />} />
             <Route
               path="/dashboard"
               element={
