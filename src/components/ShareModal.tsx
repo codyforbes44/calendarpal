@@ -18,8 +18,10 @@ import {
   MessageCircle,
   ExternalLink,
   Share2,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
+import { QRCodeSVG } from "qrcode.react";
 
 interface ShareModalProps {
   open: boolean;
@@ -96,6 +98,30 @@ const ShareModal = ({ open, onOpenChange, username, fullName }: ShareModalProps)
     }
   };
 
+  const downloadQRCode = () => {
+    const svg = document.getElementById("qr-code-svg");
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      const pngFile = canvas.toDataURL("image/png");
+      const downloadLink = document.createElement("a");
+      downloadLink.download = `${username}-booking-qr.png`;
+      downloadLink.href = pngFile;
+      downloadLink.click();
+      toast.success("QR code downloaded!");
+    };
+    
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -139,6 +165,36 @@ const ShareModal = ({ open, onOpenChange, username, fullName }: ShareModalProps)
               >
                 <ExternalLink className="w-4 h-4" />
               </Button>
+            </div>
+          </div>
+
+          {/* QR Code Section */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">QR Code</label>
+            <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+              <div className="bg-white p-3 rounded-lg shadow-sm">
+                <QRCodeSVG
+                  id="qr-code-svg"
+                  value={bookingUrl}
+                  size={100}
+                  level="H"
+                  includeMargin={false}
+                />
+              </div>
+              <div className="flex-1 space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Scan this code to open your booking page
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadQRCode}
+                  className="w-full"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download QR
+                </Button>
+              </div>
             </div>
           </div>
 
