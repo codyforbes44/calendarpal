@@ -1,15 +1,18 @@
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Check, X, Minus, Quote } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 
 const plans = [
   {
     name: "Starter",
-    price: "$12",
-    period: "/month",
+    monthlyPrice: 12,
+    yearlyPrice: 10,
     description: "Perfect for getting started",
     features: [
       "1 event type",
@@ -23,8 +26,8 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "$28",
-    period: "/month",
+    monthlyPrice: 28,
+    yearlyPrice: 22,
     description: "For professionals and small teams",
     features: [
       "Unlimited event types",
@@ -41,7 +44,8 @@ const plans = [
   },
   {
     name: "Enterprise",
-    price: "Custom",
+    monthlyPrice: null,
+    yearlyPrice: null,
     description: "For large organizations",
     features: [
       "Everything in Pro",
@@ -59,6 +63,24 @@ const plans = [
 ];
 
 const Pricing = () => {
+  const [isYearly, setIsYearly] = useState(false);
+
+  const getPrice = (plan: typeof plans[0]) => {
+    if (plan.monthlyPrice === null) return "Custom";
+    const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+    return `$${price}`;
+  };
+
+  const getPeriod = (plan: typeof plans[0]) => {
+    if (plan.monthlyPrice === null) return null;
+    return isYearly ? "/month" : "/month";
+  };
+
+  const getYearlySavings = (plan: typeof plans[0]) => {
+    if (plan.monthlyPrice === null || plan.yearlyPrice === null) return 0;
+    return Math.round(((plan.monthlyPrice - plan.yearlyPrice) / plan.monthlyPrice) * 100);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -66,13 +88,30 @@ const Pricing = () => {
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-6">
           {/* Header */}
-          <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-8">
             <h1 className="font-display text-4xl md:text-5xl font-bold mb-6">
               Simple, transparent pricing
             </h1>
             <p className="text-lg text-muted-foreground">
-              Choose the plan that fits your needs. Start free and scale as you grow.
+              Choose the plan that fits your needs. Start with a free trial and scale as you grow.
             </p>
+          </div>
+
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-4 mb-16">
+            <span className={`text-sm font-medium ${!isYearly ? "text-foreground" : "text-muted-foreground"}`}>
+              Monthly
+            </span>
+            <Switch
+              checked={isYearly}
+              onCheckedChange={setIsYearly}
+            />
+            <span className={`text-sm font-medium ${isYearly ? "text-foreground" : "text-muted-foreground"}`}>
+              Yearly
+            </span>
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
+              Save up to 21%
+            </Badge>
           </div>
 
           {/* Pricing Cards */}
@@ -101,9 +140,24 @@ const Pricing = () => {
                 
                 <CardContent className="text-center flex-1">
                   <div className="mb-6">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    {plan.period && (
-                      <span className="text-muted-foreground">{plan.period}</span>
+                    <span className="text-4xl font-bold">{getPrice(plan)}</span>
+                    {getPeriod(plan) && (
+                      <span className="text-muted-foreground">{getPeriod(plan)}</span>
+                    )}
+                    {isYearly && plan.monthlyPrice !== null && (
+                      <div className="mt-2">
+                        <span className="text-xs text-muted-foreground line-through mr-2">
+                          ${plan.monthlyPrice}/mo
+                        </span>
+                        <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-0 text-xs">
+                          Save {getYearlySavings(plan)}%
+                        </Badge>
+                      </div>
+                    )}
+                    {isYearly && plan.monthlyPrice !== null && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Billed ${(plan.yearlyPrice ?? 0) * 12}/year
+                      </p>
                     )}
                   </div>
                   
