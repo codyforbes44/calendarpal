@@ -9,9 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import CalendarGrid from "@/components/calendar/CalendarGrid";
 import TimeSlotPicker from "@/components/calendar/TimeSlotPicker";
 import { useTimeSlots, convertTo24Hour, calculateEndTime } from "@/hooks/useTimeSlots";
-import { Calendar, Clock, Video, User, Mail, MessageSquare, ArrowLeft, Check, MapPin } from "lucide-react";
+import { Calendar, Clock, Video, User, Mail, MessageSquare, ArrowLeft, Check, MapPin, Globe } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import TimezoneSelector from "@/components/TimezoneSelector";
+import { getLocalTimezone, getTimezoneLabel } from "@/lib/timezones";
+import { getTimezoneAbbr } from "@/hooks/useTimezone";
 
 interface Profile {
   id: string;
@@ -19,6 +22,7 @@ interface Profile {
   full_name: string | null;
   username: string | null;
   avatar_url: string | null;
+  timezone: string | null;
 }
 
 interface EventType {
@@ -44,6 +48,7 @@ const PublicBooking = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
+  const [guestTimezone, setGuestTimezone] = useState(getLocalTimezone());
 
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
   const [cancellationToken, setCancellationToken] = useState<string | null>(null);
@@ -183,6 +188,7 @@ const PublicBooking = () => {
     try {
       const startTime = convertTo24Hour(selectedTime);
       const endTime = calculateEndTime(startTime, selectedEvent.duration);
+      const hostTimezone = profile.timezone || "America/New_York";
 
       const { data, error } = await supabase.from("bookings").insert({
         host_user_id: profile.user_id,
@@ -194,6 +200,8 @@ const PublicBooking = () => {
         guest_email: formData.email,
         guest_notes: formData.notes || null,
         status: "confirmed",
+        host_timezone: hostTimezone,
+        guest_timezone: guestTimezone,
       }).select("id, cancellation_token").single();
 
       if (error) throw error;
@@ -260,6 +268,10 @@ const PublicBooking = () => {
             <div className="flex items-center gap-2">
               <Video className="w-4 h-4 text-muted-foreground" />
               <span>{selectedEvent?.title}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm">{getTimezoneLabel(guestTimezone)}</span>
             </div>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
@@ -475,6 +487,19 @@ const PublicBooking = () => {
                 onSelectDate={handleDateSelect}
                 availableDates={availableDates}
               />
+
+              {/* Timezone Selector */}
+              <div className="pt-4 border-t border-border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Globe className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Your timezone</span>
+                </div>
+                <TimezoneSelector
+                  value={guestTimezone}
+                  onChange={setGuestTimezone}
+                  showIcon={false}
+                />
+              </div>
             </div>
           </div>
 
@@ -489,6 +514,7 @@ const PublicBooking = () => {
                 selectedTime={selectedTime}
                 onSelectTime={setSelectedTime}
                 timeSlots={timeSlots}
+                timezone={guestTimezone}
               />
             )}
 

@@ -5,10 +5,11 @@ import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Calendar, Clock, Mail, User, Search } from "lucide-react";
+import { Calendar, Clock, Mail, User, Search, Globe } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import BookingActionsDropdown from "@/components/booking/BookingActionsDropdown";
 import RescheduleDialog from "@/components/booking/RescheduleDialog";
+import { getTimezoneLabel } from "@/lib/timezones";
 
 interface Booking {
   id: string;
@@ -20,6 +21,8 @@ interface Booking {
   status: string;
   host_user_id: string;
   event_type_id: string;
+  host_timezone: string | null;
+  guest_timezone: string | null;
   event_types: {
     title: string;
     duration: number;
@@ -54,6 +57,8 @@ const Bookings = () => {
           status,
           host_user_id,
           event_type_id,
+          host_timezone,
+          guest_timezone,
           event_types (
             title,
             duration,
@@ -205,6 +210,18 @@ const Bookings = () => {
                       <div className="text-xs text-muted-foreground">Email</div>
                     </div>
                   </div>
+
+                  {booking.guest_timezone && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                        <Globe className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">{getTimezoneLabel(booking.guest_timezone)}</div>
+                        <div className="text-xs text-muted-foreground">Guest Timezone</div>
+                      </div>
+                    </div>
+                  )}
 
                   {booking.guest_notes && (
                     <div className="sm:col-span-2 mt-2">

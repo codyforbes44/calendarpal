@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { User, Link, Copy, Check, ExternalLink } from "lucide-react";
+import { User, Link, Copy, Check, ExternalLink, Globe } from "lucide-react";
+import TimezoneSelector from "@/components/TimezoneSelector";
+import { getLocalTimezone } from "@/lib/timezones";
 
 const ProfileSettings = () => {
   const { user } = useAuth();
@@ -17,6 +19,7 @@ const ProfileSettings = () => {
   const [profile, setProfile] = useState({
     full_name: "",
     username: "",
+    timezone: getLocalTimezone(),
   });
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
@@ -31,7 +34,7 @@ const ProfileSettings = () => {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, username")
+        .select("full_name, username, timezone")
         .eq("user_id", user?.id)
         .single();
 
@@ -40,6 +43,7 @@ const ProfileSettings = () => {
       setProfile({
         full_name: data?.full_name || "",
         username: data?.username || "",
+        timezone: data?.timezone || getLocalTimezone(),
       });
     } catch (error) {
       console.error("Error loading profile:", error);
@@ -105,6 +109,7 @@ const ProfileSettings = () => {
         .update({
           full_name: profile.full_name,
           username: profile.username || null,
+          timezone: profile.timezone,
         })
         .eq("user_id", user.id);
 
@@ -213,6 +218,34 @@ const ProfileSettings = () => {
                 disabled={saving}
               >
                 {saving ? "Saving..." : "Save Changes"}
+              </Button>
+            </Card>
+
+            {/* Timezone Settings */}
+            <Card className="p-6">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                Timezone
+              </h2>
+
+              <div className="space-y-2">
+                <Label>Your Timezone</Label>
+                <TimezoneSelector
+                  value={profile.timezone}
+                  onChange={(value) => setProfile((prev) => ({ ...prev, timezone: value }))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  All your availability and booking times will be displayed in this timezone.
+                </p>
+              </div>
+
+              <Button
+                variant="hero"
+                className="mt-6"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save Timezone"}
               </Button>
             </Card>
 
