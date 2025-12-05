@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import CalendarGrid from "@/components/calendar/CalendarGrid";
 import TimeSlotPicker from "@/components/calendar/TimeSlotPicker";
 import { useTimeSlots, convertTo24Hour, calculateEndTime } from "@/hooks/useTimeSlots";
-import { Calendar, Clock, Video, User, Mail, MessageSquare, ArrowLeft, Check, MapPin, Globe } from "lucide-react";
-import { format } from "date-fns";
+import { Calendar, Clock, Video, User, Mail, MessageSquare, ArrowLeft, Check, MapPin, Globe, Repeat } from "lucide-react";
+import { format, addWeeks, addMonths } from "date-fns";
 import { toast } from "sonner";
 import TimezoneSelector from "@/components/TimezoneSelector";
 import { getLocalTimezone, getTimezoneLabel } from "@/lib/timezones";
@@ -36,6 +38,7 @@ interface EventType {
   is_active: boolean;
   buffer_before: number;
   buffer_after: number;
+  allow_recurring: boolean;
 }
 
 const PublicBooking = () => {
@@ -60,6 +63,13 @@ const PublicBooking = () => {
     email: "",
     notes: "",
   });
+
+  // Recurring booking state
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrencePattern, setRecurrencePattern] = useState<"weekly" | "biweekly" | "monthly">("weekly");
+  const [endType, setEndType] = useState<"count" | "date">("count");
+  const [recurrenceCount, setRecurrenceCount] = useState(4);
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState("");
 
   const { timeSlots, loading: slotsLoading } = useTimeSlots({
     userId: profile?.user_id || "",
@@ -194,10 +204,35 @@ const PublicBooking = () => {
       const endTime = calculateEndTime(startTime, selectedEvent.duration);
       const hostTimezone = profile.timezone || "America/New_York";
 
-      const { data, error } = await supabase.from("bookings").insert({
+      // Calculate all dates for recurring bookings
+      const bookingDates: Date[] = [selectedDate];
+      
+      if (isRecurring && selectedEvent.allow_recurring) {
+        let currentDate = selectedDate;
+        const maxOccurrences = endType === "count" ? recurrenceCount : 52; // Max 1 year of weekly
+        const endDateLimit = endType === "date" && recurrenceEndDate 
+          ? new Date(recurrenceEndDate) 
+          : addMonths(selectedDate, 12);
+
+        for (let i = 1; i < maxOccurrences; i++) {
+          if (recurrencePattern === "weekly") {
+            currentDate = addWeeks(selectedDate, i);
+          } else if (recurrencePattern === "biweekly") {
+            currentDate = addWeeks(selectedDate, i * 2);
+          } else {
+            currentDate = addMonths(selectedDate, i);
+          }
+
+          if (currentDate > endDateLimit) break;
+          bookingDates.push(currentDate);
+        }
+      }
+
+      // Create the first (parent) booking
+      const { data: parentBooking, error: parentError } = await supabase.from("bookings").insert({
         host_user_id: profile.user_id,
         event_type_id: selectedEvent.id,
-        scheduled_date: format(selectedDate, "yyyy-MM-dd"),
+        scheduled_date: format(bookingDates[0], "yyyy-MM-dd"),
         start_time: startTime,
         end_time: endTime,
         guest_name: formData.name,
@@ -206,14 +241,41 @@ const PublicBooking = () => {
         status: "confirmed",
         host_timezone: hostTimezone,
         guest_timezone: guestTimezone,
+        recurrence_pattern: isRecurring ? recurrencePattern : null,
+        recurrence_count: isRecurring && endType === "count" ? bookingDates.length : null,
+        recurrence_end_date: isRecurring && endType === "date" ? recurrenceEndDate : null,
       }).select("id, cancellation_token").single();
 
-      if (error) throw error;
+      if (parentError) throw parentError;
 
-      setCreatedBookingId(data.id);
-      setCancellationToken(data.cancellation_token);
+      // Create remaining recurring bookings
+      if (bookingDates.length > 1) {
+        const childBookings = bookingDates.slice(1).map(date => ({
+          host_user_id: profile.user_id,
+          event_type_id: selectedEvent.id,
+          scheduled_date: format(date, "yyyy-MM-dd"),
+          start_time: startTime,
+          end_time: endTime,
+          guest_name: formData.name,
+          guest_email: formData.email,
+          guest_notes: formData.notes || null,
+          status: "confirmed",
+          host_timezone: hostTimezone,
+          guest_timezone: guestTimezone,
+          parent_booking_id: parentBooking.id,
+          recurrence_pattern: recurrencePattern,
+        }));
+
+        const { error: childError } = await supabase.from("bookings").insert(childBookings);
+        if (childError) throw childError;
+      }
+
+      setCreatedBookingId(parentBooking.id);
+      setCancellationToken(parentBooking.cancellation_token);
       setStep("confirmed");
-      toast.success("Meeting booked successfully!");
+      toast.success(bookingDates.length > 1 
+        ? `${bookingDates.length} meetings booked successfully!` 
+        : "Meeting booked successfully!");
     } catch (error) {
       console.error("Error creating booking:", error);
       toast.error("Failed to book meeting. Please try again.");
@@ -426,6 +488,86 @@ const PublicBooking = () => {
                   rows={4}
                 />
               </div>
+
+              {/* Recurring Options */}
+              {selectedEvent?.allow_recurring && (
+                <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Repeat className="w-4 h-4 text-primary" />
+                      <Label htmlFor="recurring" className="font-medium">Make this recurring</Label>
+                    </div>
+                    <Switch
+                      id="recurring"
+                      checked={isRecurring}
+                      onCheckedChange={setIsRecurring}
+                    />
+                  </div>
+
+                  {isRecurring && (
+                    <div className="space-y-4 pt-4 border-t border-border animate-fade-in">
+                      <div className="space-y-2">
+                        <Label>Repeat</Label>
+                        <Select
+                          value={recurrencePattern}
+                          onValueChange={(value: "weekly" | "biweekly" | "monthly") => setRecurrencePattern(value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="weekly">Every week</SelectItem>
+                            <SelectItem value="biweekly">Every 2 weeks</SelectItem>
+                            <SelectItem value="monthly">Every month</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Ends</Label>
+                        <Select
+                          value={endType}
+                          onValueChange={(value: "count" | "date") => setEndType(value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="count">After number of sessions</SelectItem>
+                            <SelectItem value="date">On a specific date</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {endType === "count" ? (
+                        <div className="space-y-2">
+                          <Label htmlFor="count">Number of sessions</Label>
+                          <Input
+                            id="count"
+                            type="number"
+                            min="2"
+                            max="52"
+                            value={recurrenceCount}
+                            onChange={(e) => setRecurrenceCount(Math.min(52, Math.max(2, parseInt(e.target.value) || 2)))}
+                          />
+                          <p className="text-xs text-muted-foreground">Maximum 52 sessions</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Label htmlFor="endDate">End date</Label>
+                          <Input
+                            id="endDate"
+                            type="date"
+                            min={selectedDate ? format(selectedDate, "yyyy-MM-dd") : undefined}
+                            value={recurrenceEndDate}
+                            onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <Button
                 type="submit"
