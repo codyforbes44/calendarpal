@@ -53,6 +53,8 @@ export type Database = {
           guest_email: string
           guest_name: string
           guest_notes: string | null
+          guest_timezone: string | null
+          host_timezone: string | null
           host_user_id: string
           id: string
           meeting_link: string | null
@@ -69,6 +71,8 @@ export type Database = {
           guest_email: string
           guest_name: string
           guest_notes?: string | null
+          guest_timezone?: string | null
+          host_timezone?: string | null
           host_user_id: string
           id?: string
           meeting_link?: string | null
@@ -85,6 +89,8 @@ export type Database = {
           guest_email?: string
           guest_name?: string
           guest_notes?: string | null
+          guest_timezone?: string | null
+          host_timezone?: string | null
           host_user_id?: string
           id?: string
           meeting_link?: string | null
@@ -149,6 +155,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          timezone: string | null
           updated_at: string
           user_id: string
           username: string | null
@@ -159,6 +166,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          timezone?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
@@ -169,6 +177,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          timezone?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null

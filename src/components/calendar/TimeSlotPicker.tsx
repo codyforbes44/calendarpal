@@ -1,6 +1,7 @@
 import { format } from "date-fns";
-import { Clock } from "lucide-react";
+import { Clock, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getTimezoneAbbr } from "@/hooks/useTimezone";
 
 interface TimeSlot {
   time: string;
@@ -12,9 +13,16 @@ interface TimeSlotPickerProps {
   onSelectTime: (time: string) => void;
   timeSlots: TimeSlot[];
   selectedDate: Date | null;
+  timezone?: string;
 }
 
-const TimeSlotPicker = ({ selectedTime, onSelectTime, timeSlots, selectedDate }: TimeSlotPickerProps) => {
+const TimeSlotPicker = ({ 
+  selectedTime, 
+  onSelectTime, 
+  timeSlots, 
+  selectedDate,
+  timezone 
+}: TimeSlotPickerProps) => {
   if (!selectedDate) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -36,6 +44,8 @@ const TimeSlotPicker = ({ selectedTime, onSelectTime, timeSlots, selectedDate }:
     );
   }
 
+  const tzAbbr = timezone ? getTimezoneAbbr(timezone, selectedDate) : null;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -44,6 +54,13 @@ const TimeSlotPicker = ({ selectedTime, onSelectTime, timeSlots, selectedDate }:
           {format(selectedDate, "EEE, MMM d")}
         </span>
       </div>
+
+      {tzAbbr && (
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Globe className="w-3 h-3" />
+          <span>Times shown in {tzAbbr}</span>
+        </div>
+      )}
       
       <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
         {availableSlots.map((slot) => (
