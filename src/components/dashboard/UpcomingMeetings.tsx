@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Video, MoreVertical } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { SkeletonMeeting } from "@/components/ui/skeleton-card";
+import EmptyState from "@/components/EmptyState";
 
 interface Booking {
   id: string;
@@ -68,7 +70,7 @@ const UpcomingMeetings = () => {
         <h2 className="text-xl font-bold mb-4">Upcoming Meetings</h2>
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+            <SkeletonMeeting key={i} />
           ))}
         </div>
       </Card>
@@ -80,16 +82,18 @@ const UpcomingMeetings = () => {
       <h2 className="text-xl font-bold mb-6">Upcoming Meetings</h2>
       
       {bookings.length === 0 ? (
-        <div className="text-center py-12">
-          <Calendar className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
-          <p className="text-muted-foreground">No upcoming meetings</p>
-        </div>
+        <EmptyState
+          icon={Calendar}
+          title="No upcoming meetings"
+          description="When someone books a meeting with you, it will appear here."
+          tip="Share your booking link to start receiving meetings"
+        />
       ) : (
         <div className="space-y-4">
           {bookings.map((booking) => (
             <div
               key={booking.id}
-              className="p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+              className="p-4 border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all"
             >
               <div className="flex items-start justify-between mb-3">
                 <div>

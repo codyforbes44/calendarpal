@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Zap, Users } from "lucide-react";
+import { Calendar, Clock, Zap, Users, Play, Star, Shield, ArrowRight } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
 
 const Hero = () => {
@@ -9,18 +9,25 @@ const Hero = () => {
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "1s" }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="container mx-auto px-6 relative z-10">
+      <div className="container mx-auto px-6 relative z-10 pt-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left content */}
           <div className="space-y-8 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              <Zap className="w-4 h-4" />
-              <span>Better than Calendly</span>
+            <div className="flex flex-wrap gap-3">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                <Zap className="w-4 h-4" />
+                <span>Better than Calendly</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium">
+                <Star className="w-4 h-4 fill-current" />
+                <span>4.9/5 Rating</span>
+              </div>
             </div>
             
-            <h1 className="text-6xl lg:text-7xl font-bold leading-tight">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight">
               Scheduling
               <br />
               <span className="bg-gradient-primary bg-clip-text text-transparent">
@@ -33,27 +40,64 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-wrap gap-4">
-              <Button variant="hero" size="lg" className="text-base px-8" asChild>
-                <a href="/booking">Try Booking Now</a>
+              <Button variant="hero" size="lg" className="text-base px-8 group" asChild>
+                <a href="/auth">
+                  Start Free Trial
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </a>
               </Button>
-              <Button variant="outline" size="lg" className="text-base" asChild>
-                <a href="/availability">Set Availability</a>
+              <Button variant="outline" size="lg" className="text-base group" asChild>
+                <a href="/booking">
+                  <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                  See How It Works
+                </a>
               </Button>
+            </div>
+
+            {/* Trust indicators */}
+            <div className="flex flex-wrap items-center gap-6 pt-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Shield className="w-4 h-4 text-primary" />
+                <span>No credit card required</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="w-4 h-4 text-primary" />
+                <span>Setup in 2 minutes</span>
+              </div>
             </div>
 
             {/* Stats */}
             <div className="flex gap-8 pt-8 border-t border-border">
-              <div>
-                <div className="text-3xl font-bold text-primary">10k+</div>
+              <div className="group">
+                <div className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform">50k+</div>
                 <div className="text-sm text-muted-foreground">Active Users</div>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-primary">500k+</div>
+              <div className="group">
+                <div className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform">2M+</div>
                 <div className="text-sm text-muted-foreground">Meetings Booked</div>
               </div>
-              <div>
-                <div className="text-3xl font-bold text-primary">99.9%</div>
+              <div className="group">
+                <div className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform">99.9%</div>
                 <div className="text-sm text-muted-foreground">Uptime</div>
+              </div>
+            </div>
+
+            {/* Logo cloud */}
+            <div className="pt-6">
+              <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Integrates with</p>
+              <div className="flex flex-wrap gap-6 items-center opacity-60">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">G</div>
+                  Google Calendar
+                </div>
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">Z</div>
+                  Zoom
+                </div>
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <div className="w-6 h-6 rounded bg-muted flex items-center justify-center">M</div>
+                  Teams
+                </div>
               </div>
             </div>
           </div>
@@ -65,6 +109,7 @@ const Hero = () => {
                 src={heroImage} 
                 alt="Modern scheduling interface preview" 
                 className="w-full h-auto"
+                loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
               

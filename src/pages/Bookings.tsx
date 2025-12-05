@@ -10,6 +10,8 @@ import { format, parseISO } from "date-fns";
 import BookingActionsDropdown from "@/components/booking/BookingActionsDropdown";
 import RescheduleDialog from "@/components/booking/RescheduleDialog";
 import { getTimezoneLabel } from "@/lib/timezones";
+import { SkeletonBooking } from "@/components/ui/skeleton-card";
+import EmptyState from "@/components/EmptyState";
 
 interface Booking {
   id: string;
@@ -108,10 +110,26 @@ const Bookings = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-muted-foreground">Loading bookings...</p>
+      <div className="min-h-screen bg-gradient-subtle">
+        <Navigation />
+        <div className="container mx-auto px-6 pt-24 pb-12">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">All Bookings</h1>
+            <p className="text-muted-foreground">View and manage your scheduled meetings</p>
+          </div>
+          <Card className="p-6 mb-6">
+            <div className="flex items-center gap-2">
+              <Search className="w-5 h-5 text-muted-foreground" />
+              <div className="h-10 w-full bg-muted/50 rounded animate-pulse" />
+            </div>
+          </Card>
+          <div className="grid gap-4">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="p-0 overflow-hidden">
+                <SkeletonBooking />
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -140,21 +158,24 @@ const Bookings = () => {
         </Card>
 
         {filteredBookings.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Calendar className="w-16 h-16 text-muted-foreground/40 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">
-              {searchTerm ? "No bookings found" : "No bookings yet"}
-            </h3>
-            <p className="text-muted-foreground">
-              {searchTerm
-                ? "Try adjusting your search"
-                : "Your scheduled meetings will appear here"}
-            </p>
+          <Card className="p-6">
+            <EmptyState
+              icon={Calendar}
+              title={searchTerm ? "No bookings found" : "No bookings yet"}
+              description={
+                searchTerm
+                  ? "Try adjusting your search terms"
+                  : "Your scheduled meetings will appear here when someone books with you."
+              }
+              actionLabel={searchTerm ? undefined : "Share Your Booking Link"}
+              actionHref={searchTerm ? undefined : "/settings"}
+              tip={searchTerm ? undefined : "Share your booking page link to start receiving bookings"}
+            />
           </Card>
         ) : (
           <div className="grid gap-4">
             {filteredBookings.map((booking) => (
-              <Card key={booking.id} className="p-6 hover:shadow-lg transition-shadow">
+              <Card key={booking.id} className="p-6 hover:shadow-lg hover:border-primary/30 transition-all">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div
