@@ -3,7 +3,7 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Check, X, Minus, Quote, ShieldCheck } from "lucide-react";
+import { Check, X, Minus, Quote, ShieldCheck, Lock, CreditCard, Users, Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -194,6 +194,41 @@ const Pricing = () => {
                 <p className="font-semibold text-foreground">30-Day Money-Back Guarantee</p>
                 <p className="text-sm text-muted-foreground">Not satisfied? Get a full refund, no questions asked.</p>
               </div>
+            </div>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            <div className="group flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 hover:bg-muted/50">
+              <div className="w-12 h-12 flex items-center justify-center bg-green-500/10 rounded-full mb-3 transition-transform duration-300 group-hover:scale-110">
+                <Lock className="w-5 h-5 text-green-600" />
+              </div>
+              <p className="font-semibold text-sm">SSL Encrypted</p>
+              <p className="text-xs text-muted-foreground">256-bit security</p>
+            </div>
+            
+            <div className="group flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 hover:bg-muted/50">
+              <div className="w-12 h-12 flex items-center justify-center bg-blue-500/10 rounded-full mb-3 transition-transform duration-300 group-hover:scale-110">
+                <CreditCard className="w-5 h-5 text-blue-600" />
+              </div>
+              <p className="font-semibold text-sm">Secure Payments</p>
+              <p className="text-xs text-muted-foreground">Powered by Stripe</p>
+            </div>
+            
+            <div className="group flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 hover:bg-muted/50">
+              <div className="w-12 h-12 flex items-center justify-center bg-purple-500/10 rounded-full mb-3 transition-transform duration-300 group-hover:scale-110">
+                <Users className="w-5 h-5 text-purple-600" />
+              </div>
+              <p className="font-semibold text-sm">50,000+</p>
+              <p className="text-xs text-muted-foreground">Active users</p>
+            </div>
+            
+            <div className="group flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 hover:bg-muted/50">
+              <div className="w-12 h-12 flex items-center justify-center bg-amber-500/10 rounded-full mb-3 transition-transform duration-300 group-hover:scale-110">
+                <Star className="w-5 h-5 text-amber-500" />
+              </div>
+              <p className="font-semibold text-sm">4.9/5 Rating</p>
+              <p className="text-xs text-muted-foreground">2,000+ reviews</p>
             </div>
           </div>
 
