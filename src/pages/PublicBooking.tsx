@@ -45,6 +45,9 @@ const PublicBooking = () => {
   const [submitting, setSubmitting] = useState(false);
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
 
+  const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
+  const [cancellationToken, setCancellationToken] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -181,7 +184,7 @@ const PublicBooking = () => {
       const startTime = convertTo24Hour(selectedTime);
       const endTime = calculateEndTime(startTime, selectedEvent.duration);
 
-      const { error } = await supabase.from("bookings").insert({
+      const { data, error } = await supabase.from("bookings").insert({
         host_user_id: profile.user_id,
         event_type_id: selectedEvent.id,
         scheduled_date: format(selectedDate, "yyyy-MM-dd"),
@@ -191,10 +194,12 @@ const PublicBooking = () => {
         guest_email: formData.email,
         guest_notes: formData.notes || null,
         status: "confirmed",
-      });
+      }).select("id, cancellation_token").single();
 
       if (error) throw error;
 
+      setCreatedBookingId(data.id);
+      setCancellationToken(data.cancellation_token);
       setStep("confirmed");
       toast.success("Meeting booked successfully!");
     } catch (error) {
@@ -229,6 +234,10 @@ const PublicBooking = () => {
 
   // Confirmed step
   if (step === "confirmed") {
+    const manageUrl = createdBookingId && cancellationToken
+      ? `${window.location.origin}/booking/${createdBookingId}/manage?token=${cancellationToken}`
+      : null;
+
     return (
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-6">
         <Card className="max-w-lg w-full p-8 text-center">
@@ -253,9 +262,23 @@ const PublicBooking = () => {
               <span>{selectedEvent?.title}</span>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground mb-4">
             A confirmation email has been sent to {formData.email}
           </p>
+          {manageUrl && (
+            <div className="pt-4 border-t border-border">
+              <p className="text-sm text-muted-foreground mb-2">
+                Need to make changes?
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(manageUrl, "_blank")}
+              >
+                Reschedule or Cancel
+              </Button>
+            </div>
+          )}
         </Card>
       </div>
     );

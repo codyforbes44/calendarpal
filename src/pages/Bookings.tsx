@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar, Clock, Mail, User, Search, MoreVertical } from "lucide-react";
+import { Calendar, Clock, Mail, User, Search } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import BookingActionsDropdown from "@/components/booking/BookingActionsDropdown";
+import RescheduleDialog from "@/components/booking/RescheduleDialog";
 
 interface Booking {
   id: string;
@@ -17,6 +18,8 @@ interface Booking {
   scheduled_date: string;
   start_time: string;
   status: string;
+  host_user_id: string;
+  event_type_id: string;
   event_types: {
     title: string;
     duration: number;
@@ -29,6 +32,7 @@ const Bookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -48,6 +52,8 @@ const Bookings = () => {
           scheduled_date,
           start_time,
           status,
+          host_user_id,
+          event_type_id,
           event_types (
             title,
             duration,
@@ -85,6 +91,14 @@ const Bookings = () => {
       default:
         return "bg-muted";
     }
+  };
+
+  const formatTime = (time: string) => {
+    const [hour, minute] = time.split(":");
+    const h = parseInt(hour);
+    const period = h >= 12 ? "PM" : "AM";
+    const displayHour = h > 12 ? h - 12 : h === 0 ? 12 : h;
+    return `${displayHour}:${minute} ${period}`;
   };
 
   if (loading) {
@@ -143,9 +157,7 @@ const Bookings = () => {
                       style={{ backgroundColor: booking.event_types.color }}
                     />
                     <div>
-                      <h3 className="font-semibold text-lg">
-                        {booking.event_types.title}
-                      </h3>
+                      <h3 className="font-semibold text-lg">{booking.event_types.title}</h3>
                       <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
@@ -153,18 +165,23 @@ const Bookings = () => {
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          {booking.start_time} ({booking.event_types.duration}min)
+                          {formatTime(booking.start_time)} ({booking.event_types.duration}min)
                         </div>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Badge className={getStatusColor(booking.status)}>
-                      {booking.status}
-                    </Badge>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="w-4 h-4" />
-                    </Button>
+                    <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
+                    <BookingActionsDropdown
+                      bookingId={booking.id}
+                      status={booking.status}
+                      guestName={booking.guest_name}
+                      eventTitle={booking.event_types.title}
+                      scheduledDate={format(parseISO(booking.scheduled_date), "MMM d, yyyy")}
+                      startTime={formatTime(booking.start_time)}
+                      onStatusChange={loadBookings}
+                      onReschedule={() => setRescheduleBooking(booking)}
+                    />
                   </div>
                 </div>
 
@@ -202,6 +219,20 @@ const Bookings = () => {
           </div>
         )}
       </div>
+
+      {rescheduleBooking && (
+        <RescheduleDialog
+          open={!!rescheduleBooking}
+          onOpenChange={(open) => !open && setRescheduleBooking(null)}
+          bookingId={rescheduleBooking.id}
+          hostUserId={rescheduleBooking.host_user_id}
+          eventTypeId={rescheduleBooking.event_type_id}
+          duration={rescheduleBooking.event_types.duration}
+          eventTitle={rescheduleBooking.event_types.title}
+          guestName={rescheduleBooking.guest_name}
+          onRescheduled={loadBookings}
+        />
+      )}
     </div>
   );
 };
