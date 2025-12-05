@@ -5,7 +5,8 @@ import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Calendar, Clock, Mail, User, Search, Globe } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, Clock, Mail, User, Search, Globe, Repeat, ChevronDown, ChevronUp } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import BookingActionsDropdown from "@/components/booking/BookingActionsDropdown";
 import RescheduleDialog from "@/components/booking/RescheduleDialog";
@@ -25,6 +26,9 @@ interface Booking {
   event_type_id: string;
   host_timezone: string | null;
   guest_timezone: string | null;
+  recurrence_pattern: string | null;
+  recurrence_count: number | null;
+  parent_booking_id: string | null;
   event_types: {
     title: string;
     duration: number;
@@ -40,6 +44,7 @@ const Bookings = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
+  const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user) {
@@ -63,6 +68,9 @@ const Bookings = () => {
           event_type_id,
           host_timezone,
           guest_timezone,
+          recurrence_pattern,
+          recurrence_count,
+          parent_booking_id,
           event_types (
             title,
             duration,
@@ -84,12 +92,45 @@ const Bookings = () => {
     }
   };
 
-  const filteredBookings = bookings.filter(
+  // Group bookings by series
+  const groupedBookings = () => {
+    const parentBookings: Booking[] = [];
+    const childBookingsMap = new Map<string, Booking[]>();
+
+    bookings.forEach(booking => {
+      if (booking.parent_booking_id) {
+        // This is a child booking
+        const children = childBookingsMap.get(booking.parent_booking_id) || [];
+        children.push(booking);
+        childBookingsMap.set(booking.parent_booking_id, children);
+      } else {
+        parentBookings.push(booking);
+      }
+    });
+
+    return { parentBookings, childBookingsMap };
+  };
+
+  const { parentBookings, childBookingsMap } = groupedBookings();
+
+  const filteredBookings = parentBookings.filter(
     (booking) =>
       booking.guest_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.guest_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.event_types.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const toggleSeriesExpanded = (bookingId: string) => {
+    setExpandedSeries(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(bookingId)) {
+        newSet.delete(bookingId);
+      } else {
+        newSet.add(bookingId);
+      }
+      return newSet;
+    });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -178,86 +219,172 @@ const Bookings = () => {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {filteredBookings.map((booking) => (
-              <Card key={booking.id} className="p-6 hover:shadow-lg hover:border-primary/30 transition-all">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: booking.event_types.color }}
-                    />
-                    <div>
-                      <h3 className="font-semibold text-lg">{booking.event_types.title}</h3>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {format(parseISO(booking.scheduled_date), "MMM d, yyyy")}
+            {filteredBookings.map((booking) => {
+              const childBookings = childBookingsMap.get(booking.id) || [];
+              const isSeriesParent = booking.recurrence_pattern && childBookings.length > 0;
+              const isExpanded = expandedSeries.has(booking.id);
+              const totalInSeries = childBookings.length + 1;
+
+              return (
+                <div key={booking.id}>
+                  <Card className="p-6 hover:shadow-lg hover:border-primary/30 transition-all">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: booking.event_types.color }}
+                        />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-lg">{booking.event_types.title}</h3>
+                            {isSeriesParent && (
+                              <Badge variant="secondary" className="bg-primary/10 text-primary border-0 flex items-center gap-1">
+                                <Repeat className="w-3 h-3" />
+                                Series ({totalInSeries})
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              {format(parseISO(booking.scheduled_date), "MMM d, yyyy")}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {formatTime(booking.start_time)} ({booking.event_types.duration}min)
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          {formatTime(booking.start_time)} ({booking.event_types.duration}min)
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
+                        <BookingActionsDropdown
+                          bookingId={booking.id}
+                          status={booking.status}
+                          guestName={booking.guest_name}
+                          eventTitle={booking.event_types.title}
+                          scheduledDate={format(parseISO(booking.scheduled_date), "MMM d, yyyy")}
+                          startTime={formatTime(booking.start_time)}
+                          onStatusChange={loadBookings}
+                          onReschedule={() => setRescheduleBooking(booking)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-border">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                          <User className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">{booking.guest_name}</div>
+                          <div className="text-xs text-muted-foreground">Guest</div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
-                    <BookingActionsDropdown
-                      bookingId={booking.id}
-                      status={booking.status}
-                      guestName={booking.guest_name}
-                      eventTitle={booking.event_types.title}
-                      scheduledDate={format(parseISO(booking.scheduled_date), "MMM d, yyyy")}
-                      startTime={formatTime(booking.start_time)}
-                      onStatusChange={loadBookings}
-                      onReschedule={() => setRescheduleBooking(booking)}
-                    />
-                  </div>
-                </div>
 
-                <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                      <User className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium">{booking.guest_name}</div>
-                      <div className="text-xs text-muted-foreground">Guest</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                      <Mail className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium">{booking.guest_email}</div>
-                      <div className="text-xs text-muted-foreground">Email</div>
-                    </div>
-                  </div>
-
-                  {booking.guest_timezone && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                        <Globe className="w-5 h-5 text-muted-foreground" />
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                          <Mail className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium">{booking.guest_email}</div>
+                          <div className="text-xs text-muted-foreground">Email</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-sm font-medium">{getTimezoneLabel(booking.guest_timezone)}</div>
-                        <div className="text-xs text-muted-foreground">Guest Timezone</div>
+
+                      {booking.guest_timezone && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                            <Globe className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium">{getTimezoneLabel(booking.guest_timezone)}</div>
+                            <div className="text-xs text-muted-foreground">Guest Timezone</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {booking.guest_notes && (
+                        <div className="sm:col-span-2 mt-2">
+                          <p className="text-sm text-muted-foreground">
+                            <span className="font-medium">Notes:</span> {booking.guest_notes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Expand/collapse series button */}
+                    {isSeriesParent && (
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleSeriesExpanded(booking.id)}
+                          className="w-full flex items-center justify-center gap-2"
+                        >
+                          {isExpanded ? (
+                            <>
+                              <ChevronUp className="w-4 h-4" />
+                              Hide {childBookings.length} more sessions
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="w-4 h-4" />
+                              Show {childBookings.length} more sessions
+                            </>
+                          )}
+                        </Button>
                       </div>
+                    )}
+                  </Card>
+
+                  {/* Child bookings (expanded series) */}
+                  {isExpanded && childBookings.length > 0 && (
+                    <div className="ml-6 mt-2 space-y-2 border-l-2 border-primary/20 pl-4">
+                      {childBookings
+                        .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime())
+                        .map((child) => (
+                          <Card key={child.id} className="p-4 bg-muted/30">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="w-2 h-2 rounded-full"
+                                  style={{ backgroundColor: child.event_types.color }}
+                                />
+                                <div className="flex items-center gap-4 text-sm">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                                    {format(parseISO(child.scheduled_date), "MMM d, yyyy")}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4 text-muted-foreground" />
+                                    {formatTime(child.start_time)}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className={getStatusColor(child.status)} variant="secondary">
+                                  {child.status}
+                                </Badge>
+                                <BookingActionsDropdown
+                                  bookingId={child.id}
+                                  status={child.status}
+                                  guestName={child.guest_name}
+                                  eventTitle={child.event_types.title}
+                                  scheduledDate={format(parseISO(child.scheduled_date), "MMM d, yyyy")}
+                                  startTime={formatTime(child.start_time)}
+                                  onStatusChange={loadBookings}
+                                  onReschedule={() => setRescheduleBooking(child)}
+                                />
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
                     </div>
                   )}
-
-                  {booking.guest_notes && (
-                    <div className="sm:col-span-2 mt-2">
-                      <p className="text-sm text-muted-foreground">
-                        <span className="font-medium">Notes:</span> {booking.guest_notes}
-                      </p>
-                    </div>
-                  )}
                 </div>
-              </Card>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
