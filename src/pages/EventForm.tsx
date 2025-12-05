@@ -47,6 +47,7 @@ const EventForm = () => {
     location_type: "video" as "video" | "phone" | "in_person",
     buffer_before: 0,
     buffer_after: 0,
+    allow_recurring: false,
   });
 
   useEffect(() => {
@@ -76,6 +77,7 @@ const EventForm = () => {
           location_type: (data.location_type || "video") as "video" | "phone" | "in_person",
           buffer_before: data.buffer_before || 0,
           buffer_after: data.buffer_after || 0,
+          allow_recurring: data.allow_recurring || false,
         });
       }
     } catch (error) {
@@ -112,6 +114,7 @@ const EventForm = () => {
             location_type: formData.location_type,
             buffer_before: formData.buffer_before,
             buffer_after: formData.buffer_after,
+            allow_recurring: formData.allow_recurring,
           })
           .eq("id", id)
           .eq("user_id", user?.id);
@@ -132,6 +135,7 @@ const EventForm = () => {
             location_type: formData.location_type,
             buffer_before: formData.buffer_before,
             buffer_after: formData.buffer_after,
+            allow_recurring: formData.allow_recurring,
           });
 
         if (error) throw error;
@@ -327,18 +331,34 @@ const EventForm = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                <div>
-                  <Label htmlFor="is_active" className="font-medium">Active</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow people to book this event type
-                  </p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div>
+                    <Label htmlFor="is_active" className="font-medium">Active</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Allow people to book this event type
+                    </p>
+                  </div>
+                  <Switch
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                  />
                 </div>
-                <Switch
-                  id="is_active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                />
+
+                <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                  <div>
+                    <Label htmlFor="allow_recurring" className="font-medium">Allow Recurring</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Let guests book repeated sessions (weekly, bi-weekly, monthly)
+                    </p>
+                  </div>
+                  <Switch
+                    id="allow_recurring"
+                    checked={formData.allow_recurring}
+                    onCheckedChange={(checked) => setFormData({ ...formData, allow_recurring: checked })}
+                  />
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">

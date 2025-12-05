@@ -58,6 +58,10 @@ export type Database = {
           host_user_id: string
           id: string
           meeting_link: string | null
+          parent_booking_id: string | null
+          recurrence_count: number | null
+          recurrence_end_date: string | null
+          recurrence_pattern: string | null
           scheduled_date: string
           start_time: string
           status: string
@@ -76,6 +80,10 @@ export type Database = {
           host_user_id: string
           id?: string
           meeting_link?: string | null
+          parent_booking_id?: string | null
+          recurrence_count?: number | null
+          recurrence_end_date?: string | null
+          recurrence_pattern?: string | null
           scheduled_date: string
           start_time: string
           status?: string
@@ -94,6 +102,10 @@ export type Database = {
           host_user_id?: string
           id?: string
           meeting_link?: string | null
+          parent_booking_id?: string | null
+          recurrence_count?: number | null
+          recurrence_end_date?: string | null
+          recurrence_pattern?: string | null
           scheduled_date?: string
           start_time?: string
           status?: string
@@ -107,10 +119,18 @@ export type Database = {
             referencedRelation: "event_types"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bookings_parent_booking_id_fkey"
+            columns: ["parent_booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
         ]
       }
       event_types: {
         Row: {
+          allow_recurring: boolean
           buffer_after: number
           buffer_before: number
           color: string | null
@@ -125,6 +145,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          allow_recurring?: boolean
           buffer_after?: number
           buffer_before?: number
           color?: string | null
@@ -139,6 +160,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          allow_recurring?: boolean
           buffer_after?: number
           buffer_before?: number
           color?: string | null
