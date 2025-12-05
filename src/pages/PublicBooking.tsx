@@ -34,6 +34,8 @@ interface EventType {
   location_type: string | null;
   color: string | null;
   is_active: boolean;
+  buffer_before: number;
+  buffer_after: number;
 }
 
 const PublicBooking = () => {
@@ -64,6 +66,8 @@ const PublicBooking = () => {
     eventTypeId: selectedEvent?.id || "",
     selectedDate,
     duration: selectedEvent?.duration || 30,
+    bufferBefore: selectedEvent?.buffer_before || 0,
+    bufferAfter: selectedEvent?.buffer_after || 0,
   });
 
   useEffect(() => {

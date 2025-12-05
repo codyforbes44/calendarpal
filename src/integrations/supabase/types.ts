@@ -111,6 +111,8 @@ export type Database = {
       }
       event_types: {
         Row: {
+          buffer_after: number
+          buffer_before: number
           color: string | null
           created_at: string
           description: string | null
@@ -123,6 +125,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          buffer_after?: number
+          buffer_before?: number
           color?: string | null
           created_at?: string
           description?: string | null
@@ -135,6 +139,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          buffer_after?: number
+          buffer_before?: number
           color?: string | null
           created_at?: string
           description?: string | null

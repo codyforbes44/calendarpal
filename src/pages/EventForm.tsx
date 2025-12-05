@@ -18,6 +18,8 @@ const eventSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
   description: z.string().max(500).optional(),
   duration: z.number().min(5).max(480),
+  buffer_before: z.number().min(0).max(60),
+  buffer_after: z.number().min(0).max(60),
 });
 
 const colors = [
@@ -43,6 +45,8 @@ const EventForm = () => {
     color: "#6366f1",
     is_active: true,
     location_type: "video" as "video" | "phone" | "in_person",
+    buffer_before: 0,
+    buffer_after: 0,
   });
 
   useEffect(() => {
@@ -70,6 +74,8 @@ const EventForm = () => {
           color: data.color,
           is_active: data.is_active,
           location_type: (data.location_type || "video") as "video" | "phone" | "in_person",
+          buffer_before: data.buffer_before || 0,
+          buffer_after: data.buffer_after || 0,
         });
       }
     } catch (error) {
@@ -89,6 +95,8 @@ const EventForm = () => {
         title: formData.title,
         description: formData.description,
         duration: formData.duration,
+        buffer_before: formData.buffer_before,
+        buffer_after: formData.buffer_after,
       });
 
       if (id) {
@@ -102,6 +110,8 @@ const EventForm = () => {
             color: formData.color,
             is_active: formData.is_active,
             location_type: formData.location_type,
+            buffer_before: formData.buffer_before,
+            buffer_after: formData.buffer_after,
           })
           .eq("id", id)
           .eq("user_id", user?.id);
@@ -120,6 +130,8 @@ const EventForm = () => {
             color: formData.color,
             is_active: formData.is_active,
             location_type: formData.location_type,
+            buffer_before: formData.buffer_before,
+            buffer_after: formData.buffer_after,
           });
 
         if (error) throw error;
@@ -240,6 +252,58 @@ const EventForm = () => {
                       <SelectItem value="in_person">In Person</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              {/* Buffer Time Settings */}
+              <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                <div>
+                  <h3 className="font-medium mb-1">Buffer Time</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Add padding before and after meetings to give yourself a break
+                  </p>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="buffer_before">Before meeting (minutes)</Label>
+                    <Select
+                      value={formData.buffer_before.toString()}
+                      onValueChange={(value) => setFormData({ ...formData, buffer_before: parseInt(value) })}
+                    >
+                      <SelectTrigger id="buffer_before">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">No buffer</SelectItem>
+                        <SelectItem value="5">5 minutes</SelectItem>
+                        <SelectItem value="10">10 minutes</SelectItem>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                        <SelectItem value="45">45 minutes</SelectItem>
+                        <SelectItem value="60">60 minutes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="buffer_after">After meeting (minutes)</Label>
+                    <Select
+                      value={formData.buffer_after.toString()}
+                      onValueChange={(value) => setFormData({ ...formData, buffer_after: parseInt(value) })}
+                    >
+                      <SelectTrigger id="buffer_after">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">No buffer</SelectItem>
+                        <SelectItem value="5">5 minutes</SelectItem>
+                        <SelectItem value="10">10 minutes</SelectItem>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                        <SelectItem value="45">45 minutes</SelectItem>
+                        <SelectItem value="60">60 minutes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
