@@ -2,7 +2,8 @@ import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Check, X, Minus } from "lucide-react";
+import { Check, X, Minus, Quote } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const plans = [
   {
@@ -314,6 +315,75 @@ const Pricing = () => {
                   </TableRow>
                 </TableBody>
               </Table>
+            </div>
+          </div>
+
+          {/* Testimonials Section */}
+          <div className="mt-24 max-w-6xl mx-auto">
+            <h2 className="font-display text-2xl font-bold text-center mb-4">
+              Loved by thousands of professionals
+            </h2>
+            <p className="text-muted-foreground text-center mb-12">
+              See what our customers have to say about MeetFlow
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Testimonial 1 */}
+              <Card className="bg-muted/30 border-border">
+                <CardContent className="pt-6">
+                  <Quote className="w-8 h-8 text-primary/30 mb-4" />
+                  <p className="text-foreground mb-6">
+                    "MeetFlow has completely transformed how I manage client meetings. The interface is intuitive and the calendar sync works flawlessly. I've saved hours every week."
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarFallback className="bg-primary/10 text-primary">SK</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-sm">Sarah Kim</p>
+                      <p className="text-xs text-muted-foreground">Marketing Consultant</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Testimonial 2 */}
+              <Card className="bg-muted/30 border-border">
+                <CardContent className="pt-6">
+                  <Quote className="w-8 h-8 text-primary/30 mb-4" />
+                  <p className="text-foreground mb-6">
+                    "As a freelancer, time is money. MeetFlow eliminated the back-and-forth emails for scheduling. The Pro plan's custom branding makes me look more professional."
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarFallback className="bg-primary/10 text-primary">MR</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-sm">Marcus Rodriguez</p>
+                      <p className="text-xs text-muted-foreground">Freelance Designer</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Testimonial 3 */}
+              <Card className="bg-muted/30 border-border">
+                <CardContent className="pt-6">
+                  <Quote className="w-8 h-8 text-primary/30 mb-4" />
+                  <p className="text-foreground mb-6">
+                    "We switched our entire sales team to MeetFlow. The team scheduling and analytics features have improved our booking rates by 40%. Highly recommend!"
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarFallback className="bg-primary/10 text-primary">JC</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold text-sm">Jennifer Chen</p>
+                      <p className="text-xs text-muted-foreground">Sales Director, TechCorp</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
