@@ -6,6 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { 
   CreditCard, 
   Calendar, 
@@ -14,7 +22,10 @@ import {
   ExternalLink,
   Loader2,
   Zap,
-  Crown
+  Crown,
+  Download,
+  Receipt,
+  FileText
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate, Link } from "react-router-dom";
@@ -30,16 +41,32 @@ interface SubscriptionData {
   interval: string | null;
 }
 
+interface Invoice {
+  id: string;
+  number: string | null;
+  amount_paid: number;
+  currency: string;
+  status: string;
+  created: number;
+  invoice_pdf: string | null;
+  hosted_invoice_url: string | null;
+  period_start: number;
+  period_end: number;
+}
+
 const Subscription = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [portalLoading, setPortalLoading] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
       loadSubscription();
+      loadInvoices();
     }
   }, [user]);
 
@@ -54,6 +81,42 @@ const Subscription = () => {
       toast.error("Failed to load subscription details");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadInvoices = async () => {
+    setInvoicesLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("list-invoices");
+      
+      if (error) throw error;
+      setInvoices(data?.invoices || []);
+    } catch (error) {
+      console.error("Error loading invoices:", error);
+    } finally {
+      setInvoicesLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+    }).format(amount / 100);
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'paid':
+        return <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/20">Paid</Badge>;
+      case 'open':
+        return <Badge variant="secondary">Open</Badge>;
+      case 'draft':
+        return <Badge variant="outline">Draft</Badge>;
+      case 'void':
+        return <Badge variant="destructive">Void</Badge>;
+      default:
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
@@ -232,6 +295,102 @@ const Subscription = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Invoice History - Only show for Pro users */}
+        {isPro && (
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Receipt className="w-5 h-5 text-muted-foreground" />
+                <div>
+                  <CardTitle className="text-lg">Invoice History</CardTitle>
+                  <CardDescription>View and download your past invoices</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {invoicesLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : invoices.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="w-10 h-10 mx-auto mb-3 opacity-50" />
+                  <p>No invoices yet</p>
+                  <p className="text-sm">Your invoices will appear here after your first payment</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Invoice</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {invoices.map((invoice) => (
+                        <TableRow key={invoice.id}>
+                          <TableCell className="font-medium">
+                            {invoice.number || invoice.id.slice(0, 12)}
+                          </TableCell>
+                          <TableCell>
+                            {format(new Date(invoice.created * 1000), "MMM d, yyyy")}
+                          </TableCell>
+                          <TableCell>
+                            {formatCurrency(invoice.amount_paid, invoice.currency)}
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge(invoice.status || 'unknown')}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              {invoice.hosted_invoice_url && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  asChild
+                                >
+                                  <a 
+                                    href={invoice.hosted_invoice_url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                  >
+                                    <ExternalLink className="w-4 h-4" />
+                                  </a>
+                                </Button>
+                              )}
+                              {invoice.invoice_pdf && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  asChild
+                                >
+                                  <a 
+                                    href={invoice.invoice_pdf} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </a>
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Features Comparison */}
         <Card>
