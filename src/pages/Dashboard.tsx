@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import UpcomingMeetings from "@/components/dashboard/UpcomingMeetings";
+import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 import EventTypesList from "@/components/dashboard/EventTypesList";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import ShareModal from "@/components/ShareModal";
@@ -140,6 +141,7 @@ const Dashboard = () => {
           />
         )}
 
+        <UpgradePrompt />
         <DashboardStats />
         
         <div className="grid lg:grid-cols-2 gap-8 mt-8">
