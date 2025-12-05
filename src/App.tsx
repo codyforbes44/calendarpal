@@ -16,6 +16,7 @@ import PublicBooking from "./pages/PublicBooking";
 import ProfileSettings from "./pages/ProfileSettings";
 import GuestBookingManage from "./pages/GuestBookingManage";
 import Pricing from "./pages/Pricing";
+import Subscription from "./pages/Subscription";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,6 +81,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <EventForm />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/subscription"
+              element={
+                <ProtectedRoute>
+                  <Subscription />
                 </ProtectedRoute>
               }
             />

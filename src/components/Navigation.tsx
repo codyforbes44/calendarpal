@@ -18,6 +18,7 @@ const Navigation = () => {
         { href: "/dashboard", label: "Dashboard" },
         { href: "/bookings", label: "Bookings" },
         { href: "/availability", label: "Availability" },
+        { href: "/subscription", label: "Subscription" },
         { href: "/settings", label: "Settings" },
       ]
     : [
