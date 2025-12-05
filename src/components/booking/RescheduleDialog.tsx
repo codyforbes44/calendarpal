@@ -18,6 +18,8 @@ interface RescheduleDialogProps {
   eventTitle: string;
   guestName: string;
   onRescheduled: () => void;
+  bufferBefore?: number;
+  bufferAfter?: number;
 }
 
 const RescheduleDialog = ({
@@ -30,6 +32,8 @@ const RescheduleDialog = ({
   eventTitle,
   guestName,
   onRescheduled,
+  bufferBefore = 0,
+  bufferAfter = 0,
 }: RescheduleDialogProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
@@ -41,6 +45,8 @@ const RescheduleDialog = ({
     eventTypeId,
     selectedDate,
     duration,
+    bufferBefore,
+    bufferAfter,
   });
 
   useEffect(() => {

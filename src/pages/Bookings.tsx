@@ -29,6 +29,8 @@ interface Booking {
     title: string;
     duration: number;
     color: string;
+    buffer_before: number;
+    buffer_after: number;
   };
 }
 
@@ -64,7 +66,9 @@ const Bookings = () => {
           event_types (
             title,
             duration,
-            color
+            color,
+            buffer_before,
+            buffer_after
           )
         `)
         .eq("host_user_id", user?.id)
@@ -269,6 +273,8 @@ const Bookings = () => {
           eventTitle={rescheduleBooking.event_types.title}
           guestName={rescheduleBooking.guest_name}
           onRescheduled={loadBookings}
+          bufferBefore={rescheduleBooking.event_types.buffer_before}
+          bufferAfter={rescheduleBooking.event_types.buffer_after}
         />
       )}
     </div>
