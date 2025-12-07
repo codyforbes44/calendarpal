@@ -70,7 +70,7 @@ const OnboardingWizard = ({
     <Card className="p-6 mb-8 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h2 className="text-lg font-bold mb-1">Welcome to MeetFlow! 🎉</h2>
+          <h2 className="text-lg font-bold mb-1">Welcome to CalendarPal! 🎉</h2>
           <p className="text-sm text-muted-foreground">
             Complete these steps to start accepting bookings
           </p>
