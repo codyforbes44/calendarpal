@@ -1,7 +1,9 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Home, Search, ArrowLeft, HelpCircle } from "lucide-react";
+import { Calendar, Home } from "lucide-react";
+import SEO from "@/components/SEO";
+import { pageSEO } from "@/lib/seo-config";
 
 const NotFound = () => {
   const location = useLocation();
@@ -11,7 +13,13 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-subtle relative overflow-hidden">
+    <>
+      <SEO
+        title={pageSEO.notFound.title}
+        description={pageSEO.notFound.description}
+        noindex={true}
+      />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float" />
@@ -82,7 +90,8 @@ const NotFound = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

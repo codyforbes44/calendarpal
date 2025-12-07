@@ -12,3 +12,13 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /bookings
+Disallow: /availability
+Disallow: /settings
+Disallow: /events/
+Disallow: /subscription
+Disallow: /booking/*/manage
+
+# Sitemap
+Sitemap: https://calendarpal.com/sitemap.xml
