@@ -79,6 +79,7 @@ const Support = () => {
         description={pageSEO.support.description}
         keywords={pageSEO.support.keywords}
         canonical={`${siteConfig.url}/support`}
+        ogImage={`${siteConfig.url}${siteConfig.ogImages.support}`}
         structuredData={faqSchema}
       />
       <Navigation />

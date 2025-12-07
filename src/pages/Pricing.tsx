@@ -169,6 +169,7 @@ const Pricing = () => {
         description={pageSEO.pricing.description}
         keywords={pageSEO.pricing.keywords}
         canonical={`${siteConfig.url}/pricing`}
+        ogImage={`${siteConfig.url}${siteConfig.ogImages.pricing}`}
         structuredData={pricingSchema}
       />
       <Navigation />
