@@ -79,7 +79,7 @@ const Pricing = () => {
     }
 
     if (planName === "Enterprise") {
-      window.location.href = "mailto:sales@meetflow.com?subject=Enterprise%20Plan%20Inquiry";
+      window.location.href = "mailto:sales@calendarpal.com?subject=Enterprise%20Plan%20Inquiry";
       return;
     }
 
@@ -382,7 +382,7 @@ const Pricing = () => {
                     <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Remove MeetFlow branding</TableCell>
+                    <TableCell>Remove CalendarPal branding</TableCell>
                     <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
                     <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
                     <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
