@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
+import SEO from "@/components/SEO";
+import { pageSEO, siteConfig } from "@/lib/seo-config";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address").max(255),
@@ -87,7 +89,14 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-6">
+    <>
+      <SEO
+        title={pageSEO.auth.title}
+        description={pageSEO.auth.description}
+        keywords={pageSEO.auth.keywords}
+        canonical={`${siteConfig.url}/auth`}
+      />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-6">
       <Card className="w-full max-w-md p-8">
         <div className="flex items-center justify-center mb-8">
           <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
@@ -183,6 +192,7 @@ const Auth = () => {
         </div>
       </Card>
     </div>
+    </>
   );
 };
 

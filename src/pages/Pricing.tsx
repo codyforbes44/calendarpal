@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import SEO from "@/components/SEO";
+import { pageSEO, siteConfig } from "@/lib/seo-config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -125,8 +127,50 @@ const Pricing = () => {
     return Math.round(((plan.monthlyPrice - plan.yearlyPrice) / plan.monthlyPrice) * 100);
   };
 
+  const pricingSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "CalendarPal Pro",
+    "description": "Professional scheduling software with unlimited bookings, calendar sync, and custom branding.",
+    "brand": { "@type": "Brand", "name": "CalendarPal" },
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "Free Plan",
+        "price": "0",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2025-12-31"
+      },
+      {
+        "@type": "Offer",
+        "name": "Pro Monthly",
+        "price": "12",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2025-12-31",
+        "billingIncrement": 1,
+        "billingDuration": { "@type": "QuantitativeValue", "value": 1, "unitCode": "MON" }
+      },
+      {
+        "@type": "Offer",
+        "name": "Pro Yearly",
+        "price": "120",
+        "priceCurrency": "USD",
+        "priceValidUntil": "2025-12-31",
+        "billingIncrement": 1,
+        "billingDuration": { "@type": "QuantitativeValue", "value": 1, "unitCode": "ANN" }
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title={pageSEO.pricing.title}
+        description={pageSEO.pricing.description}
+        keywords={pageSEO.pricing.keywords}
+        canonical={`${siteConfig.url}/pricing`}
+        structuredData={pricingSchema}
+      />
       <Navigation />
       
       <main className="pt-32 pb-20">

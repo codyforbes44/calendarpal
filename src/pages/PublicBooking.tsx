@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import TimezoneSelector from "@/components/TimezoneSelector";
 import { getLocalTimezone, getTimezoneLabel } from "@/lib/timezones";
 import { getTimezoneAbbr } from "@/hooks/useTimezone";
+import SEO from "@/components/SEO";
+import { siteConfig } from "@/lib/seo-config";
 
 interface Profile {
   id: string;
@@ -295,14 +297,25 @@ const PublicBooking = () => {
     }
   };
 
+  const dynamicTitle = profile?.full_name 
+    ? `Book with ${profile.full_name} | CalendarPal` 
+    : "Book a Meeting | CalendarPal";
+  
+  const dynamicDescription = profile?.full_name
+    ? `Schedule a meeting with ${profile.full_name}. Choose your preferred time slot and book instantly.`
+    : "Schedule a meeting. Choose your preferred time slot and book instantly.";
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-muted-foreground">Loading booking page...</p>
+      <>
+        <SEO title={dynamicTitle} description={dynamicDescription} />
+        <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
+          <div className="text-center space-y-4">
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-muted-foreground">Loading booking page...</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -313,8 +326,10 @@ const PublicBooking = () => {
       : null;
 
     return (
-      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-6">
-        <Card className="max-w-lg w-full p-8 text-center">
+      <>
+        <SEO title={dynamicTitle} description={dynamicDescription} />
+        <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-6">
+          <Card className="max-w-lg w-full p-8 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Check className="w-8 h-8 text-green-600" />
           </div>
@@ -359,13 +374,16 @@ const PublicBooking = () => {
           )}
         </Card>
       </div>
+      </>
     );
   }
 
   // Event selection step
   if (step === "event") {
     return (
-      <div className="min-h-screen bg-gradient-subtle py-12 px-6">
+      <>
+        <SEO title={dynamicTitle} description={dynamicDescription} />
+        <div className="min-h-screen bg-gradient-subtle py-12 px-6">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -411,13 +429,16 @@ const PublicBooking = () => {
           )}
         </div>
       </div>
+      </>
     );
   }
 
   // Details step
   if (step === "details") {
     return (
-      <div className="min-h-screen bg-gradient-subtle py-12 px-6">
+      <>
+        <SEO title={dynamicTitle} description={dynamicDescription} />
+        <div className="min-h-screen bg-gradient-subtle py-12 px-6">
         <Card className="max-w-2xl mx-auto overflow-hidden border-border shadow-lg">
           <div className="p-8">
             <Button variant="ghost" size="sm" onClick={handleBack} className="mb-6">
@@ -582,12 +603,15 @@ const PublicBooking = () => {
           </div>
         </Card>
       </div>
+      </>
     );
   }
 
   // Selection step (calendar + time)
   return (
-    <div className="min-h-screen bg-gradient-subtle py-12 px-6">
+    <>
+      <SEO title={dynamicTitle} description={dynamicDescription} />
+      <div className="min-h-screen bg-gradient-subtle py-12 px-6">
       <Card className="max-w-5xl mx-auto overflow-hidden border-border shadow-lg">
         <div className="grid md:grid-cols-[2fr,1fr] divide-x divide-border">
           <div className="p-8 space-y-6">
@@ -675,6 +699,7 @@ const PublicBooking = () => {
         </div>
       </Card>
     </div>
+    </>
   );
 };
 

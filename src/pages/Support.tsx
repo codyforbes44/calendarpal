@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Mail, MessageSquare, FileText, Lightbulb } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import SEO from "@/components/SEO";
+import { pageSEO, siteConfig } from "@/lib/seo-config";
 
 const Support = () => {
   const [name, setName] = useState("");
@@ -57,8 +59,28 @@ const Support = () => {
     }
   ];
 
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title={pageSEO.support.title}
+        description={pageSEO.support.description}
+        keywords={pageSEO.support.keywords}
+        canonical={`${siteConfig.url}/support`}
+        structuredData={faqSchema}
+      />
       <Navigation />
       
       <main className="container mx-auto px-6 py-24">

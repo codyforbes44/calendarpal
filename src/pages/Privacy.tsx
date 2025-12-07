@@ -1,9 +1,17 @@
 import Navigation from "@/components/Navigation";
 import { Link } from "react-router-dom";
+import SEO from "@/components/SEO";
+import { pageSEO, siteConfig } from "@/lib/seo-config";
 
 const Privacy = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title={pageSEO.privacy.title}
+        description={pageSEO.privacy.description}
+        keywords={pageSEO.privacy.keywords}
+        canonical={`${siteConfig.url}/privacy`}
+      />
       <Navigation />
       
       <main className="container mx-auto px-6 py-24 max-w-4xl">
