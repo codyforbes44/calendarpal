@@ -6,6 +6,11 @@ export const siteConfig = {
   twitterHandle: "@calendarpal",
   themeColor: "#4F46E5",
   logo: "/calendarpal-logo.png",
+  ogImages: {
+    home: "/og-home.png",
+    pricing: "/og-pricing.png",
+    support: "/og-support.png",
+  },
 };
 
 export const defaultSEO = {

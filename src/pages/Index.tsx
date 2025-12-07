@@ -26,10 +26,9 @@ const Index = () => {
         description={pageSEO.home.description}
         keywords={pageSEO.home.keywords}
         canonical={siteConfig.url}
+        ogImage={`${siteConfig.url}${siteConfig.ogImages.home}`}
         structuredData={[organizationSchema, webApplicationSchema, breadcrumbSchema]}
       />
-      <Navigation />
-      <Hero />
       <Navigation />
       <Hero />
       <Features />
