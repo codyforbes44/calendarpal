@@ -45,7 +45,7 @@ const Navigation = () => {
     : [
         { href: "/#features", label: "Features" },
         { href: "/pricing", label: "Pricing" },
-        { href: "/booking", label: "Book Demo" },
+        { href: "/book/codyforbes", label: "Book Demo" },
       ];
 
   return (
