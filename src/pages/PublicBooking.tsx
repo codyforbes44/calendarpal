@@ -272,6 +272,45 @@ const PublicBooking = () => {
         if (childError) throw childError;
       }
 
+      // Get host email for notifications
+      const { data: hostData } = await supabase.auth.admin?.getUserById?.(profile.user_id) || {};
+      
+      // Fetch host email from profiles table
+      const { data: hostProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("user_id", profile.user_id)
+        .single();
+
+      // Send confirmation emails
+      const manageUrl = `${window.location.origin}/booking/${parentBooking.id}/manage?token=${parentBooking.cancellation_token}`;
+      
+      try {
+        await supabase.functions.invoke("send-booking-email", {
+          body: {
+            type: "booking_confirmed",
+            booking: {
+              id: parentBooking.id,
+              guestName: formData.name,
+              guestEmail: formData.email,
+              hostName: profile.full_name || "Host",
+              hostEmail: hostProfile?.email,
+              eventTitle: selectedEvent.title,
+              scheduledDate: format(bookingDates[0], "yyyy-MM-dd"),
+              startTime: startTime,
+              endTime: endTime,
+              duration: selectedEvent.duration,
+              guestTimezone: guestTimezone,
+              hostTimezone: hostTimezone,
+              manageUrl: manageUrl,
+            },
+          },
+        });
+      } catch (emailError) {
+        console.error("Failed to send confirmation email:", emailError);
+        // Don't fail the booking if email fails
+      }
+
       setCreatedBookingId(parentBooking.id);
       setCancellationToken(parentBooking.cancellation_token);
       setStep("confirmed");

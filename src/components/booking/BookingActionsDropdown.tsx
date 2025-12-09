@@ -25,9 +25,13 @@ interface BookingActionsDropdownProps {
   bookingId: string;
   status: string;
   guestName: string;
+  guestEmail: string;
   eventTitle: string;
   scheduledDate: string;
   startTime: string;
+  endTime: string;
+  duration: number;
+  hostUserId: string;
   onStatusChange: () => void;
   onReschedule: () => void;
 }
@@ -36,9 +40,13 @@ const BookingActionsDropdown = ({
   bookingId,
   status,
   guestName,
+  guestEmail,
   eventTitle,
   scheduledDate,
   startTime,
+  endTime,
+  duration,
+  hostUserId,
   onStatusChange,
   onReschedule,
 }: BookingActionsDropdownProps) => {
@@ -55,6 +63,36 @@ const BookingActionsDropdown = ({
         .eq("id", bookingId);
 
       if (error) throw error;
+
+      // Fetch host info for email
+      const { data: hostProfile } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("user_id", hostUserId)
+        .single();
+
+      // Send cancellation email
+      try {
+        await supabase.functions.invoke("send-booking-email", {
+          body: {
+            type: "booking_cancelled",
+            booking: {
+              id: bookingId,
+              guestName,
+              guestEmail,
+              hostName: hostProfile?.full_name || "Host",
+              hostEmail: hostProfile?.email,
+              eventTitle,
+              scheduledDate,
+              startTime,
+              endTime,
+              duration,
+            },
+          },
+        });
+      } catch (emailError) {
+        console.error("Failed to send cancellation email:", emailError);
+      }
 
       toast.success("Booking cancelled");
       onStatusChange();
