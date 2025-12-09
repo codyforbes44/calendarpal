@@ -52,9 +52,18 @@ const Onboarding = () => {
       navigate("/auth");
       return;
     }
-    // Pre-fill name from user metadata
-    const name = user.user_metadata?.full_name || "";
+    // Pre-fill data from user metadata (works for both email signup and Google OAuth)
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || "";
     setFullName(name);
+    
+    // For Google OAuth users, suggest username from email
+    if (!username && user.email) {
+      const emailUsername = user.email.split("@")[0].toLowerCase().replace(/[^a-z0-9-]/g, "");
+      if (emailUsername.length >= 3) {
+        setUsername(emailUsername);
+        checkUsernameAvailability(emailUsername);
+      }
+    }
   }, [user, navigate]);
 
   const checkUsernameAvailability = async (value: string) => {

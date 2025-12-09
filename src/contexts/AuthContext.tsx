@@ -11,6 +11,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper to check if user has completed onboarding
+const checkUserOnboardingStatus = async (userId: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("user_id", userId)
+      .maybeSingle();
+    
+    if (error) return false;
+    return !!data?.username;
+  } catch {
+    return false;
+  }
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -23,6 +39,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Handle OAuth sign-in redirect
+        if (event === "SIGNED_IN" && session?.user) {
+          // Use setTimeout to avoid Supabase deadlock
+          setTimeout(async () => {
+            const hasCompletedOnboarding = await checkUserOnboardingStatus(session.user.id);
+            const currentPath = window.location.pathname;
+            
+            // Only redirect if we're on the auth page or root (not already navigating)
+            if (currentPath === "/auth" || currentPath === "/") {
+              if (hasCompletedOnboarding) {
+                window.location.href = "/dashboard";
+              } else {
+                window.location.href = "/onboarding";
+              }
+            }
+          }, 0);
+        }
       }
     );
 
