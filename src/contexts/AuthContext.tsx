@@ -50,9 +50,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Only redirect if we're on the auth page or root (not already navigating)
             if (currentPath === "/auth" || currentPath === "/") {
               if (hasCompletedOnboarding) {
-                window.location.href = "/dashboard";
+                window.location.replace("/dashboard");
               } else {
-                window.location.href = "/onboarding";
+                window.location.replace("/onboarding");
               }
             }
           }, 0);
