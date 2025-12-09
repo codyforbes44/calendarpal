@@ -404,7 +404,7 @@ const Subscription = () => {
                 <ul className="space-y-2">
                   {[
                     "1 event type",
-                    "10 bookings per month",
+                    "Unlimited bookings",
                     "Basic calendar integration",
                     "Email notifications",
                   ].map((feature) => (

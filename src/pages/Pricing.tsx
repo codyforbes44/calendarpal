@@ -22,7 +22,7 @@ const plans = [
     description: "Perfect for getting started",
     features: [
       "1 event type",
-      "10 bookings per month",
+      "Unlimited bookings",
       "Basic calendar integration",
       "Email notifications",
       "7-day scheduling window",
@@ -32,8 +32,8 @@ const plans = [
   },
   {
     name: "Pro",
-    monthlyPrice: 12,
-    yearlyPrice: 10,
+    monthlyPrice: 8,
+    yearlyPrice: 7,
     description: "For professionals and small teams",
     features: [
       "Unlimited event types",
@@ -144,7 +144,7 @@ const Pricing = () => {
       {
         "@type": "Offer",
         "name": "Pro Monthly",
-        "price": "12",
+        "price": "8",
         "priceCurrency": "USD",
         "priceValidUntil": "2025-12-31",
         "billingIncrement": 1,
@@ -153,7 +153,7 @@ const Pricing = () => {
       {
         "@type": "Offer",
         "name": "Pro Yearly",
-        "price": "120",
+        "price": "84",
         "priceCurrency": "USD",
         "priceValidUntil": "2025-12-31",
         "billingIncrement": 1,
@@ -342,7 +342,7 @@ const Pricing = () => {
                   </TableRow>
                   <TableRow>
                     <TableCell>Bookings per month</TableCell>
-                    <TableCell className="text-center">10</TableCell>
+                    <TableCell className="text-center">Unlimited</TableCell>
                     <TableCell className="text-center bg-primary/5">Unlimited</TableCell>
                     <TableCell className="text-center">Unlimited</TableCell>
                   </TableRow>
