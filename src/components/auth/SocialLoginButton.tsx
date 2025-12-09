@@ -14,10 +14,11 @@ const SocialLoginButton = ({ provider, disabled }: SocialLoginButtonProps) => {
   const handleSocialLogin = async () => {
     setLoading(true);
     try {
+      // Redirect to auth page - AuthContext will handle routing based on onboarding status
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/auth`,
         },
       });
 
