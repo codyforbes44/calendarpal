@@ -45,7 +45,7 @@ const plans = [
       "Team scheduling",
       "Analytics dashboard",
     ],
-    cta: "Get Started",
+    cta: "Start Free Trial",
     popular: true,
   },
   {
@@ -505,7 +505,7 @@ const Pricing = () => {
           {/* Competitor Comparison */}
           <div className="mt-24 max-w-4xl mx-auto">
             <h2 className="font-display text-2xl font-bold text-center mb-4">
-              Why choose MeetFlow?
+              Why choose CalendarPal?
             </h2>
             <p className="text-muted-foreground text-center mb-12">
               See how we stack up against the competition
@@ -517,7 +517,7 @@ const Pricing = () => {
                   <TableRow className="bg-muted/50">
                     <TableHead className="w-[200px] font-semibold">Feature</TableHead>
                     <TableHead className="text-center font-semibold bg-primary/10">
-                      <span className="text-primary">MeetFlow</span>
+                      <span className="text-primary">CalendarPal</span>
                     </TableHead>
                     <TableHead className="text-center font-semibold">Calendly</TableHead>
                     <TableHead className="text-center font-semibold">Cal.com</TableHead>
@@ -526,7 +526,7 @@ const Pricing = () => {
                 <TableBody>
                   <TableRow>
                     <TableCell className="font-medium">Starting Price</TableCell>
-                    <TableCell className="text-center bg-primary/5 font-semibold text-primary">$12/mo</TableCell>
+                    <TableCell className="text-center bg-primary/5 font-semibold text-primary">$8/mo</TableCell>
                     <TableCell className="text-center">$12/mo</TableCell>
                     <TableCell className="text-center">$12/mo</TableCell>
                   </TableRow>
@@ -601,7 +601,7 @@ const Pricing = () => {
               Loved by thousands of professionals
             </h2>
             <p className="text-muted-foreground text-center mb-12">
-              See what our customers have to say about MeetFlow
+              See what our customers have to say about CalendarPal
             </p>
             
             <div className="grid md:grid-cols-3 gap-6">
@@ -610,7 +610,7 @@ const Pricing = () => {
                 <CardContent className="pt-6">
                   <Quote className="w-8 h-8 text-primary/30 mb-4" />
                   <p className="text-foreground mb-6">
-                    "MeetFlow has completely transformed how I manage client meetings. The interface is intuitive and the calendar sync works flawlessly. I've saved hours every week."
+                    "CalendarPal has completely transformed how I manage client meetings. The interface is intuitive and the calendar sync works flawlessly. I've saved hours every week."
                   </p>
                   <div className="flex items-center gap-3">
                     <Avatar>
@@ -629,7 +629,7 @@ const Pricing = () => {
                 <CardContent className="pt-6">
                   <Quote className="w-8 h-8 text-primary/30 mb-4" />
                   <p className="text-foreground mb-6">
-                    "As a freelancer, time is money. MeetFlow eliminated the back-and-forth emails for scheduling. The Pro plan's custom branding makes me look more professional."
+                    "As a freelancer, time is money. CalendarPal eliminated the back-and-forth emails for scheduling. The Pro plan's custom branding makes me look more professional."
                   </p>
                   <div className="flex items-center gap-3">
                     <Avatar>
@@ -648,7 +648,7 @@ const Pricing = () => {
                 <CardContent className="pt-6">
                   <Quote className="w-8 h-8 text-primary/30 mb-4" />
                   <p className="text-foreground mb-6">
-                    "We switched our entire sales team to MeetFlow. The team scheduling and analytics features have improved our booking rates by 40%. Highly recommend!"
+                    "We switched our entire sales team to CalendarPal. The team scheduling and analytics features have improved our booking rates by 40%. Highly recommend!"
                   </p>
                   <div className="flex items-center gap-3">
                     <Avatar>
@@ -708,7 +708,7 @@ const Pricing = () => {
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-muted-foreground">
-              © 2024 MeetFlow. Built with love for better scheduling.
+              © 2024 CalendarPal. Built with love for better scheduling.
             </div>
             <div className="flex gap-6 text-sm">
               <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
