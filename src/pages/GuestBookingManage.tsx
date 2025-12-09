@@ -159,6 +159,36 @@ const GuestBookingManage = () => {
 
       if (error) throw error;
 
+      // Fetch host email for notification
+      const { data: hostProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("user_id", booking.host_user_id)
+        .single();
+
+      // Send cancellation emails
+      try {
+        await supabase.functions.invoke("send-booking-email", {
+          body: {
+            type: "booking_cancelled",
+            booking: {
+              id: booking.id,
+              guestName: booking.guest_name,
+              guestEmail: booking.guest_email,
+              hostName: (booking.profiles as any)?.full_name || "Host",
+              hostEmail: hostProfile?.email,
+              eventTitle: booking.event_types.title,
+              scheduledDate: booking.scheduled_date,
+              startTime: booking.start_time,
+              endTime: booking.end_time,
+              duration: booking.event_types.duration,
+            },
+          },
+        });
+      } catch (emailError) {
+        console.error("Failed to send cancellation email:", emailError);
+      }
+
       setAction("cancelled");
       toast.success("Booking cancelled successfully");
     } catch (error) {
@@ -173,6 +203,9 @@ const GuestBookingManage = () => {
   const handleReschedule = async () => {
     if (!booking || !selectedDate || !selectedTime) return;
     setRescheduling(true);
+
+    const oldDate = booking.scheduled_date;
+    const oldTime = booking.start_time;
 
     try {
       const startTime = convertTo24Hour(selectedTime);
@@ -189,6 +222,41 @@ const GuestBookingManage = () => {
         .eq("cancellation_token", token);
 
       if (error) throw error;
+
+      // Fetch host email for notification
+      const { data: hostProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("user_id", booking.host_user_id)
+        .single();
+
+      // Send reschedule emails
+      try {
+        await supabase.functions.invoke("send-booking-email", {
+          body: {
+            type: "booking_rescheduled",
+            booking: {
+              id: booking.id,
+              guestName: booking.guest_name,
+              guestEmail: booking.guest_email,
+              hostName: (booking.profiles as any)?.full_name || "Host",
+              hostEmail: hostProfile?.email,
+              eventTitle: booking.event_types.title,
+              scheduledDate: format(selectedDate, "yyyy-MM-dd"),
+              startTime: startTime,
+              endTime: endTime,
+              duration: booking.event_types.duration,
+              manageUrl: `${window.location.origin}/booking/${booking.id}/manage?token=${token}`,
+            },
+            oldDateTime: {
+              date: oldDate,
+              time: oldTime,
+            },
+          },
+        });
+      } catch (emailError) {
+        console.error("Failed to send reschedule email:", emailError);
+      }
 
       setAction("rescheduled");
       toast.success("Booking rescheduled successfully");
