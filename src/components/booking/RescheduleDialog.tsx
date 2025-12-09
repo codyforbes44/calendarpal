@@ -17,6 +17,9 @@ interface RescheduleDialogProps {
   duration: number;
   eventTitle: string;
   guestName: string;
+  guestEmail: string;
+  currentDate: string;
+  currentStartTime: string;
   onRescheduled: () => void;
   bufferBefore?: number;
   bufferAfter?: number;
@@ -31,6 +34,9 @@ const RescheduleDialog = ({
   duration,
   eventTitle,
   guestName,
+  guestEmail,
+  currentDate,
+  currentStartTime,
   onRescheduled,
   bufferBefore = 0,
   bufferAfter = 0,
@@ -94,17 +100,54 @@ const RescheduleDialog = ({
     try {
       const startTime = convertTo24Hour(selectedTime);
       const endTime = calculateEndTime(startTime, duration);
+      const newDate = format(selectedDate, "yyyy-MM-dd");
 
       const { error } = await supabase
         .from("bookings")
         .update({
-          scheduled_date: format(selectedDate, "yyyy-MM-dd"),
+          scheduled_date: newDate,
           start_time: startTime,
           end_time: endTime,
         })
         .eq("id", bookingId);
 
       if (error) throw error;
+
+      // Send reschedule email notification
+      try {
+        // Fetch host profile for email
+        const { data: hostProfile } = await supabase
+          .from("profiles")
+          .select("full_name, email")
+          .eq("user_id", hostUserId)
+          .single();
+
+        await supabase.functions.invoke("send-booking-email", {
+          body: {
+            type: "booking_rescheduled",
+            booking: {
+              id: bookingId,
+              guestName,
+              guestEmail,
+              hostName: hostProfile?.full_name || "Host",
+              hostEmail: hostProfile?.email,
+              eventTitle,
+              scheduledDate: newDate,
+              startTime,
+              endTime,
+              duration,
+            },
+            oldDateTime: {
+              date: currentDate,
+              time: currentStartTime,
+            },
+          },
+        });
+        console.log("Reschedule notification email sent");
+      } catch (emailError) {
+        console.error("Failed to send reschedule email:", emailError);
+        // Don't fail the whole operation if email fails
+      }
 
       toast.success("Booking rescheduled successfully");
       onOpenChange(false);

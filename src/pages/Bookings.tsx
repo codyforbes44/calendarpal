@@ -409,6 +409,9 @@ const Bookings = () => {
           duration={rescheduleBooking.event_types.duration}
           eventTitle={rescheduleBooking.event_types.title}
           guestName={rescheduleBooking.guest_name}
+          guestEmail={rescheduleBooking.guest_email}
+          currentDate={rescheduleBooking.scheduled_date}
+          currentStartTime={rescheduleBooking.start_time}
           onRescheduled={loadBookings}
           bufferBefore={rescheduleBooking.event_types.buffer_before}
           bufferAfter={rescheduleBooking.event_types.buffer_after}
