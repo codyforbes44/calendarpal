@@ -60,6 +60,11 @@ export const pageSEO = {
     description: "The page you're looking for doesn't exist. Return to CalendarPal homepage.",
     noindex: true,
   },
+  onboarding: {
+    title: "Get Started | CalendarPal",
+    description: "Set up your CalendarPal account in minutes. Create your profile, set availability, and start accepting bookings.",
+    keywords: "setup scheduling account, create booking profile, get started scheduling",
+  },
 };
 
 export const organizationSchema = {

@@ -1,20 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Calendar } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar, Eye, EyeOff, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import SEO from "@/components/SEO";
 import { pageSEO, siteConfig } from "@/lib/seo-config";
+import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
+import SocialLoginButton from "@/components/auth/SocialLoginButton";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address").max(255),
   password: z.string().min(6, "Password must be at least 6 characters").max(100),
   fullName: z.string().max(100).optional(),
+  username: z.string().min(3, "Username must be at least 3 characters").max(30).optional(),
 });
 
 const Auth = () => {
@@ -23,15 +27,75 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const navigate = useNavigate();
+
+  const checkUsernameAvailability = async (value: string) => {
+    if (value.length < 3) {
+      setUsernameAvailable(null);
+      return;
+    }
+    
+    setCheckingUsername(true);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("username", value)
+        .maybeSingle();
+
+      if (error) throw error;
+      setUsernameAvailable(!data);
+    } catch {
+      setUsernameAvailable(null);
+    } finally {
+      setCheckingUsername(false);
+    }
+  };
+
+  const handleUsernameChange = (value: string) => {
+    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    setUsername(sanitized);
+  };
+
+  // Debounced username check
+  useEffect(() => {
+    if (!isLogin && username.length >= 3) {
+      const timer = setTimeout(() => {
+        checkUsernameAvailability(username);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      setUsernameAvailable(null);
+    }
+  }, [username, isLogin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isLogin && !acceptedTerms) {
+      toast.error("Please accept the Terms of Service and Privacy Policy");
+      return;
+    }
+
+    if (!isLogin && usernameAvailable === false) {
+      toast.error("Username is already taken");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Validate input
-      authSchema.parse({ email, password, fullName: isLogin ? undefined : fullName });
+      authSchema.parse({ 
+        email, 
+        password, 
+        fullName: isLogin ? undefined : fullName,
+        username: isLogin ? undefined : username 
+      });
 
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
@@ -51,15 +115,16 @@ const Auth = () => {
         toast.success("Welcome back!");
         navigate("/dashboard");
       } else {
-        const redirectUrl = `${window.location.origin}/dashboard`;
+        const redirectUrl = `${window.location.origin}/onboarding`;
         
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
             emailRedirectTo: redirectUrl,
             data: {
               full_name: fullName.trim() || email.trim(),
+              username: username.trim(),
             },
           },
         });
@@ -74,8 +139,16 @@ const Auth = () => {
           return;
         }
 
-        toast.success("Account created! Redirecting...");
-        navigate("/dashboard");
+        // Update the profile with username immediately after signup
+        if (data.user && username.trim()) {
+          await supabase
+            .from("profiles")
+            .update({ username: username.trim(), full_name: fullName.trim() })
+            .eq("user_id", data.user.id);
+        }
+
+        toast.success("Account created! Let's set up your profile.");
+        navigate("/onboarding");
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -88,6 +161,13 @@ const Auth = () => {
     }
   };
 
+  const toggleMode = () => {
+    setIsLogin(!isLogin);
+    setPassword("");
+    setUsernameAvailable(null);
+    setAcceptedTerms(false);
+  };
+
   return (
     <>
       <SEO
@@ -97,101 +177,214 @@ const Auth = () => {
         canonical={`${siteConfig.url}/auth`}
       />
       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-6">
-      <Card className="w-full max-w-md p-8">
-        <div className="flex items-center justify-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
-            <Calendar className="w-7 h-7 text-primary-foreground" />
+        <Card className="w-full max-w-md p-8 animate-scale-in">
+          {/* Logo */}
+          <div className="flex items-center justify-center mb-8">
+            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
+              <Calendar className="w-7 h-7 text-primary-foreground" />
+            </div>
           </div>
-        </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">
-            {isLogin ? "Welcome Back" : "Create Account"}
-          </h1>
-          <p className="text-muted-foreground">
-            {isLogin
-              ? "Sign in to manage your scheduling"
-              : "Get started with your free account"}
-          </p>
-        </div>
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-2">
+              {isLogin ? "Welcome Back" : "Create Account"}
+            </h1>
+            <p className="text-muted-foreground">
+              {isLogin
+                ? "Sign in to manage your scheduling"
+                : "Get started with your free account"}
+            </p>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
+          {/* Social Login */}
+          <div className="mb-6">
+            <SocialLoginButton provider="google" disabled={loading} />
+          </div>
+
+          {/* Divider */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">
+                or continue with email
+              </span>
+            </div>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Full Name (Signup only) */}
+            {!isLogin && (
+              <div className="space-y-2 animate-fade-in">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  type="text"
+                  placeholder="John Doe"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required={!isLogin}
+                  className="h-12"
+                />
+              </div>
+            )}
+
+            {/* Username (Signup only) */}
+            {!isLogin && (
+              <div className="space-y-2 animate-fade-in">
+                <Label htmlFor="username">Username</Label>
+                <div className="relative">
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="johndoe"
+                    value={username}
+                    onChange={(e) => handleUsernameChange(e.target.value)}
+                    required={!isLogin}
+                    className={`h-12 pr-10 ${
+                      username.length >= 3
+                        ? usernameAvailable
+                          ? "border-green-500 focus-visible:ring-green-500"
+                          : usernameAvailable === false
+                          ? "border-destructive focus-visible:ring-destructive"
+                          : ""
+                        : ""
+                    }`}
+                  />
+                  {username.length >= 3 && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {checkingUsername ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                      ) : usernameAvailable ? (
+                        <Check className="w-5 h-5 text-green-500" />
+                      ) : usernameAvailable === false ? (
+                        <span className="text-xs text-destructive font-medium">Taken</span>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Your booking URL: calendarpal.com/book/{username || "username"}
+                </p>
+              </div>
+            )}
+
+            {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="fullName">Full Name</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="fullName"
-                type="text"
-                placeholder="John Doe"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required={!isLogin}
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="h-12"
               />
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+            {/* Password */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="h-12 pr-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            {!isLogin && (
-              <p className="text-xs text-muted-foreground">
-                At least 6 characters
-              </p>
+            {/* Password Strength (Signup only) */}
+            {!isLogin && password && (
+              <PasswordStrengthMeter password={password} />
             )}
+
+            {/* Terms Checkbox (Signup only) */}
+            {!isLogin && (
+              <div className="flex items-start space-x-3 animate-fade-in">
+                <Checkbox
+                  id="terms"
+                  checked={acceptedTerms}
+                  onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+                  className="mt-0.5"
+                />
+                <label
+                  htmlFor="terms"
+                  className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
+                >
+                  I agree to the{" "}
+                  <a href="/terms" className="text-primary hover:underline">
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a href="/privacy" className="text-primary hover:underline">
+                    Privacy Policy
+                  </a>
+                </label>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              variant="hero"
+              size="lg"
+              className="w-full h-12"
+              disabled={loading || (!isLogin && (!acceptedTerms || usernameAvailable === false))}
+            >
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : isLogin ? (
+                "Sign In"
+              ) : (
+                "Create Account"
+              )}
+            </Button>
+          </form>
+
+          {/* Toggle Mode */}
+          <div className="mt-6 text-center">
+            <button
+              onClick={toggleMode}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              <span className="text-primary font-medium">
+                {isLogin ? "Sign up" : "Sign in"}
+              </span>
+            </button>
           </div>
 
-          <Button
-            type="submit"
-            variant="hero"
-            size="lg"
-            className="w-full"
-            disabled={loading}
-          >
-            {loading ? "Loading..." : isLogin ? "Sign In" : "Create Account"}
-          </Button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <span className="text-primary font-medium">
-              {isLogin ? "Sign up" : "Sign in"}
-            </span>
-          </button>
-        </div>
-
-        <div className="mt-8 pt-6 border-t border-border text-center">
-          <a
-            href="/"
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            ← Back to home
-          </a>
-        </div>
-      </Card>
-    </div>
+          {/* Back to Home */}
+          <div className="mt-8 pt-6 border-t border-border text-center">
+            <a
+              href="/"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← Back to home
+            </a>
+          </div>
+        </Card>
+      </div>
     </>
   );
 };
