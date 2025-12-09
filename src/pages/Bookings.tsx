@@ -21,6 +21,7 @@ interface Booking {
   guest_notes: string | null;
   scheduled_date: string;
   start_time: string;
+  end_time: string;
   status: string;
   host_user_id: string;
   event_type_id: string;
@@ -63,6 +64,7 @@ const Bookings = () => {
           guest_notes,
           scheduled_date,
           start_time,
+          end_time,
           status,
           host_user_id,
           event_type_id,
@@ -262,9 +264,13 @@ const Bookings = () => {
                           bookingId={booking.id}
                           status={booking.status}
                           guestName={booking.guest_name}
+                          guestEmail={booking.guest_email}
                           eventTitle={booking.event_types.title}
                           scheduledDate={format(parseISO(booking.scheduled_date), "MMM d, yyyy")}
-                          startTime={formatTime(booking.start_time)}
+                          startTime={booking.start_time}
+                          endTime={booking.end_time}
+                          duration={booking.event_types.duration}
+                          hostUserId={booking.host_user_id}
                           onStatusChange={loadBookings}
                           onReschedule={() => setRescheduleBooking(booking)}
                         />
@@ -370,9 +376,13 @@ const Bookings = () => {
                                   bookingId={child.id}
                                   status={child.status}
                                   guestName={child.guest_name}
+                                  guestEmail={child.guest_email}
                                   eventTitle={child.event_types.title}
                                   scheduledDate={format(parseISO(child.scheduled_date), "MMM d, yyyy")}
-                                  startTime={formatTime(child.start_time)}
+                                  startTime={child.start_time}
+                                  endTime={child.end_time}
+                                  duration={child.event_types.duration}
+                                  hostUserId={child.host_user_id}
                                   onStatusChange={loadBookings}
                                   onReschedule={() => setRescheduleBooking(child)}
                                 />
