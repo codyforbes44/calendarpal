@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Zap, Users, Play, Star, Shield, ArrowRight } from "lucide-react";
+import { Calendar, Clock, Zap, Users, Play, Shield, ArrowRight } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
 
 const Hero = () => {
@@ -16,15 +16,9 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left content */}
           <div className="space-y-8 animate-fade-in">
-            <div className="flex flex-wrap gap-3">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                <Zap className="w-4 h-4" />
-                <span>Better than Calendly</span>
-              </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium">
-                <Star className="w-4 h-4 fill-current" />
-                <span>4.9/5 Rating</span>
-              </div>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              <Zap className="w-4 h-4" />
+              <span>Better than Calendly</span>
             </div>
             
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight">
@@ -63,22 +57,6 @@ const Hero = () => {
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="w-4 h-4 text-primary" />
                 <span>Setup in 2 minutes</span>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="flex gap-8 pt-8 border-t border-border">
-              <div className="group">
-                <div className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform">50k+</div>
-                <div className="text-sm text-muted-foreground">Active Users</div>
-              </div>
-              <div className="group">
-                <div className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform">2M+</div>
-                <div className="text-sm text-muted-foreground">Meetings Booked</div>
-              </div>
-              <div className="group">
-                <div className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform">99.9%</div>
-                <div className="text-sm text-muted-foreground">Uptime</div>
               </div>
             </div>
 
