@@ -9,9 +9,11 @@ import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 import EventTypesList from "@/components/dashboard/EventTypesList";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import ShareModal from "@/components/ShareModal";
-import { Button } from "@/components/ui/button";
+import QuickActions from "@/components/dashboard/QuickActions";
+import BookingStatsChart from "@/components/dashboard/BookingStatsChart";
+import CalendarHeatmap from "@/components/dashboard/CalendarHeatmap";
+import TodaySchedule from "@/components/dashboard/TodaySchedule";
 import { SkeletonDashboard } from "@/components/ui/skeleton-card";
-import { Plus, Share2 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,18 +87,6 @@ const Dashboard = () => {
               Here's what's happening with your schedule today
             </p>
           </div>
-          <div className="flex gap-3">
-            {profile?.username && (
-              <Button variant="outline" size="lg" onClick={() => setShowShareModal(true)}>
-                <Share2 className="w-5 h-5 mr-2" />
-                Share
-              </Button>
-            )}
-            <Button variant="hero" size="lg" onClick={() => navigate("/events/new")}>
-              <Plus className="w-5 h-5 mr-2" />
-              New Event Type
-            </Button>
-          </div>
         </div>
 
         {showOnboarding && (
@@ -109,10 +99,27 @@ const Dashboard = () => {
         )}
 
         <UpgradePrompt />
-        <DashboardStats />
         
-        <div className="grid lg:grid-cols-2 gap-8 mt-8">
+        <QuickActions 
+          username={profile?.username} 
+          onShare={() => setShowShareModal(true)} 
+        />
+        
+        <div className="mt-6">
+          <DashboardStats />
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6 mt-6">
+          <BookingStatsChart />
+          <CalendarHeatmap />
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-6 mt-6">
+          <TodaySchedule />
           <UpcomingMeetings />
+        </div>
+
+        <div className="mt-6">
           <EventTypesList />
         </div>
       </div>
