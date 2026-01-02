@@ -47,8 +47,8 @@ const TimeSlotPicker = ({
   const tzAbbr = timezone ? getTimezoneAbbr(timezone, selectedDate) : null;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="hidden md:flex items-center justify-between">
         <h4 className="font-semibold text-sm">Available times</h4>
         <span className="text-xs text-muted-foreground">
           {format(selectedDate, "EEE, MMM d")}
@@ -62,14 +62,15 @@ const TimeSlotPicker = ({
         </div>
       )}
       
-      <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+      {/* Mobile: Horizontal scrolling grid, Desktop: Vertical list */}
+      <div className="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-1 gap-2 max-h-[250px] sm:max-h-[350px] md:max-h-[400px] overflow-y-auto pr-1 sm:pr-2">
         {availableSlots.map((slot) => (
           <button
             key={slot.time}
             onClick={() => onSelectTime(slot.time)}
             className={cn(
-              "w-full px-4 py-3 rounded-lg text-sm font-medium transition-all text-left",
-              "border hover:border-primary/50",
+              "px-2 sm:px-4 py-3 rounded-lg text-xs sm:text-sm font-medium transition-all text-center md:text-left",
+              "border hover:border-primary/50 touch-target",
               selectedTime === slot.time
                 ? "bg-primary text-primary-foreground border-primary shadow-md"
                 : "bg-background border-border hover:bg-muted"
