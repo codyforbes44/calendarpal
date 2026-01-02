@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useBookings, useUpdateBookingStatus, Booking } from "@/hooks/useBookings";
 import Navigation from "@/components/Navigation";
+import BottomNavigation from "@/components/BottomNavigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -137,7 +138,7 @@ const Bookings = () => {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">All Bookings</h1>
             <p className="text-sm sm:text-base text-muted-foreground">View and manage your scheduled meetings</p>
@@ -156,6 +157,7 @@ const Bookings = () => {
             ))}
           </div>
         </div>
+        <BottomNavigation />
       </div>
     );
   }
@@ -164,7 +166,7 @@ const Bookings = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav">
         <div className="mb-6 sm:mb-8 flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <div>
@@ -443,6 +445,8 @@ const Bookings = () => {
           bufferAfter={rescheduleBooking.event_types.buffer_after}
         />
       )}
+
+      <BottomNavigation />
     </div>
   );
 };

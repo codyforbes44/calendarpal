@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import Navigation from "@/components/Navigation";
+import BottomNavigation from "@/components/BottomNavigation";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import UpcomingMeetings from "@/components/dashboard/UpcomingMeetings";
 import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
@@ -66,9 +67,10 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav">
           <SkeletonDashboard />
         </div>
+        <BottomNavigation />
       </div>
     );
   }
@@ -77,7 +79,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
       
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav">
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">
@@ -132,6 +134,8 @@ const Dashboard = () => {
           fullName={profile.full_name || ""}
         />
       )}
+
+      <BottomNavigation />
     </div>
   );
 };
