@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useBookings, Booking } from "@/hooks/useBookings";
+import { useBookings, useUpdateBookingStatus, Booking } from "@/hooks/useBookings";
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,16 +23,20 @@ import { format, parseISO } from "date-fns";
 import BookingActionsDropdown from "@/components/booking/BookingActionsDropdown";
 import RescheduleDialog from "@/components/booking/RescheduleDialog";
 import BookingsCalendarView from "@/components/booking/BookingsCalendarView";
+import BookingDetailModal from "@/components/booking/BookingDetailModal";
 import { getTimezoneLabel } from "@/lib/timezones";
 import { SkeletonBooking } from "@/components/ui/skeleton-card";
 import EmptyState from "@/components/EmptyState";
+import { toast } from "sonner";
 
 type ViewMode = "list" | "calendar";
 
 const Bookings = () => {
   const { data: bookings = [], isLoading, refetch } = useBookings();
+  const updateStatus = useUpdateBookingStatus();
   const [searchTerm, setSearchTerm] = useState("");
   const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [calendarMonth, setCalendarMonth] = useState(new Date());
@@ -106,9 +110,27 @@ const Bookings = () => {
   };
 
   const handleBookingClick = (booking: Booking) => {
-    // Switch to list view and scroll to booking, or open a detail modal
-    setViewMode("list");
-    setSearchTerm(booking.guest_name);
+    setSelectedBooking(booking);
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    try {
+      await updateStatus.mutateAsync({ bookingId, status: "cancelled" });
+      toast.success("Booking cancelled successfully");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to cancel booking");
+    }
+  };
+
+  const handleCompleteBooking = async (bookingId: string) => {
+    try {
+      await updateStatus.mutateAsync({ bookingId, status: "completed" });
+      toast.success("Booking marked as completed");
+      refetch();
+    } catch (error) {
+      toast.error("Failed to complete booking");
+    }
   };
 
   if (isLoading) {
@@ -388,6 +410,18 @@ const Bookings = () => {
           </div>
         )}
       </div>
+
+      <BookingDetailModal
+        booking={selectedBooking}
+        open={!!selectedBooking}
+        onOpenChange={(open) => !open && setSelectedBooking(null)}
+        onCancel={handleCancelBooking}
+        onComplete={handleCompleteBooking}
+        onReschedule={(booking) => {
+          setSelectedBooking(null);
+          setRescheduleBooking(booking);
+        }}
+      />
 
       {rescheduleBooking && (
         <RescheduleDialog
