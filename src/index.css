@@ -143,4 +143,12 @@
   .card-padding {
     @apply p-4 sm:p-6;
   }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  .pb-bottom-nav {
+    @apply pb-20 md:pb-8;
+  }
 }

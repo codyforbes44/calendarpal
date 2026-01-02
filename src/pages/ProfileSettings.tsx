@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useUpdateProfile, useCheckUsernameAvailability } from "@/hooks/useProfile";
 import Navigation from "@/components/Navigation";
+import BottomNavigation from "@/components/BottomNavigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,7 +112,7 @@ const ProfileSettings = () => {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
-        <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 sm:pb-12">
+        <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-bottom-nav">
           <div className="max-w-2xl mx-auto">
             <div className="mb-6 sm:mb-8">
               <h1 className="text-2xl sm:text-3xl font-bold mb-2">Profile Settings</h1>
@@ -122,6 +123,7 @@ const ProfileSettings = () => {
             <SkeletonProfile />
           </div>
         </div>
+        <BottomNavigation />
       </div>
     );
   }
@@ -133,7 +135,7 @@ const ProfileSettings = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
 
-      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 sm:pb-12">
+      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-bottom-nav">
         <div className="max-w-2xl mx-auto">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">Profile Settings</h1>
@@ -320,6 +322,8 @@ const ProfileSettings = () => {
           fullName={form.watch("full_name")}
         />
       )}
+
+      <BottomNavigation />
     </div>
   );
 };
