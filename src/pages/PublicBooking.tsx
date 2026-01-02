@@ -650,27 +650,27 @@ const PublicBooking = () => {
   return (
     <>
       <SEO title={dynamicTitle} description={dynamicDescription} />
-      <div className="min-h-screen bg-gradient-subtle py-12 px-6">
+      <div className="min-h-screen bg-gradient-subtle py-8 sm:py-12 px-4 sm:px-6">
       <Card className="max-w-5xl mx-auto overflow-hidden border-border shadow-lg">
-        <div className="grid md:grid-cols-[2fr,1fr] divide-x divide-border">
-          <div className="p-8 space-y-6">
+        <div className="flex flex-col md:grid md:grid-cols-[2fr,1fr] md:divide-x divide-border">
+          <div className="p-4 sm:p-8 space-y-4 sm:space-y-6">
             <Button variant="ghost" size="sm" onClick={handleBack} className="mb-2">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
 
             <div>
-              <h2 className="text-2xl font-bold mb-2">{selectedEvent?.title}</h2>
-              <p className="text-muted-foreground">
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">{selectedEvent?.title}</h2>
+              <p className="text-muted-foreground text-sm sm:text-base">
                 Select a date and time with {profile?.full_name}
               </p>
             </div>
 
-            <div className="grid gap-6">
-              <div className="space-y-3 pb-6 border-b border-border">
+            <div className="grid gap-4 sm:gap-6">
+              <div className="space-y-3 pb-4 sm:pb-6 border-b border-border">
                 <div className="flex items-center gap-3 text-sm">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-primary" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
                   <div>
                     <div className="font-medium">{selectedEvent?.duration} minutes</div>
@@ -679,8 +679,8 @@ const PublicBooking = () => {
                 </div>
 
                 <div className="flex items-center gap-3 text-sm">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <Video className="w-5 h-5 text-accent" />
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <Video className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                   </div>
                   <div>
                     <div className="font-medium">
@@ -712,9 +712,19 @@ const PublicBooking = () => {
             </div>
           </div>
 
-          <div className="p-8 bg-muted/30">
+          {/* Time slots section - shown below calendar on mobile */}
+          <div className="p-4 sm:p-8 bg-muted/30 border-t md:border-t-0 border-border">
+            {/* Mobile: Show selected date header */}
+            {selectedDate && (
+              <div className="md:hidden mb-4 pb-3 border-b border-border">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Available times for {format(selectedDate, "MMM d")}
+                </p>
+              </div>
+            )}
+            
             {slotsLoading ? (
-              <div className="flex items-center justify-center h-full">
+              <div className="flex items-center justify-center h-32 md:h-full">
                 <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
@@ -728,7 +738,7 @@ const PublicBooking = () => {
             )}
 
             {selectedDate && selectedTime && (
-              <div className="mt-6 pt-6 border-t border-border animate-fade-in">
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border animate-fade-in">
                 <Button variant="hero" size="lg" className="w-full" onClick={handleConfirm}>
                   Continue
                 </Button>
