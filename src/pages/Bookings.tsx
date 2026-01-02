@@ -1,25 +1,41 @@
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { useBookings, Booking } from "@/hooks/useBookings";
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Mail, User, Search, Globe, Repeat, ChevronDown, ChevronUp } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Calendar,
+  Clock,
+  Mail,
+  User,
+  Search,
+  Globe,
+  Repeat,
+  ChevronDown,
+  ChevronUp,
+  List,
+  CalendarDays,
+} from "lucide-react";
 import { format, parseISO } from "date-fns";
 import BookingActionsDropdown from "@/components/booking/BookingActionsDropdown";
 import RescheduleDialog from "@/components/booking/RescheduleDialog";
+import BookingsCalendarView from "@/components/booking/BookingsCalendarView";
 import { getTimezoneLabel } from "@/lib/timezones";
 import { SkeletonBooking } from "@/components/ui/skeleton-card";
 import EmptyState from "@/components/EmptyState";
 
+type ViewMode = "list" | "calendar";
+
 const Bookings = () => {
-  const { user } = useAuth();
   const { data: bookings = [], isLoading, refetch } = useBookings();
   const [searchTerm, setSearchTerm] = useState("");
   const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
 
   // Group bookings by series
   const groupedBookings = () => {
@@ -42,6 +58,14 @@ const Bookings = () => {
   const { parentBookings, childBookingsMap } = groupedBookings();
 
   const filteredBookings = parentBookings.filter(
+    (booking) =>
+      booking.guest_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.guest_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.event_types.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // For calendar view, include all bookings (not just parents)
+  const allFilteredBookings = bookings.filter(
     (booking) =>
       booking.guest_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.guest_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -81,6 +105,12 @@ const Bookings = () => {
     return `${displayHour}:${minute} ${period}`;
   };
 
+  const handleBookingClick = (booking: Booking) => {
+    // Switch to list view and scroll to booking, or open a detail modal
+    setViewMode("list");
+    setSearchTerm(booking.guest_name);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-subtle">
@@ -113,9 +143,36 @@ const Bookings = () => {
       <Navigation />
 
       <div className="container mx-auto px-6 pt-24 pb-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">All Bookings</h1>
-          <p className="text-muted-foreground">View and manage your scheduled meetings</p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">All Bookings</h1>
+            <p className="text-muted-foreground">View and manage your scheduled meetings</p>
+          </div>
+          
+          {/* View toggle */}
+          <ToggleGroup
+            type="single"
+            value={viewMode}
+            onValueChange={(value) => value && setViewMode(value as ViewMode)}
+            className="bg-muted p-1 rounded-lg"
+          >
+            <ToggleGroupItem
+              value="list"
+              aria-label="List view"
+              className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-3"
+            >
+              <List className="w-4 h-4 mr-2" />
+              List
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="calendar"
+              aria-label="Calendar view"
+              className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-3"
+            >
+              <CalendarDays className="w-4 h-4 mr-2" />
+              Calendar
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
 
         <Card className="p-6 mb-6">
@@ -130,7 +187,14 @@ const Bookings = () => {
           </div>
         </Card>
 
-        {filteredBookings.length === 0 ? (
+        {viewMode === "calendar" ? (
+          <BookingsCalendarView
+            bookings={allFilteredBookings}
+            currentMonth={calendarMonth}
+            onMonthChange={setCalendarMonth}
+            onBookingClick={handleBookingClick}
+          />
+        ) : filteredBookings.length === 0 ? (
           <Card className="p-6">
             <EmptyState
               icon={Calendar}
