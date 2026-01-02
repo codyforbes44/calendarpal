@@ -111,11 +111,11 @@ const ProfileSettings = () => {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
-        <div className="container mx-auto px-6 pt-24 pb-12">
+        <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 sm:pb-12">
           <div className="max-w-2xl mx-auto">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold mb-2">Profile Settings</h1>
-              <p className="text-muted-foreground">
+            <div className="mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Profile Settings</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">
                 Manage your profile and booking page settings
               </p>
             </div>
@@ -127,26 +127,27 @@ const ProfileSettings = () => {
   }
 
   const currentUsername = form.watch("username");
+  const bookingUrl = `${window.location.origin}/book/${currentUsername || "yourname"}`;
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
 
-      <div className="container mx-auto px-6 pt-24 pb-12">
+      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 sm:pb-12">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Profile Settings</h1>
-            <p className="text-muted-foreground">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Profile Settings</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
               Manage your profile and booking page settings
             </p>
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
               {/* Profile Info */}
-              <Card className="p-6">
-                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <User className="w-5 h-5" />
+              <Card className="p-4 sm:p-6">
+                <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5" />
                   Profile Information
                 </h2>
 
@@ -158,7 +159,7 @@ const ProfileSettings = () => {
                       <FormItem>
                         <FormLabel>Full Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your full name" {...field} />
+                          <Input placeholder="Your full name" {...field} className="h-11 sm:h-10" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -180,7 +181,7 @@ const ProfileSettings = () => {
                                 const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
                                 field.onChange(sanitized);
                               }}
-                              className="pr-10"
+                              className="pr-10 h-11 sm:h-10"
                             />
                             {checkUsername.isPending && (
                               <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -198,7 +199,7 @@ const ProfileSettings = () => {
                             )}
                           </div>
                         </FormControl>
-                        <FormDescription>
+                        <FormDescription className="text-xs sm:text-sm break-all">
                           Your booking URL: {window.location.origin}/book/{field.value || "yourname"}
                         </FormDescription>
                         <FormMessage />
@@ -210,7 +211,7 @@ const ProfileSettings = () => {
                 <Button
                   type="submit"
                   variant="hero"
-                  className="mt-6"
+                  className="mt-6 w-full sm:w-auto"
                   disabled={updateProfile.isPending}
                 >
                   {updateProfile.isPending ? "Saving..." : "Save Changes"}
@@ -218,9 +219,9 @@ const ProfileSettings = () => {
               </Card>
 
               {/* Timezone Settings */}
-              <Card className="p-6">
-                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Globe className="w-5 h-5" />
+              <Card className="p-4 sm:p-6">
+                <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
                   Timezone
                 </h2>
 
@@ -236,7 +237,7 @@ const ProfileSettings = () => {
                           onChange={field.onChange}
                         />
                       </FormControl>
-                      <FormDescription>
+                      <FormDescription className="text-xs sm:text-sm">
                         All your availability and booking times will be displayed in this timezone.
                       </FormDescription>
                       <FormMessage />
@@ -247,7 +248,7 @@ const ProfileSettings = () => {
                 <Button
                   type="submit"
                   variant="hero"
-                  className="mt-6"
+                  className="mt-6 w-full sm:w-auto"
                   disabled={updateProfile.isPending}
                 >
                   {updateProfile.isPending ? "Saving..." : "Save Timezone"}
@@ -258,32 +259,44 @@ const ProfileSettings = () => {
 
           {/* Booking Link */}
           {currentUsername && (
-            <Card className="p-6 mt-6">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Link className="w-5 h-5" />
+            <Card className="p-4 sm:p-6 mt-4 sm:mt-6">
+              <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+                <Link className="w-4 h-4 sm:w-5 sm:h-5" />
                 Your Booking Link
               </h2>
 
-              <div className="flex items-center gap-3">
-                <div className="flex-1 bg-muted rounded-lg px-4 py-3 font-mono text-sm">
+              {/* Mobile: Stacked layout */}
+              <div className="space-y-3">
+                <div className="bg-muted rounded-lg px-3 sm:px-4 py-3 font-mono text-xs sm:text-sm break-all">
                   {window.location.origin}/book/{currentUsername}
                 </div>
-                <Button variant="outline" size="icon" onClick={copyBookingLink}>
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => window.open(`/book/${currentUsername}`, "_blank")}
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </Button>
-              </div>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={copyBookingLink}
+                    className="flex-1 sm:flex-none h-10"
+                  >
+                    {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
+                    <span className="sm:hidden">Copy</span>
+                    <span className="hidden sm:inline">Copy Link</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(`/book/${currentUsername}`, "_blank")}
+                    className="flex-1 sm:flex-none h-10"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    <span className="sm:hidden">Open</span>
+                    <span className="hidden sm:inline">Open Link</span>
+                  </Button>
+                </div>
 
-              <div className="flex gap-3 mt-4">
                 <Button
                   variant="hero"
-                  className="flex-1"
+                  className="w-full h-11 sm:h-10"
                   onClick={() => setShowShareModal(true)}
                 >
                   <Share2 className="w-4 h-4 mr-2" />
@@ -291,7 +304,7 @@ const ProfileSettings = () => {
                 </Button>
               </div>
 
-              <p className="text-sm text-muted-foreground mt-3">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-4">
                 Share this link with others so they can book meetings with you.
               </p>
             </Card>
