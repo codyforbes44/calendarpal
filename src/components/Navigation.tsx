@@ -1,14 +1,21 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Menu, Crown } from "lucide-react";
+import { Calendar, Menu, Crown, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useTheme } from "next-themes";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
@@ -75,6 +82,20 @@ const Navigation = () => {
 
           {/* Desktop CTA buttons */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Theme Toggle */}
+            {mounted && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="relative overflow-hidden"
+              >
+                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0" />
+                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100" />
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+            )}
+            
             {user ? (
               <>
                 {isPro && (
@@ -131,6 +152,29 @@ const Navigation = () => {
                       {link.label}
                     </a>
                   ))}
+                </div>
+
+                {/* Mobile Theme Toggle */}
+                <div className="px-4 py-3 border-t border-border">
+                  {mounted && (
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start gap-3"
+                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    >
+                      {theme === "dark" ? (
+                        <>
+                          <Sun className="h-4 w-4" />
+                          Light Mode
+                        </>
+                      ) : (
+                        <>
+                          <Moon className="h-4 w-4" />
+                          Dark Mode
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
 
                 {/* Mobile CTA Buttons */}
