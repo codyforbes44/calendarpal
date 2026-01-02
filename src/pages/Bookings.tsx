@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useBookings, Booking } from "@/hooks/useBookings";
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,94 +14,20 @@ import { getTimezoneLabel } from "@/lib/timezones";
 import { SkeletonBooking } from "@/components/ui/skeleton-card";
 import EmptyState from "@/components/EmptyState";
 
-interface Booking {
-  id: string;
-  guest_name: string;
-  guest_email: string;
-  guest_notes: string | null;
-  scheduled_date: string;
-  start_time: string;
-  end_time: string;
-  status: string;
-  host_user_id: string;
-  event_type_id: string;
-  host_timezone: string | null;
-  guest_timezone: string | null;
-  recurrence_pattern: string | null;
-  recurrence_count: number | null;
-  parent_booking_id: string | null;
-  event_types: {
-    title: string;
-    duration: number;
-    color: string;
-    buffer_before: number;
-    buffer_after: number;
-  };
-}
-
 const Bookings = () => {
   const { user } = useAuth();
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: bookings = [], isLoading, refetch } = useBookings();
   const [searchTerm, setSearchTerm] = useState("");
   const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (user) {
-      loadBookings();
-    }
-  }, [user]);
-
-  const loadBookings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(`
-          id,
-          guest_name,
-          guest_email,
-          guest_notes,
-          scheduled_date,
-          start_time,
-          end_time,
-          status,
-          host_user_id,
-          event_type_id,
-          host_timezone,
-          guest_timezone,
-          recurrence_pattern,
-          recurrence_count,
-          parent_booking_id,
-          event_types (
-            title,
-            duration,
-            color,
-            buffer_before,
-            buffer_after
-          )
-        `)
-        .eq("host_user_id", user?.id)
-        .order("scheduled_date", { ascending: false })
-        .order("start_time", { ascending: false });
-
-      if (error) throw error;
-      setBookings(data || []);
-    } catch (error) {
-      console.error("Error loading bookings:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Group bookings by series
   const groupedBookings = () => {
     const parentBookings: Booking[] = [];
     const childBookingsMap = new Map<string, Booking[]>();
 
-    bookings.forEach(booking => {
+    bookings.forEach((booking) => {
       if (booking.parent_booking_id) {
-        // This is a child booking
         const children = childBookingsMap.get(booking.parent_booking_id) || [];
         children.push(booking);
         childBookingsMap.set(booking.parent_booking_id, children);
@@ -123,7 +49,7 @@ const Bookings = () => {
   );
 
   const toggleSeriesExpanded = (bookingId: string) => {
-    setExpandedSeries(prev => {
+    setExpandedSeries((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(bookingId)) {
         newSet.delete(bookingId);
@@ -155,7 +81,7 @@ const Bookings = () => {
     return `${displayHour}:${minute} ${period}`;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
@@ -271,7 +197,7 @@ const Bookings = () => {
                           endTime={booking.end_time}
                           duration={booking.event_types.duration}
                           hostUserId={booking.host_user_id}
-                          onStatusChange={loadBookings}
+                          onStatusChange={() => refetch()}
                           onReschedule={() => setRescheduleBooking(booking)}
                         />
                       </div>
@@ -383,7 +309,7 @@ const Bookings = () => {
                                   endTime={child.end_time}
                                   duration={child.event_types.duration}
                                   hostUserId={child.host_user_id}
-                                  onStatusChange={loadBookings}
+                                  onStatusChange={() => refetch()}
                                   onReschedule={() => setRescheduleBooking(child)}
                                 />
                               </div>
@@ -412,7 +338,7 @@ const Bookings = () => {
           guestEmail={rescheduleBooking.guest_email}
           currentDate={rescheduleBooking.scheduled_date}
           currentStartTime={rescheduleBooking.start_time}
-          onRescheduled={loadBookings}
+          onRescheduled={() => refetch()}
           bufferBefore={rescheduleBooking.event_types.buffer_before}
           bufferAfter={rescheduleBooking.event_types.buffer_after}
         />

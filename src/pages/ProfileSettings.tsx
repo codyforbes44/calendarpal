@@ -1,152 +1,132 @@
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useProfile, useUpdateProfile, useCheckUsernameAvailability } from "@/hooks/useProfile";
 import Navigation from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { User, Link, Copy, Check, ExternalLink, Globe, Share2 } from "lucide-react";
 import TimezoneSelector from "@/components/TimezoneSelector";
 import { getLocalTimezone } from "@/lib/timezones";
 import ShareModal from "@/components/ShareModal";
+import { SkeletonProfile } from "@/components/ui/skeleton-card";
+import { toast } from "sonner";
+
+const profileSchema = z.object({
+  full_name: z.string().min(1, "Full name is required").max(100, "Name is too long"),
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(30, "Username is too long")
+    .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens allowed")
+    .optional()
+    .or(z.literal("")),
+  timezone: z.string().min(1, "Timezone is required"),
+});
+
+type ProfileFormValues = z.infer<typeof profileSchema>;
 
 const ProfileSettings = () => {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { data: profile, isLoading } = useProfile();
+  const updateProfile = useUpdateProfile();
+  const checkUsername = useCheckUsernameAvailability();
   const [copied, setCopied] = useState(false);
-  const [profile, setProfile] = useState({
-    full_name: "",
-    username: "",
-    timezone: getLocalTimezone(),
-  });
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
-  const [checkingUsername, setCheckingUsername] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      full_name: "",
+      username: "",
+      timezone: getLocalTimezone(),
+    },
+  });
+
+  // Populate form when profile loads
   useEffect(() => {
-    if (user) {
-      loadProfile();
-    }
-  }, [user]);
-
-  const loadProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("full_name, username, timezone")
-        .eq("user_id", user?.id)
-        .single();
-
-      if (error) throw error;
-
-      setProfile({
-        full_name: data?.full_name || "",
-        username: data?.username || "",
-        timezone: data?.timezone || getLocalTimezone(),
+    if (profile) {
+      form.reset({
+        full_name: profile.full_name || "",
+        username: profile.username || "",
+        timezone: profile.timezone || getLocalTimezone(),
       });
-    } catch (error) {
-      console.error("Error loading profile:", error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [profile, form]);
 
-  const checkUsernameAvailability = async (username: string) => {
-    if (!username || username.length < 3) {
+  // Debounced username availability check
+  const watchedUsername = form.watch("username");
+  useEffect(() => {
+    if (watchedUsername && watchedUsername.length >= 3 && watchedUsername !== profile?.username) {
+      const timer = setTimeout(async () => {
+        const result = await checkUsername.mutateAsync(watchedUsername);
+        setUsernameAvailable(result);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (watchedUsername === profile?.username) {
+      setUsernameAvailable(true);
+    } else {
       setUsernameAvailable(null);
-      return;
     }
+  }, [watchedUsername, profile?.username]);
 
-    setCheckingUsername(true);
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("username", username.toLowerCase())
-        .neq("user_id", user?.id)
-        .maybeSingle();
-
-      if (error) throw error;
-      setUsernameAvailable(!data);
-    } catch (error) {
-      console.error("Error checking username:", error);
-    } finally {
-      setCheckingUsername(false);
-    }
-  };
-
-  const handleUsernameChange = (value: string) => {
-    // Only allow alphanumeric and hyphens
-    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
-    setProfile((prev) => ({ ...prev, username: sanitized }));
-    
-    // Debounce the availability check
-    const timeoutId = setTimeout(() => {
-      checkUsernameAvailability(sanitized);
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  };
-
-  const handleSave = async () => {
-    if (!user) return;
-    
-    if (profile.username && profile.username.length < 3) {
-      toast.error("Username must be at least 3 characters");
-      return;
-    }
-
+  const onSubmit = async (data: ProfileFormValues) => {
     if (usernameAvailable === false) {
       toast.error("Username is not available");
       return;
     }
 
-    setSaving(true);
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          full_name: profile.full_name,
-          username: profile.username || null,
-          timezone: profile.timezone,
-        })
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-      toast.success("Profile updated successfully!");
-    } catch (error: any) {
-      console.error("Error updating profile:", error);
-      if (error.code === "23505") {
-        toast.error("Username is already taken");
-      } else {
-        toast.error("Failed to update profile");
-      }
-    } finally {
-      setSaving(false);
-    }
+    await updateProfile.mutateAsync({
+      full_name: data.full_name,
+      username: data.username || null,
+      timezone: data.timezone,
+    });
   };
 
   const copyBookingLink = () => {
-    const url = `${window.location.origin}/book/${profile.username}`;
+    const username = form.getValues("username");
+    if (!username) return;
+    
+    const url = `${window.location.origin}/book/${username}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     toast.success("Booking link copied!");
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-muted-foreground">Loading settings...</p>
+      <div className="min-h-screen bg-gradient-subtle">
+        <Navigation />
+        <div className="container mx-auto px-6 pt-24 pb-12">
+          <div className="max-w-2xl mx-auto">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold mb-2">Profile Settings</h1>
+              <p className="text-muted-foreground">
+                Manage your profile and booking page settings
+              </p>
+            </div>
+            <SkeletonProfile />
+          </div>
         </div>
       </div>
     );
   }
+
+  const currentUsername = form.watch("username");
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -161,148 +141,170 @@ const ProfileSettings = () => {
             </p>
           </div>
 
-          <div className="space-y-6">
-            {/* Profile Info */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Profile Information
-              </h2>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Profile Info */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Profile Information
+                </h2>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    placeholder="Your full name"
-                    value={profile.full_name}
-                    onChange={(e) =>
-                      setProfile((prev) => ({ ...prev, full_name: e.target.value }))
-                    }
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="full_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Your full name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Username</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              placeholder="yourname"
+                              {...field}
+                              onChange={(e) => {
+                                const sanitized = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+                                field.onChange(sanitized);
+                              }}
+                              className="pr-10"
+                            />
+                            {checkUsername.isPending && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                              </div>
+                            )}
+                            {!checkUsername.isPending && field.value && field.value.length >= 3 && usernameAvailable !== null && (
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                {usernameAvailable ? (
+                                  <Check className="w-4 h-4 text-green-500" />
+                                ) : (
+                                  <span className="text-xs text-destructive">Taken</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormDescription>
+                          Your booking URL: {window.location.origin}/book/{field.value || "yourname"}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <div className="relative">
-                    <Input
-                      id="username"
-                      placeholder="yourname"
-                      value={profile.username}
-                      onChange={(e) => handleUsernameChange(e.target.value)}
-                      className="pr-10"
-                    />
-                    {checkingUsername && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      </div>
-                    )}
-                    {!checkingUsername && profile.username && usernameAvailable !== null && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        {usernameAvailable ? (
-                          <Check className="w-4 h-4 text-green-500" />
-                        ) : (
-                          <span className="text-xs text-destructive">Taken</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    This will be your booking page URL: meetflow.app/book/{profile.username || "yourname"}
-                  </p>
-                </div>
-              </div>
+                <Button
+                  type="submit"
+                  variant="hero"
+                  className="mt-6"
+                  disabled={updateProfile.isPending}
+                >
+                  {updateProfile.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </Card>
 
-              <Button
-                variant="hero"
-                className="mt-6"
-                onClick={handleSave}
-                disabled={saving}
-              >
-                {saving ? "Saving..." : "Save Changes"}
-              </Button>
-            </Card>
-
-            {/* Timezone Settings */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Globe className="w-5 h-5" />
-                Timezone
-              </h2>
-
-              <div className="space-y-2">
-                <Label>Your Timezone</Label>
-                <TimezoneSelector
-                  value={profile.timezone}
-                  onChange={(value) => setProfile((prev) => ({ ...prev, timezone: value }))}
-                />
-                <p className="text-xs text-muted-foreground">
-                  All your availability and booking times will be displayed in this timezone.
-                </p>
-              </div>
-
-              <Button
-                variant="hero"
-                className="mt-6"
-                onClick={handleSave}
-                disabled={saving}
-              >
-                {saving ? "Saving..." : "Save Timezone"}
-              </Button>
-            </Card>
-
-            {/* Booking Link */}
-            {profile.username && (
+              {/* Timezone Settings */}
               <Card className="p-6">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Link className="w-5 h-5" />
-                  Your Booking Link
+                  <Globe className="w-5 h-5" />
+                  Timezone
                 </h2>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-muted rounded-lg px-4 py-3 font-mono text-sm">
-                    {window.location.origin}/book/{profile.username}
-                  </div>
-                  <Button variant="outline" size="icon" onClick={copyBookingLink}>
-                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() =>
-                      window.open(`/book/${profile.username}`, "_blank")
-                    }
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </Button>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="timezone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Your Timezone</FormLabel>
+                      <FormControl>
+                        <TimezoneSelector
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        All your availability and booking times will be displayed in this timezone.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <div className="flex gap-3 mt-4">
-                  <Button
-                    variant="hero"
-                    className="flex-1"
-                    onClick={() => setShowShareModal(true)}
-                  >
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share Link
-                  </Button>
-                </div>
-
-                <p className="text-sm text-muted-foreground mt-3">
-                  Share this link with others so they can book meetings with you.
-                </p>
+                <Button
+                  type="submit"
+                  variant="hero"
+                  className="mt-6"
+                  disabled={updateProfile.isPending}
+                >
+                  {updateProfile.isPending ? "Saving..." : "Save Timezone"}
+                </Button>
               </Card>
-            )}
-          </div>
+            </form>
+          </Form>
+
+          {/* Booking Link */}
+          {currentUsername && (
+            <Card className="p-6 mt-6">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Link className="w-5 h-5" />
+                Your Booking Link
+              </h2>
+
+              <div className="flex items-center gap-3">
+                <div className="flex-1 bg-muted rounded-lg px-4 py-3 font-mono text-sm">
+                  {window.location.origin}/book/{currentUsername}
+                </div>
+                <Button variant="outline" size="icon" onClick={copyBookingLink}>
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => window.open(`/book/${currentUsername}`, "_blank")}
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="flex gap-3 mt-4">
+                <Button
+                  variant="hero"
+                  className="flex-1"
+                  onClick={() => setShowShareModal(true)}
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share Link
+                </Button>
+              </div>
+
+              <p className="text-sm text-muted-foreground mt-3">
+                Share this link with others so they can book meetings with you.
+              </p>
+            </Card>
+          )}
         </div>
       </div>
 
-      {profile.username && (
+      {currentUsername && (
         <ShareModal
           open={showShareModal}
           onOpenChange={setShowShareModal}
-          username={profile.username}
-          fullName={profile.full_name}
+          username={currentUsername}
+          fullName={form.watch("full_name")}
         />
       )}
     </div>
