@@ -91,31 +91,32 @@ const BookingStatsChart = () => {
   }
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
+    <Card className="p-4 sm:p-6">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
         <div>
-          <h2 className="text-lg font-semibold">Booking Activity</h2>
-          <p className="text-sm text-muted-foreground">Last 7 days</p>
+          <h2 className="text-base sm:text-lg font-semibold">Booking Activity</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">Last 7 days</p>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-bold">{totalBookings}</p>
-          <p className="text-sm text-muted-foreground">New bookings</p>
+          <p className="text-xl sm:text-2xl font-bold">{totalBookings}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">New bookings</p>
         </div>
       </div>
       
-      <ChartContainer config={chartConfig} className="h-[200px] w-full">
+      <ChartContainer config={chartConfig} className="h-[150px] sm:h-[200px] w-full">
         <BarChart data={stats} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <XAxis 
             dataKey="label" 
             axisLine={false}
             tickLine={false}
-            tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
           />
           <YAxis 
             axisLine={false}
             tickLine={false}
-            tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
             allowDecimals={false}
+            hide
           />
           <ChartTooltip 
             content={<ChartTooltipContent />}

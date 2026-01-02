@@ -94,21 +94,24 @@ const CalendarHeatmap = () => {
     );
   }
 
+  const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const dayLabelsMobile = ["M", "T", "W", "T", "F", "S", "S"];
+
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
+    <Card className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
         <div>
-          <h2 className="text-lg font-semibold">Upcoming Schedule</h2>
-          <p className="text-sm text-muted-foreground">Next 4 weeks</p>
+          <h2 className="text-base sm:text-lg font-semibold">Upcoming Schedule</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">Next 4 weeks</p>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <span>Less</span>
           <div className="flex gap-0.5">
-            <div className="w-3 h-3 rounded-sm bg-muted" />
-            <div className="w-3 h-3 rounded-sm bg-primary/30" />
-            <div className="w-3 h-3 rounded-sm bg-primary/50" />
-            <div className="w-3 h-3 rounded-sm bg-primary/70" />
-            <div className="w-3 h-3 rounded-sm bg-primary" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm bg-muted" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm bg-primary/30" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm bg-primary/50" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm bg-primary/70" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-sm bg-primary" />
           </div>
           <span>More</span>
         </div>
@@ -117,9 +120,10 @@ const CalendarHeatmap = () => {
       <div className="space-y-1">
         {/* Day labels */}
         <div className="grid grid-cols-7 gap-1 mb-2">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+          {dayLabels.map((day, i) => (
             <div key={day} className="text-xs text-muted-foreground text-center">
-              {day}
+              <span className="hidden sm:inline">{day}</span>
+              <span className="sm:hidden">{dayLabelsMobile[i]}</span>
             </div>
           ))}
         </div>

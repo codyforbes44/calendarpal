@@ -89,11 +89,11 @@ const TodaySchedule = () => {
   }
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
+    <Card className="p-4 sm:p-6">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
         <div>
-          <h2 className="text-lg font-semibold">Today's Schedule</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-base sm:text-lg font-semibold">Today's Schedule</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             {format(new Date(), "EEEE, MMMM d")}
           </p>
         </div>
@@ -103,8 +103,8 @@ const TodaySchedule = () => {
       </div>
 
       {bookings.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <Calendar className="w-10 h-10 text-muted-foreground/50 mb-3" />
+        <div className="flex flex-col items-center justify-center py-6 sm:py-8 text-center">
+          <Calendar className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground/50 mb-2 sm:mb-3" />
           <p className="text-sm text-muted-foreground">No meetings today</p>
           <p className="text-xs text-muted-foreground mt-1">Enjoy your free time!</p>
         </div>
@@ -113,18 +113,18 @@ const TodaySchedule = () => {
           {/* Timeline line */}
           <div className="absolute left-[7px] top-3 bottom-3 w-0.5 bg-border" />
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {bookings.map((booking) => {
               const timeStatus = getTimeStatus(booking.start_time, booking.end_time);
               const isPast = timeStatus === "past" || booking.status === "completed";
               const isCurrent = timeStatus === "current";
 
               return (
-                <div key={booking.id} className="relative flex gap-4">
+                <div key={booking.id} className="relative flex gap-3 sm:gap-4">
                   {/* Timeline dot */}
                   <div
                     className={cn(
-                      "relative z-10 w-4 h-4 rounded-full border-2 mt-1",
+                      "relative z-10 w-4 h-4 rounded-full border-2 mt-1 shrink-0",
                       isPast && "bg-muted border-muted-foreground/30",
                       isCurrent && "bg-accent border-accent animate-pulse",
                       !isPast && !isCurrent && "bg-background border-primary"
@@ -138,32 +138,32 @@ const TodaySchedule = () => {
                   {/* Content */}
                   <div
                     className={cn(
-                      "flex-1 p-3 rounded-lg border transition-colors",
+                      "flex-1 p-2.5 sm:p-3 rounded-lg border transition-colors min-w-0",
                       isPast && "bg-muted/50 border-muted",
                       isCurrent && "bg-accent/10 border-accent",
                       !isPast && !isCurrent && "bg-card border-border hover:border-primary/30"
                     )}
                   >
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2">
                       <div className="flex-1 min-w-0">
                         <p className={cn(
-                          "font-medium truncate",
+                          "font-medium truncate text-sm sm:text-base",
                           isPast && "text-muted-foreground"
                         )}>
                           {booking.event_types.title}
                         </p>
-                        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-                          <User className="w-3 h-3" />
+                        <div className="flex items-center gap-2 mt-0.5 sm:mt-1 text-xs sm:text-sm text-muted-foreground">
+                          <User className="w-3 h-3 shrink-0" />
                           <span className="truncate">{booking.guest_name}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground whitespace-nowrap">
-                        <Clock className="w-3 h-3" />
+                      <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
+                        <Clock className="w-3 h-3 shrink-0" />
                         <span>{booking.start_time} - {booking.end_time}</span>
                       </div>
                     </div>
                     {isCurrent && (
-                      <Badge className="mt-2 bg-accent text-accent-foreground">
+                      <Badge className="mt-2 bg-accent text-accent-foreground text-xs">
                         In progress
                       </Badge>
                     )}
