@@ -137,18 +137,18 @@ const Bookings = () => {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
-        <div className="container mx-auto px-6 pt-24 pb-12">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">All Bookings</h1>
-            <p className="text-muted-foreground">View and manage your scheduled meetings</p>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">All Bookings</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">View and manage your scheduled meetings</p>
           </div>
-          <Card className="p-6 mb-6">
+          <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
             <div className="flex items-center gap-2">
               <Search className="w-5 h-5 text-muted-foreground" />
               <div className="h-10 w-full bg-muted/50 rounded animate-pulse" />
             </div>
           </Card>
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="p-0 overflow-hidden">
                 <SkeletonBooking />
@@ -164,44 +164,46 @@ const Bookings = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
 
-      <div className="container mx-auto px-6 pt-24 pb-12">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">All Bookings</h1>
-            <p className="text-muted-foreground">View and manage your scheduled meetings</p>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+        <div className="mb-6 sm:mb-8 flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">All Bookings</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">View and manage your scheduled meetings</p>
+            </div>
+            
+            {/* View toggle */}
+            <ToggleGroup
+              type="single"
+              value={viewMode}
+              onValueChange={(value) => value && setViewMode(value as ViewMode)}
+              className="bg-muted p-1 rounded-lg self-start sm:self-auto"
+            >
+              <ToggleGroupItem
+                value="list"
+                aria-label="List view"
+                className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-2 sm:px-3"
+              >
+                <List className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">List</span>
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="calendar"
+                aria-label="Calendar view"
+                className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-2 sm:px-3"
+              >
+                <CalendarDays className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Calendar</span>
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
-          
-          {/* View toggle */}
-          <ToggleGroup
-            type="single"
-            value={viewMode}
-            onValueChange={(value) => value && setViewMode(value as ViewMode)}
-            className="bg-muted p-1 rounded-lg"
-          >
-            <ToggleGroupItem
-              value="list"
-              aria-label="List view"
-              className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-3"
-            >
-              <List className="w-4 h-4 mr-2" />
-              List
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="calendar"
-              aria-label="Calendar view"
-              className="data-[state=on]:bg-background data-[state=on]:shadow-sm px-3"
-            >
-              <CalendarDays className="w-4 h-4 mr-2" />
-              Calendar
-            </ToggleGroupItem>
-          </ToggleGroup>
         </div>
 
-        <Card className="p-6 mb-6">
+        <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
           <div className="flex items-center gap-2">
-            <Search className="w-5 h-5 text-muted-foreground" />
+            <Search className="w-5 h-5 text-muted-foreground shrink-0" />
             <Input
-              placeholder="Search by guest name, email, or event type..."
+              placeholder="Search by name, email, or event..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="border-0 focus-visible:ring-0"
@@ -232,7 +234,7 @@ const Bookings = () => {
             />
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3 sm:gap-4">
             {filteredBookings.map((booking) => {
               const childBookings = childBookingsMap.get(booking.id) || [];
               const isSeriesParent = booking.recurrence_pattern && childBookings.length > 0;
@@ -241,36 +243,36 @@ const Bookings = () => {
 
               return (
                 <div key={booking.id}>
-                  <Card className="p-6 hover:shadow-lg hover:border-primary/30 transition-all">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
+                  <Card className="p-4 sm:p-6 hover:shadow-lg hover:border-primary/30 transition-all">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <div
-                          className="w-3 h-3 rounded-full"
+                          className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
                           style={{ backgroundColor: booking.event_types.color }}
                         />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-lg">{booking.event_types.title}</h3>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-base sm:text-lg truncate">{booking.event_types.title}</h3>
                             {isSeriesParent && (
-                              <Badge variant="secondary" className="bg-primary/10 text-primary border-0 flex items-center gap-1">
+                              <Badge variant="secondary" className="bg-primary/10 text-primary border-0 flex items-center gap-1 shrink-0 text-xs">
                                 <Repeat className="w-3 h-3" />
-                                Series ({totalInSeries})
+                                <span className="hidden xs:inline">Series</span> ({totalInSeries})
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 mt-1 text-xs sm:text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              {format(parseISO(booking.scheduled_date), "MMM d, yyyy")}
+                              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                              <span>{format(parseISO(booking.scheduled_date), "MMM d, yyyy")}</span>
                             </div>
                             <div className="flex items-center gap-1">
-                              <Clock className="w-4 h-4" />
-                              {formatTime(booking.start_time)} ({booking.event_types.duration}min)
+                              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                              <span>{formatTime(booking.start_time)} ({booking.event_types.duration}min)</span>
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 sm:gap-3 self-end sm:self-start shrink-0">
                         <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
                         <BookingActionsDropdown
                           bookingId={booking.id}
@@ -289,42 +291,42 @@ const Bookings = () => {
                       </div>
                     </div>
 
-                    <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-border">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                          <User className="w-5 h-5 text-muted-foreground" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-border">
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                         </div>
-                        <div>
-                          <div className="text-sm font-medium">{booking.guest_name}</div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-medium truncate">{booking.guest_name}</div>
                           <div className="text-xs text-muted-foreground">Guest</div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                          <Mail className="w-5 h-5 text-muted-foreground" />
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                          <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                         </div>
-                        <div>
-                          <div className="text-sm font-medium">{booking.guest_email}</div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-medium truncate">{booking.guest_email}</div>
                           <div className="text-xs text-muted-foreground">Email</div>
                         </div>
                       </div>
 
                       {booking.guest_timezone && (
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                            <Globe className="w-5 h-5 text-muted-foreground" />
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
                           </div>
-                          <div>
-                            <div className="text-sm font-medium">{getTimezoneLabel(booking.guest_timezone)}</div>
+                          <div className="min-w-0">
+                            <div className="text-xs sm:text-sm font-medium truncate">{getTimezoneLabel(booking.guest_timezone)}</div>
                             <div className="text-xs text-muted-foreground">Guest Timezone</div>
                           </div>
                         </div>
                       )}
 
                       {booking.guest_notes && (
-                        <div className="sm:col-span-2 mt-2">
-                          <p className="text-sm text-muted-foreground">
+                        <div className="sm:col-span-2 mt-1 sm:mt-2">
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             <span className="font-medium">Notes:</span> {booking.guest_notes}
                           </p>
                         </div>

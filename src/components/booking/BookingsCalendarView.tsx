@@ -91,17 +91,21 @@ const BookingsCalendarView = ({
     return result;
   }, [calendarDays]);
 
+  const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const dayLabelsMobile = ["M", "T", "W", "T", "F", "S", "S"];
+
   return (
-    <Card className="p-6">
+    <Card className="p-4 sm:p-6">
       {/* Calendar header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-semibold">
           {format(currentMonth, "MMMM yyyy")}
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant="outline"
             size="icon"
+            className="h-8 w-8 sm:h-9 sm:w-9"
             onClick={() => onMonthChange(subMonths(currentMonth, 1))}
           >
             <ChevronLeft className="w-4 h-4" />
@@ -109,6 +113,7 @@ const BookingsCalendarView = ({
           <Button
             variant="outline"
             size="sm"
+            className="hidden sm:flex"
             onClick={() => onMonthChange(new Date())}
           >
             Today
@@ -116,6 +121,7 @@ const BookingsCalendarView = ({
           <Button
             variant="outline"
             size="icon"
+            className="h-8 w-8 sm:h-9 sm:w-9"
             onClick={() => onMonthChange(addMonths(currentMonth, 1))}
           >
             <ChevronRight className="w-4 h-4" />
@@ -125,12 +131,13 @@ const BookingsCalendarView = ({
 
       {/* Day headers */}
       <div className="grid grid-cols-7 gap-1 mb-2">
-        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+        {dayLabels.map((day, i) => (
           <div
             key={day}
-            className="text-center text-sm font-medium text-muted-foreground py-2"
+            className="text-center text-xs sm:text-sm font-medium text-muted-foreground py-1 sm:py-2"
           >
-            {day}
+            <span className="hidden sm:inline">{day}</span>
+            <span className="sm:hidden">{dayLabelsMobile[i]}</span>
           </div>
         ))}
       </div>
@@ -152,7 +159,7 @@ const BookingsCalendarView = ({
               <div
                 key={`${weekIndex}-${dayIndex}`}
                 className={cn(
-                  "min-h-[100px] p-1 border rounded-lg transition-colors",
+                  "min-h-[70px] sm:min-h-[100px] p-1 border rounded-lg transition-colors",
                   isCurrentMonth ? "bg-background" : "bg-muted/30",
                   isToday && "ring-2 ring-primary",
                   hasBookings && isCurrentMonth && "hover:border-primary/50"
@@ -161,7 +168,7 @@ const BookingsCalendarView = ({
                 {/* Day number */}
                 <div
                   className={cn(
-                    "text-sm font-medium mb-1 w-7 h-7 flex items-center justify-center rounded-full",
+                    "text-xs sm:text-sm font-medium mb-0.5 sm:mb-1 w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full",
                     !isCurrentMonth && "text-muted-foreground",
                     isToday && "bg-primary text-primary-foreground"
                   )}
@@ -172,13 +179,13 @@ const BookingsCalendarView = ({
                 {/* Bookings */}
                 <div className="space-y-0.5">
                   <TooltipProvider>
-                    {dayBookings.slice(0, 3).map((booking) => (
+                    {dayBookings.slice(0, 2).map((booking) => (
                       <Tooltip key={booking.id}>
                         <TooltipTrigger asChild>
                           <button
                             onClick={() => onBookingClick(booking)}
                             className={cn(
-                              "w-full text-left px-1.5 py-0.5 rounded text-xs truncate transition-colors",
+                              "w-full text-left px-1 sm:px-1.5 py-0.5 rounded text-[10px] sm:text-xs truncate transition-colors",
                               "hover:opacity-80 cursor-pointer",
                               booking.status === "confirmed" &&
                                 "bg-green-500/10 text-green-700 dark:text-green-400",
@@ -188,10 +195,11 @@ const BookingsCalendarView = ({
                                 "bg-blue-500/10 text-blue-700 dark:text-blue-400"
                             )}
                           >
-                            <span className="font-medium">
+                            <span className="font-medium hidden sm:inline">
                               {formatTime(booking.start_time)}
                             </span>{" "}
-                            {booking.guest_name.split(" ")[0]}
+                            <span className="sm:hidden">{booking.guest_name.split(" ")[0].charAt(0)}</span>
+                            <span className="hidden sm:inline">{booking.guest_name.split(" ")[0]}</span>
                           </button>
                         </TooltipTrigger>
                         <TooltipContent
@@ -232,9 +240,9 @@ const BookingsCalendarView = ({
                   </TooltipProvider>
 
                   {/* More indicator */}
-                  {dayBookings.length > 3 && (
-                    <div className="text-xs text-muted-foreground px-1.5">
-                      +{dayBookings.length - 3} more
+                  {dayBookings.length > 2 && (
+                    <div className="text-[10px] sm:text-xs text-muted-foreground px-1 sm:px-1.5">
+                      +{dayBookings.length - 2}
                     </div>
                   )}
                 </div>
@@ -245,17 +253,17 @@ const BookingsCalendarView = ({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 mt-4 pt-4 border-t text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t text-xs sm:text-sm text-muted-foreground">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-green-500" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-500" />
           <span>Confirmed</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-blue-500" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-blue-500" />
           <span>Completed</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-red-500" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500" />
           <span>Cancelled</span>
         </div>
       </div>

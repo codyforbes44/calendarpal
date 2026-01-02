@@ -130,3 +130,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  .container-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .card-padding {
+    @apply p-4 sm:p-6;
+  }
+}

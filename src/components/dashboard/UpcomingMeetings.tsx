@@ -78,8 +78,8 @@ const UpcomingMeetings = () => {
   }
 
   return (
-    <Card className="p-6">
-      <h2 className="text-xl font-bold mb-6">Upcoming Meetings</h2>
+    <Card className="p-4 sm:p-6">
+      <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Upcoming Meetings</h2>
       
       {bookings.length === 0 ? (
         <EmptyState
@@ -89,35 +89,35 @@ const UpcomingMeetings = () => {
           tip="Share your booking link to start receiving meetings"
         />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {bookings.map((booking) => (
             <div
               key={booking.id}
-              className="p-4 border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all"
+              className="p-3 sm:p-4 border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all"
             >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-semibold">{booking.event_types.title}</h3>
-                  <p className="text-sm text-muted-foreground">
+              <div className="flex items-start justify-between mb-2 sm:mb-3">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-semibold text-sm sm:text-base truncate">{booking.event_types.title}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
                     with {booking.guest_name}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 sm:h-9 sm:w-9">
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </div>
               
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span>{format(parseISO(booking.scheduled_date), "MMM d, yyyy")}</span>
+              <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs sm:text-sm">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />
+                  <span>{format(parseISO(booking.scheduled_date), "MMM d")}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />
                   <span>{booking.start_time}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Video className="w-4 h-4 text-muted-foreground" />
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />
                   <span>{booking.event_types.duration}min</span>
                 </div>
               </div>

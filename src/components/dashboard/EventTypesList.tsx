@@ -63,12 +63,12 @@ const EventTypesList = () => {
   }
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold">Event Types</h2>
+    <Card className="p-4 sm:p-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-bold">Event Types</h2>
         <Button variant="outline" size="sm" onClick={() => navigate("/events/new")}>
-          <Plus className="w-4 h-4 mr-2" />
-          New
+          <Plus className="w-4 h-4 sm:mr-2" />
+          <span className="hidden sm:inline">New</span>
         </Button>
       </div>
 
@@ -82,36 +82,36 @@ const EventTypesList = () => {
           tip="Event types define the meetings you offer, like '30-min Call' or 'Product Demo'"
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {eventTypes.map((eventType) => (
             <div
               key={eventType.id}
-              className="p-4 border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all cursor-pointer"
+              className="p-3 sm:p-4 border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all cursor-pointer"
               onClick={() => navigate(`/events/${eventType.id}`)}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2 flex-wrap">
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0"
                       style={{ backgroundColor: eventType.color }}
                     />
-                    <h3 className="font-semibold">{eventType.title}</h3>
+                    <h3 className="font-semibold text-sm sm:text-base truncate">{eventType.title}</h3>
                     {eventType.is_active ? (
-                      <Badge variant="secondary" className="text-xs">Active</Badge>
+                      <Badge variant="secondary" className="text-xs shrink-0">Active</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-xs">Inactive</Badge>
+                      <Badge variant="outline" className="text-xs shrink-0">Inactive</Badge>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2 line-clamp-1">
                     {eventType.description || "No description"}
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="w-4 h-4" />
-                    <span>{eventType.duration} minutes</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                    <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                    <span>{eventType.duration} min</span>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={(e) => e.stopPropagation()}>
                   <MoreVertical className="w-4 h-4" />
                 </Button>
               </div>

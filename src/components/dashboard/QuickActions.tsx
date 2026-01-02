@@ -54,18 +54,18 @@ const QuickActions = ({ username, onShare }: QuickActionsProps) => {
   ];
 
   return (
-    <Card className="p-6">
-      <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <Card className="p-4 sm:p-6">
+      <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Quick Actions</h2>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         {actions.map((action, index) => (
           <Button
             key={index}
             variant={action.variant}
-            className="h-auto flex-col gap-2 p-4"
+            className="h-auto flex-col gap-1.5 sm:gap-2 p-3 sm:p-4 min-h-[72px] sm:min-h-[80px]"
             onClick={action.onClick}
           >
-            <action.icon className="w-5 h-5" />
-            <span className="font-medium">{action.label}</span>
+            <action.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="font-medium text-xs sm:text-sm">{action.label}</span>
           </Button>
         ))}
       </div>

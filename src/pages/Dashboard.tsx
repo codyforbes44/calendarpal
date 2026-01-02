@@ -66,7 +66,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
-        <div className="container mx-auto px-6 pt-24 pb-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
           <SkeletonDashboard />
         </div>
       </div>
@@ -77,13 +77,13 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
       
-      <div className="container mx-auto px-6 pt-24 pb-12">
-        <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-8 sm:pb-12">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">
               Welcome back, {profile?.full_name || "User"}!
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Here's what's happening with your schedule today
             </p>
           </div>
@@ -109,17 +109,17 @@ const Dashboard = () => {
           <DashboardStats />
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6 mt-6">
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
           <BookingStatsChart />
           <CalendarHeatmap />
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6 mt-6">
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
           <TodaySchedule />
           <UpcomingMeetings />
         </div>
 
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           <EventTypesList />
         </div>
       </div>
