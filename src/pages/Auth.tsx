@@ -185,21 +185,21 @@ const Auth = () => {
         keywords={pageSEO.auth.keywords}
         canonical={`${siteConfig.url}/auth`}
       />
-      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-6">
-        <Card className="w-full max-w-md p-8 animate-scale-in">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4 sm:p-6">
+        <Card className="w-full max-w-md p-5 sm:p-8 animate-scale-in">
           {/* Logo */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
-              <Calendar className="w-7 h-7 text-primary-foreground" />
+          <div className="flex items-center justify-center mb-6 sm:mb-8">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
+              <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" />
             </div>
           </div>
 
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">
               {isLogin ? "Welcome Back" : "Create Account"}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm sm:text-base">
               {isLogin
                 ? "Sign in to manage your scheduling"
                 : "Get started with your free account"}
@@ -207,12 +207,12 @@ const Auth = () => {
           </div>
 
           {/* Social Login */}
-          <div className="mb-6">
+          <div className="mb-5 sm:mb-6">
             <SocialLoginButton provider="google" disabled={loading} />
           </div>
 
           {/* Divider */}
-          <div className="relative mb-6">
+          <div className="relative mb-5 sm:mb-6">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-border" />
             </div>
@@ -224,11 +224,11 @@ const Auth = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             {/* Full Name (Signup only) */}
             {!isLogin && (
-              <div className="space-y-2 animate-fade-in">
-                <Label htmlFor="fullName">Full Name</Label>
+              <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
+                <Label htmlFor="fullName" className="text-sm">Full Name</Label>
                 <Input
                   id="fullName"
                   type="text"
@@ -236,15 +236,15 @@ const Auth = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required={!isLogin}
-                  className="h-12"
+                  className="h-11 sm:h-12"
                 />
               </div>
             )}
 
             {/* Username (Signup only) */}
             {!isLogin && (
-              <div className="space-y-2 animate-fade-in">
-                <Label htmlFor="username">Username</Label>
+              <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
+                <Label htmlFor="username" className="text-sm">Username</Label>
                 <div className="relative">
                   <Input
                     id="username"
@@ -253,7 +253,7 @@ const Auth = () => {
                     value={username}
                     onChange={(e) => handleUsernameChange(e.target.value)}
                     required={!isLogin}
-                    className={`h-12 pr-10 ${
+                    className={`h-11 sm:h-12 pr-10 ${
                       username.length >= 3
                         ? usernameAvailable
                           ? "border-green-500 focus-visible:ring-green-500"
@@ -275,15 +275,15 @@ const Auth = () => {
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Your booking URL: calendarpal.com/book/{username || "username"}
+                <p className="text-xs text-muted-foreground break-all">
+                  Your booking URL: {window.location.host}/book/{username || "username"}
                 </p>
               </div>
             )}
 
             {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="email" className="text-sm">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -291,13 +291,13 @@ const Auth = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-12"
+                className="h-11 sm:h-12"
               />
             </div>
 
             {/* Password */}
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="password" className="text-sm">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -306,12 +306,12 @@ const Auth = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-12 pr-12"
+                  className="h-11 sm:h-12 pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 touch-target"
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -329,16 +329,16 @@ const Auth = () => {
 
             {/* Terms Checkbox (Signup only) */}
             {!isLogin && (
-              <div className="flex items-start space-x-3 animate-fade-in">
+              <div className="flex items-start space-x-3 animate-fade-in py-1">
                 <Checkbox
                   id="terms"
                   checked={acceptedTerms}
                   onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
-                  className="mt-0.5"
+                  className="mt-0.5 h-5 w-5"
                 />
                 <label
                   htmlFor="terms"
-                  className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
+                  className="text-xs sm:text-sm text-muted-foreground leading-relaxed cursor-pointer"
                 >
                   I agree to the{" "}
                   <a href="/terms" className="text-primary hover:underline">
@@ -357,7 +357,7 @@ const Auth = () => {
               type="submit"
               variant="hero"
               size="lg"
-              className="w-full h-12"
+              className="w-full h-11 sm:h-12 mt-2"
               disabled={loading || (!isLogin && (!acceptedTerms || usernameAvailable === false))}
             >
               {loading ? (
@@ -371,10 +371,10 @@ const Auth = () => {
           </form>
 
           {/* Toggle Mode */}
-          <div className="mt-6 text-center">
+          <div className="mt-5 sm:mt-6 text-center">
             <button
               onClick={toggleMode}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
             >
               {isLogin ? "Don't have an account? " : "Already have an account? "}
               <span className="text-primary font-medium">
@@ -384,10 +384,10 @@ const Auth = () => {
           </div>
 
           {/* Back to Home */}
-          <div className="mt-8 pt-6 border-t border-border text-center">
+          <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-border text-center">
             <a
               href="/"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 inline-block"
             >
               ← Back to home
             </a>
