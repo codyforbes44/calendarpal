@@ -141,17 +141,17 @@ const EventForm = () => {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
-        <div className="container mx-auto px-6 pt-24 pb-12">
+        <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 sm:pb-12">
           <div className="max-w-2xl mx-auto">
-            <Skeleton className="h-8 w-32 mb-6" />
-            <Card className="p-8 space-y-6">
-              <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-8 w-32 mb-4 sm:mb-6" />
+            <Card className="p-4 sm:p-8 space-y-4 sm:space-y-6">
+              <Skeleton className="h-7 sm:h-8 w-48" />
               <Skeleton className="h-5 w-64" />
               <div className="space-y-4">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="space-y-2">
                     <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 sm:h-11 w-full" />
                   </div>
                 ))}
               </div>
@@ -166,30 +166,31 @@ const EventForm = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
       
-      <div className="container mx-auto px-6 pt-24 pb-12">
+      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 sm:pb-12">
         <div className="max-w-2xl mx-auto">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate("/dashboard")}
-            className="mb-6"
+            className="mb-4 sm:mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            <span className="hidden sm:inline">Back to Dashboard</span>
+            <span className="sm:hidden">Back</span>
           </Button>
 
-          <Card className="p-8">
-            <h1 className="text-3xl font-bold mb-2">
+          <Card className="p-4 sm:p-8">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">
               {id ? "Edit Event Type" : "Create Event Type"}
             </h1>
-            <p className="text-muted-foreground mb-8">
+            <p className="text-muted-foreground text-sm sm:text-base mb-6 sm:mb-8">
               {id
                 ? "Update your event type settings"
                 : "Set up a new meeting type for your schedule"}
             </p>
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
                 <FormField
                   control={form.control}
                   name="title"
@@ -197,7 +198,11 @@ const EventForm = () => {
                     <FormItem>
                       <FormLabel>Event Title *</FormLabel>
                       <FormControl>
-                        <Input placeholder="30 Minute Meeting" {...field} />
+                        <Input 
+                          placeholder="30 Minute Meeting" 
+                          {...field} 
+                          className="h-11 sm:h-10"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -222,7 +227,7 @@ const EventForm = () => {
                   )}
                 />
 
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <FormField
                     control={form.control}
                     name="duration"
@@ -230,7 +235,13 @@ const EventForm = () => {
                       <FormItem>
                         <FormLabel>Duration (minutes) *</FormLabel>
                         <FormControl>
-                          <Input type="number" min="5" max="480" {...field} />
+                          <Input 
+                            type="number" 
+                            min="5" 
+                            max="480" 
+                            {...field} 
+                            className="h-11 sm:h-10"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -245,7 +256,7 @@ const EventForm = () => {
                         <FormLabel>Location Type</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="h-11 sm:h-10">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
@@ -262,23 +273,23 @@ const EventForm = () => {
                 </div>
 
                 {/* Buffer Time Settings */}
-                <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
+                <div className="space-y-4 p-3 sm:p-4 bg-muted/50 rounded-lg border border-border">
                   <div>
-                    <h3 className="font-medium mb-1">Buffer Time</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Add padding before and after meetings to give yourself a break
+                    <h3 className="font-medium text-sm sm:text-base mb-1">Buffer Time</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      Add padding before and after meetings
                     </p>
                   </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="buffer_before"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Before meeting (minutes)</FormLabel>
+                          <FormLabel className="text-sm">Before meeting</FormLabel>
                           <Select onValueChange={(v) => field.onChange(parseInt(v))} value={field.value.toString()}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="h-11 sm:h-10">
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
@@ -301,10 +312,10 @@ const EventForm = () => {
                       name="buffer_after"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>After meeting (minutes)</FormLabel>
+                          <FormLabel className="text-sm">After meeting</FormLabel>
                           <Select onValueChange={(v) => field.onChange(parseInt(v))} value={field.value.toString()}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="h-11 sm:h-10">
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
@@ -332,13 +343,13 @@ const EventForm = () => {
                     <FormItem>
                       <FormLabel>Color</FormLabel>
                       <FormControl>
-                        <div className="flex gap-3">
+                        <div className="flex flex-wrap gap-2 sm:gap-3">
                           {colors.map((color) => (
                             <button
                               key={color.value}
                               type="button"
                               onClick={() => field.onChange(color.value)}
-                              className={`w-10 h-10 rounded-lg transition-all ${
+                              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-lg transition-all touch-target ${
                                 field.value === color.value
                                   ? "ring-2 ring-offset-2 ring-primary scale-110"
                                   : "hover:scale-105"
@@ -354,16 +365,16 @@ const EventForm = () => {
                   )}
                 />
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <FormField
                     control={form.control}
                     name="is_active"
                     render={({ field }) => (
-                      <FormItem className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                        <div>
-                          <FormLabel className="font-medium">Active</FormLabel>
-                          <FormDescription>
-                            Allow people to book this event type
+                      <FormItem className="flex items-center justify-between gap-4 p-3 sm:p-4 bg-muted rounded-lg">
+                        <div className="flex-1 min-w-0">
+                          <FormLabel className="font-medium text-sm sm:text-base">Active</FormLabel>
+                          <FormDescription className="text-xs sm:text-sm">
+                            Allow people to book this event
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -380,11 +391,11 @@ const EventForm = () => {
                     control={form.control}
                     name="allow_recurring"
                     render={({ field }) => (
-                      <FormItem className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                        <div>
-                          <FormLabel className="font-medium">Allow Recurring</FormLabel>
-                          <FormDescription>
-                            Let guests book repeated sessions (weekly, bi-weekly, monthly)
+                      <FormItem className="flex items-center justify-between gap-4 p-3 sm:p-4 bg-muted rounded-lg">
+                        <div className="flex-1 min-w-0">
+                          <FormLabel className="font-medium text-sm sm:text-base">Allow Recurring</FormLabel>
+                          <FormDescription className="text-xs sm:text-sm">
+                            Let guests book repeated sessions
                           </FormDescription>
                         </div>
                         <FormControl>
@@ -398,18 +409,8 @@ const EventForm = () => {
                   />
                 </div>
 
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="submit"
-                    variant="hero"
-                    size="lg"
-                    className="flex-1"
-                    disabled={isSubmitting}
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {isSubmitting ? "Saving..." : id ? "Update Event" : "Create Event"}
-                  </Button>
-
+                {/* Action buttons - stack on mobile */}
+                <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
                   {id && (
                     <Button
                       type="button"
@@ -417,10 +418,22 @@ const EventForm = () => {
                       size="lg"
                       onClick={handleDelete}
                       disabled={isDeleting}
+                      className="w-full sm:w-auto h-11 sm:h-10"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4 mr-2 sm:mr-0" />
+                      <span className="sm:hidden">Delete Event</span>
                     </Button>
                   )}
+                  <Button
+                    type="submit"
+                    variant="hero"
+                    size="lg"
+                    className="flex-1 h-11 sm:h-10"
+                    disabled={isSubmitting}
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {isSubmitting ? "Saving..." : id ? "Update Event" : "Create Event"}
+                  </Button>
                 </div>
               </form>
             </Form>
