@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/useProfile";
+import { useEventTypes } from "@/hooks/useEventTypes";
 import Navigation from "@/components/Navigation";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import UpcomingMeetings from "@/components/dashboard/UpcomingMeetings";
@@ -9,21 +10,22 @@ import EventTypesList from "@/components/dashboard/EventTypesList";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import ShareModal from "@/components/ShareModal";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonDashboard } from "@/components/ui/skeleton-card";
 import { Plus, Share2 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [hasEventTypes, setHasEventTypes] = useState(false);
   const [hasAvailability, setHasAvailability] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
+
+  const { data: profile, isLoading: profileLoading } = useProfile();
+  const { data: eventTypes, isLoading: eventTypesLoading } = useEventTypes();
 
   useEffect(() => {
     const checkoutStatus = searchParams.get("checkout");
@@ -36,40 +38,26 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
-      loadDashboardData();
+      checkAvailability();
     }
   }, [user]);
 
-  const loadDashboardData = async () => {
+  const checkAvailability = async () => {
     try {
-      const [profileRes, eventTypesRes, availabilityRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("*")
-          .eq("user_id", user?.id)
-          .single(),
-        supabase
-          .from("event_types")
-          .select("id")
-          .eq("user_id", user?.id)
-          .limit(1),
-        supabase
-          .from("availability")
-          .select("id")
-          .eq("user_id", user?.id)
-          .limit(1),
-      ]);
-
-      if (profileRes.data) setProfile(profileRes.data);
-      setHasEventTypes((eventTypesRes.data?.length || 0) > 0);
-      setHasAvailability((availabilityRes.data?.length || 0) > 0);
+      const { data } = await supabase
+        .from("availability")
+        .select("id")
+        .eq("user_id", user?.id)
+        .limit(1);
+      
+      setHasAvailability((data?.length || 0) > 0);
     } catch (error) {
-      console.error("Error loading dashboard data:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error checking availability:", error);
     }
   };
 
+  const loading = profileLoading || eventTypesLoading;
+  const hasEventTypes = (eventTypes?.length || 0) > 0;
   const hasCompleteProfile = profile?.full_name && profile?.username;
 
   if (loading) {
@@ -77,39 +65,7 @@ const Dashboard = () => {
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
         <div className="container mx-auto px-6 pt-24 pb-12">
-          <div className="mb-8 flex items-center justify-between">
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-5 w-80" />
-            </div>
-            <Skeleton className="h-10 w-36" />
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="p-6 border border-border rounded-lg space-y-3">
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-10 w-10 rounded-lg" />
-                </div>
-                <Skeleton className="h-8 w-16" />
-                <Skeleton className="h-3 w-32" />
-              </div>
-            ))}
-          </div>
-          <div className="grid lg:grid-cols-2 gap-8">
-            <div className="p-6 border border-border rounded-lg space-y-4">
-              <Skeleton className="h-6 w-40" />
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-20 w-full" />
-              ))}
-            </div>
-            <div className="p-6 border border-border rounded-lg space-y-4">
-              <Skeleton className="h-6 w-32" />
-              {[1, 2].map((i) => (
-                <Skeleton key={i} className="h-20 w-full" />
-              ))}
-            </div>
-          </div>
+          <SkeletonDashboard />
         </div>
       </div>
     );
@@ -166,7 +122,7 @@ const Dashboard = () => {
           open={showShareModal}
           onOpenChange={setShowShareModal}
           username={profile.username}
-          fullName={profile.full_name}
+          fullName={profile.full_name || ""}
         />
       )}
     </div>
