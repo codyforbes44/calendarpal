@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MoreVertical, Plus } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Clock, MoreVertical, Plus, Link, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SkeletonEventType } from "@/components/ui/skeleton-card";
 import EmptyState from "@/components/EmptyState";
+import { toast } from "sonner";
 
 interface EventType {
   id: string;
@@ -23,12 +25,30 @@ const EventTypesList = () => {
   const navigate = useNavigate();
   const [eventTypes, setEventTypes] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [username, setUsername] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       loadEventTypes();
+      loadUsername();
     }
   }, [user]);
+
+  const loadUsername = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("user_id", user?.id)
+        .single();
+
+      if (error) throw error;
+      setUsername(data?.username || null);
+    } catch (error) {
+      console.error("Error loading username:", error);
+    }
+  };
 
   const loadEventTypes = async () => {
     try {
@@ -45,6 +65,26 @@ const EventTypesList = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const copyBookingLink = (eventType: EventType, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!username) {
+      toast.error("Please set up your username in settings first");
+      return;
+    }
+
+    const typeSlug = eventType.title.toLowerCase().replace(/\s+/g, "-");
+    const bookingUrl = `${window.location.origin}/book/${username}?type=${typeSlug}`;
+    
+    navigator.clipboard.writeText(bookingUrl).then(() => {
+      setCopiedId(eventType.id);
+      toast.success("Booking link copied!");
+      setTimeout(() => setCopiedId(null), 2000);
+    }).catch(() => {
+      toast.error("Failed to copy link");
+    });
   };
 
   if (loading) {
@@ -111,9 +151,28 @@ const EventTypesList = () => {
                     <span>{eventType.duration} min</span>
                   </div>
                 </div>
-                <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={(e) => e.stopPropagation()}>
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => copyBookingLink(eventType, e)}
+                      >
+                        {copiedId === eventType.id ? (
+                          <Check className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <Link className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy booking link</TooltipContent>
+                  </Tooltip>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
