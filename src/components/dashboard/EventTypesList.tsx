@@ -5,11 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Clock, MoreVertical, Plus, Link, Check } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Clock, MoreVertical, Plus, Link, Check, QrCode, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SkeletonEventType } from "@/components/ui/skeleton-card";
 import EmptyState from "@/components/EmptyState";
 import { toast } from "sonner";
+import { QRCodeSVG } from "qrcode.react";
 
 interface EventType {
   id: string;
@@ -27,6 +29,7 @@ const EventTypesList = () => {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [qrModalEvent, setQrModalEvent] = useState<EventType | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -67,16 +70,20 @@ const EventTypesList = () => {
     }
   };
 
+  const getBookingUrl = (eventType: EventType) => {
+    if (!username) return null;
+    const typeSlug = eventType.title.toLowerCase().replace(/\s+/g, "-");
+    return `${window.location.origin}/book/${username}?type=${typeSlug}`;
+  };
+
   const copyBookingLink = (eventType: EventType, e: React.MouseEvent) => {
     e.stopPropagation();
     
-    if (!username) {
+    const bookingUrl = getBookingUrl(eventType);
+    if (!bookingUrl) {
       toast.error("Please set up your username in settings first");
       return;
     }
-
-    const typeSlug = eventType.title.toLowerCase().replace(/\s+/g, "-");
-    const bookingUrl = `${window.location.origin}/book/${username}?type=${typeSlug}`;
     
     navigator.clipboard.writeText(bookingUrl).then(() => {
       setCopiedId(eventType.id);
@@ -85,6 +92,45 @@ const EventTypesList = () => {
     }).catch(() => {
       toast.error("Failed to copy link");
     });
+  };
+
+  const openQrModal = (eventType: EventType, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!username) {
+      toast.error("Please set up your username in settings first");
+      return;
+    }
+    
+    setQrModalEvent(eventType);
+  };
+
+  const downloadQrCode = () => {
+    if (!qrModalEvent) return;
+    
+    const svg = document.getElementById("qr-code-svg");
+    if (!svg) return;
+    
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      const pngUrl = canvas.toDataURL("image/png");
+      
+      const downloadLink = document.createElement("a");
+      downloadLink.href = pngUrl;
+      downloadLink.download = `${qrModalEvent.title.toLowerCase().replace(/\s+/g, "-")}-qr-code.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    };
+    
+    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
   };
 
   if (loading) {
@@ -169,6 +215,19 @@ const EventTypesList = () => {
                     </TooltipTrigger>
                     <TooltipContent>Copy booking link</TooltipContent>
                   </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => openQrModal(eventType, e)}
+                      >
+                        <QrCode className="w-4 h-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Show QR code</TooltipContent>
+                  </Tooltip>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
                     <MoreVertical className="w-4 h-4" />
                   </Button>
@@ -178,6 +237,52 @@ const EventTypesList = () => {
           ))}
         </div>
       )}
+
+      {/* QR Code Modal */}
+      <Dialog open={!!qrModalEvent} onOpenChange={(open) => !open && setQrModalEvent(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">{qrModalEvent?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-6 py-4">
+            {qrModalEvent && getBookingUrl(qrModalEvent) && (
+              <>
+                <div className="bg-white p-4 rounded-lg">
+                  <QRCodeSVG
+                    id="qr-code-svg"
+                    value={getBookingUrl(qrModalEvent)!}
+                    size={200}
+                    level="H"
+                    includeMargin
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground text-center max-w-xs break-all">
+                  {getBookingUrl(qrModalEvent)}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const url = getBookingUrl(qrModalEvent);
+                      if (url) {
+                        navigator.clipboard.writeText(url);
+                        toast.success("Link copied!");
+                      }
+                    }}
+                  >
+                    <Link className="w-4 h-4 mr-2" />
+                    Copy Link
+                  </Button>
+                  <Button onClick={downloadQrCode}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
