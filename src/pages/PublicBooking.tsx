@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,7 @@ interface EventType {
 const PublicBooking = () => {
   const { username, eventSlug } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [eventTypes, setEventTypes] = useState<EventType[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
@@ -88,17 +89,62 @@ const PublicBooking = () => {
     }
   }, [username]);
 
+  // Handle URL parameters for direct event selection
   useEffect(() => {
-    if (eventSlug && eventTypes.length > 0) {
+    if (eventTypes.length === 0) return;
+    
+    // Priority: 1. eventSlug from path, 2. type query param, 3. duration query param
+    if (eventSlug) {
       const event = eventTypes.find(
         (e) => e.title.toLowerCase().replace(/\s+/g, "-") === eventSlug
       );
       if (event) {
         setSelectedEvent(event);
         setStep("selection");
+        return;
       }
     }
-  }, [eventSlug, eventTypes]);
+
+    // Check for type query parameter (matches by title slug or exact title)
+    const typeParam = searchParams.get("type");
+    if (typeParam) {
+      const event = eventTypes.find(
+        (e) => 
+          e.title.toLowerCase().replace(/\s+/g, "-") === typeParam.toLowerCase() ||
+          e.title.toLowerCase() === typeParam.toLowerCase()
+      );
+      if (event) {
+        setSelectedEvent(event);
+        setStep("selection");
+        return;
+      }
+    }
+
+    // Check for duration query parameter (matches by duration in minutes)
+    const durationParam = searchParams.get("duration");
+    if (durationParam) {
+      const duration = parseInt(durationParam, 10);
+      if (!isNaN(duration)) {
+        const event = eventTypes.find((e) => e.duration === duration);
+        if (event) {
+          setSelectedEvent(event);
+          setStep("selection");
+          return;
+        }
+      }
+    }
+
+    // Check for event ID query parameter
+    const eventIdParam = searchParams.get("event");
+    if (eventIdParam) {
+      const event = eventTypes.find((e) => e.id === eventIdParam);
+      if (event) {
+        setSelectedEvent(event);
+        setStep("selection");
+        return;
+      }
+    }
+  }, [eventSlug, eventTypes, searchParams]);
 
   useEffect(() => {
     if (profile?.user_id) {
