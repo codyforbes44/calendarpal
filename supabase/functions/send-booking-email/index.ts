@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "CalendarPal <onboarding@resend.dev>";
 
 const corsHeaders = {
@@ -605,6 +608,28 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${requestId}] Guest email sent: ${result.guestSent}`);
     console.log(`[${requestId}] Host email sent: ${result.hostSent}`);
     console.log(`[${requestId}] ===================================`);
+
+    // Update booking record with email status if at least one email was sent
+    if (result.guestSent || result.hostSent) {
+      try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const { error: updateError } = await supabase
+          .from("bookings")
+          .update({
+            confirmation_email_sent: true,
+            email_sent_at: new Date().toISOString(),
+          })
+          .eq("id", booking.id);
+
+        if (updateError) {
+          console.error(`[${requestId}] Failed to update booking email status: ${updateError.message}`);
+        } else {
+          console.log(`[${requestId}] Updated booking ${booking.id} with email_sent_at timestamp`);
+        }
+      } catch (dbError: any) {
+        console.error(`[${requestId}] Database error updating email status: ${dbError.message}`);
+      }
+    }
 
     return new Response(
       JSON.stringify({ 
