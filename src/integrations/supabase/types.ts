@@ -47,7 +47,9 @@ export type Database = {
       bookings: {
         Row: {
           cancellation_token: string | null
+          confirmation_email_sent: boolean | null
           created_at: string
+          email_sent_at: string | null
           end_time: string
           event_type_id: string
           guest_email: string
@@ -69,7 +71,9 @@ export type Database = {
         }
         Insert: {
           cancellation_token?: string | null
+          confirmation_email_sent?: boolean | null
           created_at?: string
+          email_sent_at?: string | null
           end_time: string
           event_type_id: string
           guest_email: string
@@ -91,7 +95,9 @@ export type Database = {
         }
         Update: {
           cancellation_token?: string | null
+          confirmation_email_sent?: boolean | null
           created_at?: string
+          email_sent_at?: string | null
           end_time?: string
           event_type_id?: string
           guest_email?: string
