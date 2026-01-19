@@ -20,6 +20,7 @@ import {
 import { MoreVertical, Calendar, XCircle, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { sendCancellationEmail, getHostEmail } from "@/lib/email-service";
 
 interface BookingActionsDropdownProps {
   bookingId: string;
@@ -71,30 +72,27 @@ const BookingActionsDropdown = ({
         .eq("user_id", hostUserId)
         .single();
 
-      // Send cancellation email
-      try {
-        await supabase.functions.invoke("send-booking-email", {
-          body: {
-            type: "booking_cancelled",
-            booking: {
-              id: bookingId,
-              guestName,
-              guestEmail,
-              hostName: hostProfile?.full_name || "Host",
-              hostEmail: hostProfile?.email,
-              eventTitle,
-              scheduledDate,
-              startTime,
-              endTime,
-              duration,
-            },
-          },
-        });
-      } catch (emailError) {
-        console.error("Failed to send cancellation email:", emailError);
-      }
+      // Send cancellation email using the email service
+      const emailResult = await sendCancellationEmail({
+        id: bookingId,
+        guestName,
+        guestEmail,
+        hostName: hostProfile?.full_name || "Host",
+        hostEmail: hostProfile?.email || undefined,
+        eventTitle,
+        scheduledDate,
+        startTime,
+        endTime,
+        duration,
+      });
 
-      toast.success("Booking cancelled");
+      if (emailResult.success) {
+        toast.success("Booking cancelled and notifications sent");
+      } else {
+        toast.success("Booking cancelled");
+        console.warn("Email notification could not be sent:", emailResult.error);
+      }
+      
       onStatusChange();
     } catch (error) {
       console.error("Error cancelling booking:", error);

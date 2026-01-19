@@ -7,6 +7,7 @@ import { useTimeSlots, convertTo24Hour, calculateEndTime } from "@/hooks/useTime
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { sendRescheduleEmail } from "@/lib/email-service";
 
 interface RescheduleDialogProps {
   open: boolean;
@@ -113,43 +114,40 @@ const RescheduleDialog = ({
 
       if (error) throw error;
 
-      // Send reschedule email notification
-      try {
-        // Fetch host profile for email
-        const { data: hostProfile } = await supabase
-          .from("profiles")
-          .select("full_name, email")
-          .eq("user_id", hostUserId)
-          .single();
+      // Fetch host profile for email
+      const { data: hostProfile } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("user_id", hostUserId)
+        .single();
 
-        await supabase.functions.invoke("send-booking-email", {
-          body: {
-            type: "booking_rescheduled",
-            booking: {
-              id: bookingId,
-              guestName,
-              guestEmail,
-              hostName: hostProfile?.full_name || "Host",
-              hostEmail: hostProfile?.email,
-              eventTitle,
-              scheduledDate: newDate,
-              startTime,
-              endTime,
-              duration,
-            },
-            oldDateTime: {
-              date: currentDate,
-              time: currentStartTime,
-            },
-          },
-        });
-        console.log("Reschedule notification email sent");
-      } catch (emailError) {
-        console.error("Failed to send reschedule email:", emailError);
-        // Don't fail the whole operation if email fails
+      // Send reschedule email notification using the email service
+      const emailResult = await sendRescheduleEmail(
+        {
+          id: bookingId,
+          guestName,
+          guestEmail,
+          hostName: hostProfile?.full_name || "Host",
+          hostEmail: hostProfile?.email || undefined,
+          eventTitle,
+          scheduledDate: newDate,
+          startTime,
+          endTime,
+          duration,
+        },
+        {
+          date: currentDate,
+          time: currentStartTime,
+        }
+      );
+
+      if (emailResult.success) {
+        toast.success("Booking rescheduled and notifications sent");
+      } else {
+        toast.success("Booking rescheduled successfully");
+        console.warn("Email notification could not be sent:", emailResult.error);
       }
-
-      toast.success("Booking rescheduled successfully");
+      
       onOpenChange(false);
       onRescheduled();
     } catch (error) {

@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "CalendarPal <onboarding@resend.dev>";
+const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "CalendarPal <notifications@notifications.3bi.io>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -43,48 +43,80 @@ function maskEmail(email: string): string {
   return `${maskedLocal}@${domain}`;
 }
 
-// Send email via Resend API with enhanced logging
-async function sendEmail(payload: {
-  from: string;
-  to: string[];
-  subject: string;
-  html: string;
-  attachments?: { filename: string; content: string; content_type: string }[];
-}): Promise<{ success: boolean; id?: string; error?: string }> {
+// Sleep utility for retry logic
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Send email via Resend API with retry logic
+async function sendEmailWithRetry(
+  payload: {
+    from: string;
+    to: string[];
+    subject: string;
+    html: string;
+    replyTo?: string;
+    attachments?: { filename: string; content: string; content_type: string }[];
+  },
+  maxRetries = 3
+): Promise<{ success: boolean; id?: string; error?: string }> {
   console.log(`[Email] Attempting to send email to: ${payload.to.map(maskEmail).join(", ")}`);
   console.log(`[Email] Subject: ${payload.subject}`);
   console.log(`[Email] From: ${payload.from}`);
+  if (payload.replyTo) {
+    console.log(`[Email] Reply-To: ${maskEmail(payload.replyTo)}`);
+  }
 
   if (!RESEND_API_KEY) {
     console.error("[Email] ERROR: RESEND_API_KEY is not configured");
     throw new Error("RESEND_API_KEY is not configured");
   }
 
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+  let lastError: Error | null = null;
 
-    const responseText = await response.text();
-    
-    if (!response.ok) {
-      console.error(`[Email] ERROR: Resend API returned status ${response.status}`);
-      console.error(`[Email] ERROR Response: ${responseText}`);
-      throw new Error(`Resend API error (${response.status}): ${responseText}`);
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`[Email] Attempt ${attempt}/${maxRetries}`);
+      
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseText = await response.text();
+      
+      if (!response.ok) {
+        // Don't retry on client errors (4xx) except rate limits (429)
+        if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+          console.error(`[Email] ERROR: Resend API returned status ${response.status}`);
+          console.error(`[Email] ERROR Response: ${responseText}`);
+          throw new Error(`Resend API error (${response.status}): ${responseText}`);
+        }
+        
+        throw new Error(`Resend API error (${response.status}): ${responseText}`);
+      }
+
+      const result = JSON.parse(responseText);
+      console.log(`[Email] SUCCESS: Email sent with ID: ${result.id}`);
+      return { success: true, id: result.id };
+    } catch (error: any) {
+      lastError = error;
+      console.error(`[Email] Attempt ${attempt} failed: ${error.message}`);
+      
+      if (attempt < maxRetries) {
+        const backoffMs = 1000 * Math.pow(2, attempt - 1); // 1s, 2s, 4s
+        console.log(`[Email] Retrying in ${backoffMs}ms...`);
+        await sleep(backoffMs);
+      }
     }
-
-    const result = JSON.parse(responseText);
-    console.log(`[Email] SUCCESS: Email sent with ID: ${result.id}`);
-    return { success: true, id: result.id };
-  } catch (error: any) {
-    console.error(`[Email] FAILED: ${error.message}`);
-    throw error;
   }
+
+  console.error(`[Email] FAILED after ${maxRetries} attempts: ${lastError?.message}`);
+  throw lastError || new Error("Unknown error sending email");
 }
 
 // Generate ICS calendar file content
@@ -153,11 +185,12 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
   let guestSent = false;
   let hostSent = false;
   
-  // Email to guest
+  // Email to guest (with reply-to set to host email)
   try {
-    await sendEmail({
+    await sendEmailWithRetry({
       from: RESEND_FROM_EMAIL,
       to: [booking.guestEmail],
+      replyTo: booking.hostEmail,
       subject: `Confirmed: Meeting with ${booking.hostName} on ${formattedDate}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -223,9 +256,10 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
   // Email to host (if host email provided)
   if (booking.hostEmail) {
     try {
-      await sendEmail({
+      await sendEmailWithRetry({
         from: RESEND_FROM_EMAIL,
         to: [booking.hostEmail],
+        replyTo: booking.guestEmail,
         subject: `New Booking: ${booking.guestName} on ${formattedDate}`,
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -299,9 +333,10 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
   
   // Email to guest
   try {
-    await sendEmail({
+    await sendEmailWithRetry({
       from: RESEND_FROM_EMAIL,
       to: [booking.guestEmail],
+      replyTo: booking.hostEmail,
       subject: `Cancelled: Meeting with ${booking.hostName} on ${formattedDate}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -354,9 +389,10 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
   // Email to host
   if (booking.hostEmail) {
     try {
-      await sendEmail({
+      await sendEmailWithRetry({
         from: RESEND_FROM_EMAIL,
         to: [booking.hostEmail],
+        replyTo: booking.guestEmail,
         subject: `Cancelled: Meeting with ${booking.guestName} on ${formattedDate}`,
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -426,9 +462,10 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
   
   // Email to guest
   try {
-    await sendEmail({
+    await sendEmailWithRetry({
       from: RESEND_FROM_EMAIL,
       to: [booking.guestEmail],
+      replyTo: booking.hostEmail,
       subject: `Rescheduled: Meeting with ${booking.hostName} - New time: ${newFormattedDate}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -499,9 +536,10 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
   // Email to host
   if (booking.hostEmail) {
     try {
-      await sendEmail({
+      await sendEmailWithRetry({
         from: RESEND_FROM_EMAIL,
         to: [booking.hostEmail],
+        replyTo: booking.guestEmail,
         subject: `Rescheduled: Meeting with ${booking.guestName} - New time: ${newFormattedDate}`,
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -563,6 +601,20 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
   return { guestSent, hostSent };
 }
 
+// Map email type to database field for tracking
+function getEmailTypeField(type: EmailRequest["type"]): string {
+  switch (type) {
+    case "booking_confirmed":
+      return "confirmation";
+    case "booking_cancelled":
+      return "cancellation";
+    case "booking_rescheduled":
+      return "reschedule";
+    default:
+      return "unknown";
+  }
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -613,6 +665,8 @@ const handler = async (req: Request): Promise<Response> => {
     if (result.guestSent || result.hostSent) {
       try {
         const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const emailTypeField = getEmailTypeField(type);
+        
         const { error: updateError } = await supabase
           .from("bookings")
           .update({
@@ -624,7 +678,7 @@ const handler = async (req: Request): Promise<Response> => {
         if (updateError) {
           console.error(`[${requestId}] Failed to update booking email status: ${updateError.message}`);
         } else {
-          console.log(`[${requestId}] Updated booking ${booking.id} with email_sent_at timestamp`);
+          console.log(`[${requestId}] Updated booking ${booking.id} with email_sent_at timestamp (type: ${emailTypeField})`);
         }
       } catch (dbError: any) {
         console.error(`[${requestId}] Database error updating email status: ${dbError.message}`);

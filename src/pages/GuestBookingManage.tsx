@@ -19,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { sendCancellationEmail, sendRescheduleEmail } from "@/lib/email-service";
 
 interface BookingDetails {
   id: string;
@@ -166,27 +167,22 @@ const GuestBookingManage = () => {
         .eq("user_id", booking.host_user_id)
         .single();
 
-      // Send cancellation emails
-      try {
-        await supabase.functions.invoke("send-booking-email", {
-          body: {
-            type: "booking_cancelled",
-            booking: {
-              id: booking.id,
-              guestName: booking.guest_name,
-              guestEmail: booking.guest_email,
-              hostName: (booking.profiles as any)?.full_name || "Host",
-              hostEmail: hostProfile?.email,
-              eventTitle: booking.event_types.title,
-              scheduledDate: booking.scheduled_date,
-              startTime: booking.start_time,
-              endTime: booking.end_time,
-              duration: booking.event_types.duration,
-            },
-          },
-        });
-      } catch (emailError) {
-        console.error("Failed to send cancellation email:", emailError);
+      // Send cancellation emails using the email service
+      const emailResult = await sendCancellationEmail({
+        id: booking.id,
+        guestName: booking.guest_name,
+        guestEmail: booking.guest_email,
+        hostName: (booking.profiles as any)?.full_name || "Host",
+        hostEmail: hostProfile?.email || undefined,
+        eventTitle: booking.event_types.title,
+        scheduledDate: booking.scheduled_date,
+        startTime: booking.start_time,
+        endTime: booking.end_time,
+        duration: booking.event_types.duration,
+      });
+
+      if (!emailResult.success) {
+        console.warn("Cancellation email could not be sent:", emailResult.error);
       }
 
       setAction("cancelled");
@@ -210,11 +206,12 @@ const GuestBookingManage = () => {
     try {
       const startTime = convertTo24Hour(selectedTime);
       const endTime = calculateEndTime(startTime, booking.event_types.duration);
+      const newDate = format(selectedDate, "yyyy-MM-dd");
 
       const { error } = await supabase
         .from("bookings")
         .update({
-          scheduled_date: format(selectedDate, "yyyy-MM-dd"),
+          scheduled_date: newDate,
           start_time: startTime,
           end_time: endTime,
         })
@@ -230,32 +227,29 @@ const GuestBookingManage = () => {
         .eq("user_id", booking.host_user_id)
         .single();
 
-      // Send reschedule emails
-      try {
-        await supabase.functions.invoke("send-booking-email", {
-          body: {
-            type: "booking_rescheduled",
-            booking: {
-              id: booking.id,
-              guestName: booking.guest_name,
-              guestEmail: booking.guest_email,
-              hostName: (booking.profiles as any)?.full_name || "Host",
-              hostEmail: hostProfile?.email,
-              eventTitle: booking.event_types.title,
-              scheduledDate: format(selectedDate, "yyyy-MM-dd"),
-              startTime: startTime,
-              endTime: endTime,
-              duration: booking.event_types.duration,
-              manageUrl: `${window.location.origin}/booking/${booking.id}/manage?token=${token}`,
-            },
-            oldDateTime: {
-              date: oldDate,
-              time: oldTime,
-            },
-          },
-        });
-      } catch (emailError) {
-        console.error("Failed to send reschedule email:", emailError);
+      // Send reschedule emails using the email service
+      const emailResult = await sendRescheduleEmail(
+        {
+          id: booking.id,
+          guestName: booking.guest_name,
+          guestEmail: booking.guest_email,
+          hostName: (booking.profiles as any)?.full_name || "Host",
+          hostEmail: hostProfile?.email || undefined,
+          eventTitle: booking.event_types.title,
+          scheduledDate: newDate,
+          startTime: startTime,
+          endTime: endTime,
+          duration: booking.event_types.duration,
+          manageUrl: `${window.location.origin}/booking/${booking.id}/manage?token=${token}`,
+        },
+        {
+          date: oldDate,
+          time: oldTime,
+        }
+      );
+
+      if (!emailResult.success) {
+        console.warn("Reschedule email could not be sent:", emailResult.error);
       }
 
       setAction("rescheduled");
