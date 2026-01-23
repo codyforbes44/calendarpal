@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          action: string
+          admin_user_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          target_id: string | null
+          target_type: string
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type: string
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string
+        }
+        Relationships: []
+      }
       availability: {
         Row: {
           created_at: string
@@ -41,6 +71,33 @@ export type Database = {
           start_time?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      blocked_access_logs: {
+        Row: {
+          country_code: string
+          created_at: string
+          id: string
+          ip_hash: string | null
+          path_attempted: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          country_code: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          path_attempted?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          country_code?: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          path_attempted?: string | null
+          user_agent?: string | null
         }
         Relationships: []
       }

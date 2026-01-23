@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
-  Shield,
   CheckCircle,
   XCircle,
   Clock,
@@ -10,7 +9,6 @@ import {
   Globe,
   FileText,
   Loader2,
-  AlertTriangle,
   RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,9 +40,6 @@ import {
 } from "@/components/ui/table";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { useAdminRole } from "@/hooks/useAdminRole";
-import Navigation from "@/components/Navigation";
 
 interface Appeal {
   id: string;
@@ -62,8 +57,6 @@ interface Appeal {
 type ActionType = "approve" | "reject";
 
 const AdminAppeals = () => {
-  const { user, loading: authLoading } = useAuth();
-  const { data: isAdmin, isLoading: roleLoading } = useAdminRole();
   const queryClient = useQueryClient();
 
   const [statusFilter, setStatusFilter] = useState<string>("verified");
@@ -81,7 +74,6 @@ const AdminAppeals = () => {
       if (error) throw error;
       return data.appeals as Appeal[];
     },
-    enabled: !!isAdmin,
   });
 
   const actionMutation = useMutation({
@@ -145,181 +137,132 @@ const AdminAppeals = () => {
     }
   };
 
-  // Loading states
-  if (authLoading || roleLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Not authenticated
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center">
-          <CardHeader>
-            <div className="mx-auto mb-4 w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
-              <Shield className="w-8 h-8 text-destructive" />
-            </div>
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>Please log in to access the admin dashboard.</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
-  // Not admin
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center">
-          <CardHeader>
-            <div className="mx-auto mb-4 w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
-              <AlertTriangle className="w-8 h-8 text-destructive" />
-            </div>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>You don't have permission to access this page.</CardDescription>
-          </CardHeader>
-        </Card>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Shield className="w-6 h-6 text-primary" />
-              Geo-Block Appeals
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Review and manage access appeals from blocked regions
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Refresh
-          </Button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Geo-Block Appeals</h1>
+          <p className="text-muted-foreground">
+            Review and manage access appeals from blocked regions
+          </p>
         </div>
-
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-4">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Filter by status:</span>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Appeals</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="email_sent">Email Sent</SelectItem>
-                    <SelectItem value="verified">Verified (Ready for Review)</SelectItem>
-                    <SelectItem value="approved">Approved</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {appeals && (
-                <Badge variant="outline" className="ml-auto">
-                  {appeals.length} appeal{appeals.length !== 1 ? "s" : ""}
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Appeals Table */}
-        <Card>
-          <CardContent className="p-0">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-              </div>
-            ) : appeals && appeals.length > 0 ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Applicant</TableHead>
-                    <TableHead>Region</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Submitted</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {appeals.map((appeal) => (
-                    <TableRow key={appeal.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{appeal.full_name}</p>
-                          <p className="text-sm text-muted-foreground">{appeal.email}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Globe className="w-3 h-3" />
-                          {appeal.country_code}
-                        </div>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(appeal.status)}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {format(new Date(appeal.created_at), "MMM d, yyyy")}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openActionDialog(appeal, "approve")}
-                            disabled={appeal.status === "approved" || appeal.status === "rejected"}
-                          >
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                          {appeal.status === "verified" && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-green-600 hover:text-green-700"
-                                onClick={() => openActionDialog(appeal, "approve")}
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-destructive hover:text-destructive"
-                                onClick={() => openActionDialog(appeal, "reject")}
-                              >
-                                <XCircle className="w-4 h-4" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <FileText className="w-12 h-12 mb-4 opacity-50" />
-                <p>No appeals found</p>
-                <p className="text-sm">Try changing the status filter</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-2">
+          <RefreshCw className="w-4 h-4" />
+          Refresh
+        </Button>
       </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="pt-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Filter by status:</span>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Appeals</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="email_sent">Email Sent</SelectItem>
+                  <SelectItem value="verified">Verified (Ready for Review)</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {appeals && (
+              <Badge variant="outline" className="ml-auto">
+                {appeals.length} appeal{appeals.length !== 1 ? "s" : ""}
+              </Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Appeals Table */}
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-primary" />
+            </div>
+          ) : appeals && appeals.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Applicant</TableHead>
+                  <TableHead>Region</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Submitted</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {appeals.map((appeal) => (
+                  <TableRow key={appeal.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{appeal.full_name}</p>
+                        <p className="text-sm text-muted-foreground">{appeal.email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm">
+                        <Globe className="w-3 h-3" />
+                        {appeal.country_code}
+                      </div>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(appeal.status)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {format(new Date(appeal.created_at), "MMM d, yyyy")}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => openActionDialog(appeal, "approve")}
+                          disabled={appeal.status === "approved" || appeal.status === "rejected"}
+                        >
+                          <FileText className="w-4 h-4" />
+                        </Button>
+                        {appeal.status === "verified" && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-green-600 hover:text-green-700"
+                              onClick={() => openActionDialog(appeal, "approve")}
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-destructive hover:text-destructive"
+                              onClick={() => openActionDialog(appeal, "reject")}
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <FileText className="w-12 h-12 mb-4 opacity-50" />
+              <p>No appeals found</p>
+              <p className="text-sm">Try changing the status filter</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Action Dialog */}
       <Dialog open={!!selectedAppeal} onOpenChange={() => closeDialog()}>

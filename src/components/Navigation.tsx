@@ -6,9 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useTheme } from "next-themes";
+import { useAdminRole } from "@/hooks/useAdminRole";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
+  const { data: isAdmin } = useAdminRole();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -41,14 +43,18 @@ const Navigation = () => {
     window.location.href = "/";
   };
 
+  const baseUserLinks = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/bookings", label: "Bookings" },
+    { href: "/availability", label: "Availability" },
+    { href: "/subscription", label: "Subscription" },
+    { href: "/settings", label: "Settings" },
+  ];
+
   const navLinks = user
-    ? [
-        { href: "/dashboard", label: "Dashboard" },
-        { href: "/bookings", label: "Bookings" },
-        { href: "/availability", label: "Availability" },
-        { href: "/subscription", label: "Subscription" },
-        { href: "/settings", label: "Settings" },
-      ]
+    ? isAdmin
+      ? [...baseUserLinks, { href: "/admin", label: "Admin" }]
+      : baseUserLinks
     : [
         { href: "/#features", label: "Features" },
         { href: "/pricing", label: "Pricing" },
