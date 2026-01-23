@@ -320,6 +320,18 @@ const Auth = () => {
                   )}
                 </button>
               </div>
+              
+              {/* Forgot Password Link (Login only) */}
+              {isLogin && (
+                <div className="text-right">
+                  <a
+                    href="/auth/reset-password"
+                    className="text-xs sm:text-sm text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Password Strength (Signup only) */}

@@ -127,9 +127,9 @@ const AdminAppeals = () => {
       case "email_sent":
         return <Badge variant="secondary"><Mail className="w-3 h-3 mr-1" />Email Sent</Badge>;
       case "verified":
-        return <Badge className="bg-blue-500"><CheckCircle className="w-3 h-3 mr-1" />Verified</Badge>;
+        return <Badge className="bg-primary"><CheckCircle className="w-3 h-3 mr-1" />Verified</Badge>;
       case "approved":
-        return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
+        return <Badge className="bg-accent text-accent-foreground"><CheckCircle className="w-3 h-3 mr-1" />Approved</Badge>;
       case "rejected":
         return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Rejected</Badge>;
       default:
@@ -233,7 +233,7 @@ const AdminAppeals = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-green-600 hover:text-green-700"
+                              className="text-primary hover:text-primary"
                               onClick={() => openActionDialog(appeal, "approve")}
                             >
                               <CheckCircle className="w-4 h-4" />
@@ -270,7 +270,7 @@ const AdminAppeals = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {actionType === "approve" ? (
-                <CheckCircle className="w-5 h-5 text-green-500" />
+                <CheckCircle className="w-5 h-5 text-primary" />
               ) : (
                 <XCircle className="w-5 h-5 text-destructive" />
               )}

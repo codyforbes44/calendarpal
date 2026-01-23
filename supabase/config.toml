@@ -23,3 +23,12 @@ verify_jwt = false
 
 [functions.admin-appeals]
 verify_jwt = false
+
+[functions.manage-guest-booking]
+verify_jwt = false
+
+[functions.reset-password]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false

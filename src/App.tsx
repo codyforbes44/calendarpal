@@ -7,10 +7,13 @@ import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminRouteGuard from "@/components/admin/AdminRouteGuard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import GeoAccessGuard from "@/components/GeoAccessGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
+import UpdatePassword from "./pages/UpdatePassword";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import Booking from "./pages/Booking";
@@ -34,7 +37,7 @@ import AdminOverview from "./pages/admin/AdminOverview";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminRoles from "./pages/admin/AdminRoles";
 import AdminBookings from "./pages/admin/AdminBookings";
-import AdminAppeals from "./pages/AdminAppeals";
+import AdminAppeals from "./pages/admin/AdminAppeals";
 import AdminBlockedLogs from "./pages/admin/AdminBlockedLogs";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -64,6 +67,8 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/auth" element={<Auth />} />
+                    <Route path="/auth/reset-password" element={<ResetPassword />} />
+                    <Route path="/auth/update-password" element={<UpdatePassword />} />
                     <Route path="/onboarding" element={<Onboarding />} />
                     <Route path="/booking" element={<Booking />} />
                     <Route path="/book/:username" element={<PublicBooking />} />
@@ -130,8 +135,15 @@ const App = () => (
                     <Route path="/support" element={<Support />} />
                     <Route path="/appeal/verify" element={<AppealVerify />} />
                     
-                    {/* Admin routes with nested layout */}
-                    <Route path="/admin" element={<AdminLayout />}>
+                    {/* Admin routes with nested layout - protected by AdminRouteGuard */}
+                    <Route 
+                      path="/admin" 
+                      element={
+                        <AdminRouteGuard>
+                          <AdminLayout />
+                        </AdminRouteGuard>
+                      }
+                    >
                       <Route index element={<AdminOverview />} />
                       <Route path="users" element={<AdminUsers />} />
                       <Route path="roles" element={<AdminRoles />} />
