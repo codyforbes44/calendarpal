@@ -182,6 +182,51 @@ export type Database = {
         }
         Relationships: []
       }
+      geo_block_appeals: {
+        Row: {
+          country_code: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          reason: string
+          reviewed_at: string | null
+          reviewer_notes: string | null
+          status: string
+          updated_at: string
+          verification_token: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          country_code: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          reason: string
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+          verification_token?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          country_code?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          reason?: string
+          reviewed_at?: string | null
+          reviewer_notes?: string | null
+          status?: string
+          updated_at?: string
+          verification_token?: string | null
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
