@@ -18,12 +18,24 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { User, Link, Copy, Check, ExternalLink, Globe, Share2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { User, Link, Copy, Check, ExternalLink, Globe, Share2, Trash2, Loader2 } from "lucide-react";
 import TimezoneSelector from "@/components/TimezoneSelector";
 import { getLocalTimezone } from "@/lib/timezones";
 import ShareModal from "@/components/ShareModal";
 import { SkeletonProfile } from "@/components/ui/skeleton-card";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const profileSchema = z.object({
   full_name: z.string().min(1, "Full name is required").max(100, "Name is too long"),
@@ -40,13 +52,15 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 const ProfileSettings = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { data: profile, isLoading } = useProfile();
   const updateProfile = useUpdateProfile();
   const checkUsername = useCheckUsernameAvailability();
   const [copied, setCopied] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -106,6 +120,25 @@ const ProfileSettings = () => {
     setCopied(true);
     toast.success("Booking link copied!");
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      const { error } = await supabase.functions.invoke("delete-account");
+      
+      if (error) throw error;
+      
+      toast.success("Account deleted successfully");
+      await signOut();
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Delete account error:", error);
+      toast.error("Failed to delete account. Please try again.");
+    } finally {
+      setDeletingAccount(false);
+      setDeleteConfirmOpen(false);
+    }
   };
 
   if (isLoading) {
@@ -311,6 +344,57 @@ const ProfileSettings = () => {
               </p>
             </Card>
           )}
+
+          {/* Danger Zone - Account Deletion */}
+          <Card className="p-4 sm:p-6 mt-4 sm:mt-6 border-destructive/50">
+            <h2 className="text-base sm:text-lg font-semibold mb-2 text-destructive flex items-center gap-2">
+              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+              Danger Zone
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+              Once you delete your account, there is no going back. This will permanently delete your profile, all your event types, bookings, and availability settings.
+            </p>
+            <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full sm:w-auto">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your account and remove all your data from our servers, including:
+                    <ul className="list-disc list-inside mt-2 space-y-1">
+                      <li>Your profile and settings</li>
+                      <li>All your event types</li>
+                      <li>All your bookings (past and upcoming)</li>
+                      <li>Your availability settings</li>
+                      <li>Any active subscriptions will be cancelled</li>
+                    </ul>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={deletingAccount}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteAccount}
+                    disabled={deletingAccount}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {deletingAccount ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      "Yes, delete my account"
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </Card>
         </div>
       </div>
 
