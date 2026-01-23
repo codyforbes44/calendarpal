@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import GeoAccessGuard from "@/components/GeoAccessGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -41,11 +42,12 @@ const App = () => (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange={false}>
       <QueryClientProvider client={queryClient}>
         <ErrorBoundary>
-          <TooltipProvider>
-            <AuthProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
+          <GeoAccessGuard>
+            <TooltipProvider>
+              <AuthProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/pricing" element={<Pricing />} />
@@ -117,9 +119,10 @@ const App = () => (
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-              </BrowserRouter>
-            </AuthProvider>
-          </TooltipProvider>
+                </BrowserRouter>
+              </AuthProvider>
+            </TooltipProvider>
+          </GeoAccessGuard>
         </ErrorBoundary>
       </QueryClientProvider>
     </ThemeProvider>
