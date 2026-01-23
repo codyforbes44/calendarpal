@@ -53,7 +53,7 @@ const Navigation = () => {
 
   const navLinks = user
     ? isAdmin
-      ? [...baseUserLinks, { href: "/admin", label: "Admin" }]
+      ? [...baseUserLinks, { href: "/admin", label: "Admin" }, { href: "/admin/appeals", label: "Appeals" }]
       : baseUserLinks
     : [
         { href: "/#features", label: "Features" },
