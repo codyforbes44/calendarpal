@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.check-geo-access]
 verify_jwt = false
+
+[functions.geo-appeal]
+verify_jwt = false
