@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useEventTypes } from "@/hooks/useEventTypes";
+import { useSubscription } from "@/hooks/useSubscription";
 import Navigation from "@/components/Navigation";
 import BottomNavigation from "@/components/BottomNavigation";
 import DashboardStats from "@/components/dashboard/DashboardStats";
@@ -15,13 +16,12 @@ import BookingStatsChart from "@/components/dashboard/BookingStatsChart";
 import CalendarHeatmap from "@/components/dashboard/CalendarHeatmap";
 import TodaySchedule from "@/components/dashboard/TodaySchedule";
 import { SkeletonDashboard } from "@/components/ui/skeleton-card";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [hasAvailability, setHasAvailability] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
@@ -29,15 +29,23 @@ const Dashboard = () => {
 
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: eventTypes, isLoading: eventTypesLoading } = useEventTypes();
+  const { refreshSubscription, isPro } = useSubscription();
 
+  // Handle checkout success - refresh subscription and show toast
   useEffect(() => {
     const checkoutStatus = searchParams.get("checkout");
     if (checkoutStatus === "success") {
-      toast.success("Welcome to Pro! Your subscription is now active.");
+      // Refresh subscription status immediately
+      refreshSubscription().then(() => {
+        toast.success("Welcome to Pro! Your subscription is now active.", {
+          duration: 5000,
+        });
+      });
+      // Clean up URL
       searchParams.delete("checkout");
-      setSearchParams(searchParams);
+      setSearchParams(searchParams, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, refreshSubscription]);
 
   useEffect(() => {
     if (user) {
