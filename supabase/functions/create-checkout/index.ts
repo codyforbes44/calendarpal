@@ -71,9 +71,9 @@ serve(async (req) => {
       }
     }
 
-    // Price IDs for Pro plan ($8/month, $7/month billed yearly)
+    // Price IDs for Pro plan ($8/month, $84/year billed annually)
     const monthlyPriceId = "price_1ScPcF2MfT7OzvjxyRfD7Gms";
-    const yearlyPriceId = "price_1ScPcK2MfT7OzvjxvViGFdv8";
+    const yearlyPriceId = "price_1SwR7n2MfT7OzvjxCNUHVqwM";
     const finalPriceId = isYearly ? yearlyPriceId : monthlyPriceId;
     
     logStep("Creating checkout session", { priceId: finalPriceId, isYearly });
