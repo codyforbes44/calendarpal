@@ -7,6 +7,9 @@ interface SubscriptionStatus {
   productId: string | null;
   subscriptionEnd: string | null;
   tier: "free" | "pro";
+  cancelAtPeriodEnd: boolean;
+  priceAmount: number | null;
+  interval: string | null;
 }
 
 export const subscriptionKeys = {
@@ -23,6 +26,9 @@ async function checkSubscriptionStatus(): Promise<SubscriptionStatus> {
       productId: null,
       subscriptionEnd: null,
       tier: "free",
+      cancelAtPeriodEnd: false,
+      priceAmount: null,
+      interval: null,
     };
   }
 
@@ -31,6 +37,9 @@ async function checkSubscriptionStatus(): Promise<SubscriptionStatus> {
     productId: data?.product_id ?? null,
     subscriptionEnd: data?.subscription_end ?? null,
     tier: data?.subscribed ? "pro" : "free",
+    cancelAtPeriodEnd: data?.cancel_at_period_end ?? false,
+    priceAmount: data?.price_amount ?? null,
+    interval: data?.interval ?? null,
   };
 }
 
@@ -44,12 +53,13 @@ export function useSubscription() {
     enabled: !!user,
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true, // Auto-refresh when user returns to tab
     retry: 1,
   });
 
-  const refreshSubscription = () => {
-    queryClient.invalidateQueries({ queryKey: subscriptionKeys.status });
+  const refreshSubscription = async () => {
+    await queryClient.invalidateQueries({ queryKey: subscriptionKeys.status });
+    return queryClient.refetchQueries({ queryKey: subscriptionKeys.status });
   };
 
   return {
@@ -57,20 +67,23 @@ export function useSubscription() {
     isPro: query.data?.subscribed ?? false,
     tier: query.data?.tier ?? "free",
     subscriptionEnd: query.data?.subscriptionEnd,
+    cancelAtPeriodEnd: query.data?.cancelAtPeriodEnd ?? false,
     refreshSubscription,
   };
 }
 
 export function useSubscriptionActions() {
-  const startCheckout = async (priceId: string) => {
+  const queryClient = useQueryClient();
+
+  const startCheckout = async (isYearly: boolean = false) => {
     const { data, error } = await supabase.functions.invoke("create-checkout", {
-      body: { priceId },
+      body: { isYearly },
     });
 
     if (error) throw error;
     
     if (data?.url) {
-      window.open(data.url, "_blank");
+      window.location.href = data.url;
     }
     
     return data;
@@ -82,14 +95,20 @@ export function useSubscriptionActions() {
     if (error) throw error;
     
     if (data?.url) {
-      window.open(data.url, "_blank");
+      window.location.href = data.url;
     }
     
     return data;
   };
 
+  const refreshAfterCheckout = async () => {
+    await queryClient.invalidateQueries({ queryKey: subscriptionKeys.status });
+    return queryClient.refetchQueries({ queryKey: subscriptionKeys.status });
+  };
+
   return {
     startCheckout,
     openCustomerPortal,
+    refreshAfterCheckout,
   };
 }

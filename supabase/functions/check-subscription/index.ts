@@ -1,10 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 const logStep = (step: string, details?: unknown) => {
@@ -41,7 +41,7 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
@@ -72,6 +72,7 @@ serve(async (req) => {
     let currentPeriodStart = null;
     let priceAmount = null;
     let interval = null;
+    let productId = null;
 
     if (hasActiveSub) {
       const subscription = subscriptions.data[0];
@@ -83,11 +84,13 @@ serve(async (req) => {
       const price = await stripe.prices.retrieve(priceId);
       priceAmount = price.unit_amount;
       interval = price.recurring?.interval;
+      productId = price.product;
       
       logStep("Active subscription found", { 
         subscriptionId: subscription.id, 
         endDate: subscriptionEnd,
-        cancelAtPeriodEnd 
+        cancelAtPeriodEnd,
+        productId
       });
     } else {
       logStep("No active subscription found");
@@ -96,6 +99,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       plan: hasActiveSub ? "pro" : "free",
+      product_id: productId,
       subscription_end: subscriptionEnd,
       current_period_start: currentPeriodStart,
       cancel_at_period_end: cancelAtPeriodEnd,
