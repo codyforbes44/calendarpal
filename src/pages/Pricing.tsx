@@ -123,7 +123,7 @@ const Pricing = () => {
   };
 
   const getYearlySavings = (plan: typeof plans[0]) => {
-    if (plan.monthlyPrice === null || plan.yearlyPrice === null) return 0;
+    if (plan.monthlyPrice === null || plan.yearlyPrice === null || plan.monthlyPrice === 0) return 0;
     return Math.round(((plan.monthlyPrice - plan.yearlyPrice) / plan.monthlyPrice) * 100);
   };
 
