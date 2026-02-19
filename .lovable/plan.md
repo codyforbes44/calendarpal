@@ -1,84 +1,79 @@
 
-# Updated OG Images for BookMe.cool
+# Generate & Implement New BookMe.cool OG Images
+
+## What This Does
+
+The plan triggers AI generation of three 1200×630px Open Graph images (Home, Pricing, Support) via the existing `generate-og-images` edge function, then updates `siteConfig.ogImages` in `src/lib/seo-config.ts` to point to the permanent cloud storage URLs — so every page automatically serves the new branded images to social crawlers.
+
+---
 
 ## Current State
 
-The app currently uses three static OG image files that still carry the old CalendarPal identity:
-- `/public/og-home.png` — used on the homepage
-- `/public/og-pricing.png` — used on the Pricing page
-- `/public/og-support.png` — used on the Support page
-
-These are referenced in `src/lib/seo-config.ts` via `siteConfig.ogImages` and consumed by the `<SEO>` component on each page.
-
----
-
-## Approach
-
-AI image generation will be used (via an edge function) to create three new 1200×630px OG images — the standard Open Graph dimensions optimised for Twitter/X, LinkedIn, Facebook, and Slack unfurls — then save them to cloud file storage so they are served from a stable public URL.
-
-### Why an edge function?
-- Image generation produces base64 payloads too large to handle in the browser
-- The edge function generates the image, uploads it to cloud storage, and returns the public URL
-- Generated images are stored permanently and don't need to be regenerated on every page load
-
----
-
-## Visual Design (per image)
-
-All three images share a consistent brand language:
-
-| Element | Value |
+| File | Current OG Image Value |
 |---|---|
-| Background | Dark gradient: `#0F172A` → `#1E1B4B` (slate to indigo-dark) |
-| Accent colour | Indigo `#6366F1` / `#4F46E5` |
-| Logo mark | Calendar icon + "BookMe.cool" wordmark, top-left |
-| Typography | Clean sans-serif, white headings |
-| Dimensions | 1200 × 630 px |
+| `siteConfig.ogImages.home` | `/og-home.png` (old static file) |
+| `siteConfig.ogImages.pricing` | `/og-pricing.png` (old static file) |
+| `siteConfig.ogImages.support` | `/og-support.png` (old static file) |
 
-**Home OG** — Hero layout: bold "Scheduling Made Simple" headline, subtext "Book meetings in seconds. No back-and-forth.", two floating UI cards showing a mock booking confirmation, indigo glow effect bottom-right.
+All three pages (`Index.tsx`, `Pricing.tsx`, `Support.tsx`) already read from `siteConfig.ogImages` and pass the value into the `<SEO>` component — so updating the config is all that's needed on the frontend side.
 
-**Pricing OG** — Three pricing tiers (Free / Pro / Enterprise) shown as cards, "Pro" card highlighted in indigo, headline "Simple, honest pricing."
-
-**Support OG** — FAQ/chat illustration, headline "We're here to help.", subtext "24/7 support for BookMe.cool users."
+The `generate-og-images` edge function and the public `og-images` storage bucket are already in place from the previous implementation.
 
 ---
 
-## Implementation Steps
+## What Will Change
 
-### 1. Create `generate-og-images` edge function
-A new Deno edge function that:
-1. Accepts a `page` parameter (`home`, `pricing`, `support`)
-2. Calls the AI image generation model with a detailed prompt for that page's OG design
-3. Uploads the resulting base64 PNG to cloud storage bucket `og-images`
-4. Returns the public URL
+### Step 1 — Generate the three OG images
+The edge function `generate-og-images` will be called once for each page (`home`, `pricing`, `support`). It:
+1. Sends a detailed visual prompt to `google/gemini-3-pro-image-preview`
+2. Receives a 1200×630px PNG as base64
+3. Uploads it to the `og-images` public storage bucket as `og-home.png`, `og-pricing.png`, `og-support.png`
+4. Returns a permanent public URL
 
-### 2. Create storage bucket
-Add a `og-images` public storage bucket via database migration.
+### Step 2 — Update `src/lib/seo-config.ts`
+Replace the three local path values with the permanent cloud storage URLs:
 
-### 3. Create `OGImageGenerator` admin utility page
-A simple admin-only React component at `/admin/og-images` that:
-- Shows three buttons: "Generate Home OG", "Generate Pricing OG", "Generate Support OG"
-- Calls the edge function for each
-- Displays the generated image for preview
-- On success, shows the public URL to copy
+```ts
+ogImages: {
+  home: "https://<project>.supabase.co/storage/v1/object/public/og-images/og-home.png",
+  pricing: "https://<project>.supabase.co/storage/v1/object/public/og-images/og-pricing.png",
+  support: "https://<project>.supabase.co/storage/v1/object/public/og-images/og-support.png",
+},
+```
 
-### 4. Update `seo-config.ts` after generation
-Once generated, update `siteConfig.ogImages` to point to the cloud storage public URLs instead of the local `/og-*.png` files.
+### Step 3 — Update `index.html` static fallback
+The `<meta property="og:image">` tag in `index.html` is a static fallback for crawlers that don't execute JavaScript. This will be updated to the new home OG image cloud URL.
 
-### 5. Wire up per-page OG images
-Confirm each page already passes the correct `ogImage` prop to `<SEO>`:
-- `Index.tsx` → `siteConfig.ogImages.home` ✓
-- `Pricing.tsx` → needs `ogImage={siteConfig.ogImages.pricing}` confirmed
-- `Support.tsx` → needs `ogImage={siteConfig.ogImages.support}` confirmed
-- `index.html` → update the static fallback tags to use the new URLs
+---
+
+## Visual Design (unchanged from plan)
+
+All three images share BookMe.cool brand identity:
+- Dark gradient background: `#0F172A` → `#1E1B4B`
+- Indigo accent: `#6366F1` / `#4F46E5`  
+- "BookMe.cool" wordmark top-left
+- 1200 × 630 px
+
+**Home** — "Scheduling Made Simple" headline, floating booking UI cards, indigo glow  
+**Pricing** — Three tier cards (Free / Pro highlighted / Enterprise), "Simple, honest pricing."  
+**Support** — Chat bubbles illustration, "We're here to help.", "24/7 support for BookMe.cool users."
+
+---
+
+## Files Modified
+
+| File | Change |
+|---|---|
+| `src/lib/seo-config.ts` | Update `ogImages` to cloud storage URLs |
+| `index.html` | Update static `og:image` fallback meta tag |
+
+No routing, database, or component changes needed — the SEO wiring is already correct.
 
 ---
 
 ## Technical Notes
 
-- The AI model used will be `google/gemini-3-pro-image-preview` for highest quality output suitable for OG images
-- The edge function uses `LOVABLE_API_KEY` (pre-configured, no user input needed)
-- Storage bucket is set to **public read** so OG images are accessible to social media crawlers without authentication
-- OG image dimensions: 1200×630 is the universal standard (Twitter min 600×314, Facebook recommended 1200×630)
-- The admin utility is behind `AdminRouteGuard` so only admins can trigger regeneration
-- After generation, the static `/public/og-*.png` fallback files remain as backups
+- Image generation takes 30–60 seconds per image (AI model limitation); all three will be triggered in sequence
+- The edge function uses `upsert: true` so running it again always overwrites with a fresh version
+- The cloud storage bucket `og-images` is already public, so no auth is needed for crawlers to fetch the URLs
+- After updating `siteConfig`, all three pages automatically serve the correct image via their existing `ogImage={siteConfig.url + siteConfig.ogImages.home/pricing/support}` props
