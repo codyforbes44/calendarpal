@@ -28,7 +28,8 @@ interface BookingActionsDropdownProps {
   guestName: string;
   guestEmail: string;
   eventTitle: string;
-  scheduledDate: string;
+  scheduledDate: string; // formatted for display e.g. "Feb 25, 2026"
+  scheduledDateRaw: string; // ISO format e.g. "2026-02-25" for email/ICS
   startTime: string;
   endTime: string;
   duration: number;
@@ -44,6 +45,7 @@ const BookingActionsDropdown = ({
   guestEmail,
   eventTitle,
   scheduledDate,
+  scheduledDateRaw,
   startTime,
   endTime,
   duration,
@@ -80,7 +82,7 @@ const BookingActionsDropdown = ({
         hostName: hostProfile?.full_name || "Host",
         hostEmail: hostProfile?.email || undefined,
         eventTitle,
-        scheduledDate,
+        scheduledDate: scheduledDateRaw,
         startTime,
         endTime,
         duration,
