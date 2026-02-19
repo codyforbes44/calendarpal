@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Clock, User, CheckCircle2, Calendar } from "lucide-react";
-import { format, parseISO, isAfter, isBefore, addMinutes } from "date-fns";
+import { format, parseISO, isAfter, isBefore } from "date-fns";
 import { cn } from "@/lib/utils";
 
 interface TodayBooking {
@@ -20,6 +20,15 @@ interface TodayBooking {
     color: string | null;
   };
 }
+
+const formatTime = (time: string): string => {
+  if (!time) return "";
+  // Handle "HH:MM:SS" or "HH:MM" format
+  const [hours, minutes] = time.split(":").map(Number);
+  const period = hours >= 12 ? "PM" : "AM";
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
+};
 
 const TodaySchedule = () => {
   const { user } = useAuth();
@@ -159,7 +168,7 @@ const TodaySchedule = () => {
                       </div>
                       <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                         <Clock className="w-3 h-3 shrink-0" />
-                        <span>{booking.start_time} - {booking.end_time}</span>
+                        <span>{formatTime(booking.start_time)} – {formatTime(booking.end_time)}</span>
                       </div>
                     </div>
                     {isCurrent && (

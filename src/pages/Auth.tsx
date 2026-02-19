@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar, Eye, EyeOff, Check, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import SEO from "@/components/SEO";
@@ -187,11 +187,23 @@ const Auth = () => {
       />
       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4 sm:p-6">
         <Card className="w-full max-w-md p-5 sm:p-8 animate-scale-in">
+          {/* Back to home — top of card */}
+          <div className="mb-4 sm:mb-6">
+            <a
+              href="/"
+              className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← Back to home
+            </a>
+          </div>
+
           {/* Logo */}
-          <div className="flex items-center justify-center mb-6 sm:mb-8">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-primary flex items-center justify-center">
-              <Calendar className="w-6 h-6 sm:w-7 sm:h-7 text-primary-foreground" />
-            </div>
+          <div className="flex items-center justify-center mb-5 sm:mb-7">
+            <img
+              src="/bookme-logo.png"
+              alt="BookMe.cool"
+              className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl object-cover shadow-md"
+            />
           </div>
 
           {/* Header */}
@@ -395,15 +407,6 @@ const Auth = () => {
             </button>
           </div>
 
-          {/* Back to Home */}
-          <div className="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-border text-center">
-            <a
-              href="/"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 inline-block"
-            >
-              ← Back to home
-            </a>
-          </div>
         </Card>
       </div>
     </>

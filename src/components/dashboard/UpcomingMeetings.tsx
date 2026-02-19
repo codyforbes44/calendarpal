@@ -3,10 +3,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Video, MoreVertical } from "lucide-react";
+import { Calendar, Clock, Video, ExternalLink } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { SkeletonMeeting } from "@/components/ui/skeleton-card";
 import EmptyState from "@/components/EmptyState";
+import { useNavigate } from "react-router-dom";
 
 interface Booking {
   id: string;
@@ -20,10 +21,19 @@ interface Booking {
   };
 }
 
+const formatTime = (time: string): string => {
+  if (!time) return "";
+  const [hours, minutes] = time.split(":").map(Number);
+  const period = hours >= 12 ? "PM" : "AM";
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
+};
+
 const UpcomingMeetings = () => {
   const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
@@ -79,7 +89,20 @@ const UpcomingMeetings = () => {
 
   return (
     <Card className="p-4 sm:p-6">
-      <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Upcoming Meetings</h2>
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-bold">Upcoming Meetings</h2>
+        {bookings.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-muted-foreground hover:text-foreground gap-1"
+            onClick={() => navigate("/bookings")}
+          >
+            View all
+            <ExternalLink className="w-3 h-3" />
+          </Button>
+        )}
+      </div>
       
       {bookings.length === 0 ? (
         <EmptyState
@@ -93,7 +116,8 @@ const UpcomingMeetings = () => {
           {bookings.map((booking) => (
             <div
               key={booking.id}
-              className="p-3 sm:p-4 border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all"
+              className="p-3 sm:p-4 border border-border rounded-lg hover:bg-muted/50 hover:border-primary/30 transition-all cursor-pointer"
+              onClick={() => navigate("/bookings")}
             >
               <div className="flex items-start justify-between mb-2 sm:mb-3">
                 <div className="min-w-0 flex-1">
@@ -102,9 +126,6 @@ const UpcomingMeetings = () => {
                     with {booking.guest_name}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 sm:h-9 sm:w-9">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
               </div>
               
               <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs sm:text-sm">
@@ -114,7 +135,7 @@ const UpcomingMeetings = () => {
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />
-                  <span>{booking.start_time}</span>
+                  <span>{formatTime(booking.start_time)}</span>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
                   <Video className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground shrink-0" />

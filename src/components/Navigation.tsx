@@ -9,6 +9,7 @@ import { useTheme } from "next-themes";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
+import { useProfile } from "@/hooks/useProfile";
 
 interface NavLink {
   href: string;
@@ -21,9 +22,14 @@ const Navigation = () => {
   const { theme, setTheme } = useTheme();
   const { data: isAdmin } = useAdminRole();
   const { isPro } = useSubscription();
+  const { data: profile } = useProfile();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+
+  const userInitials = profile?.full_name
+    ? profile.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : user?.email?.slice(0, 2).toUpperCase() ?? "U";
 
   useEffect(() => {
     setMounted(true);
@@ -115,13 +121,18 @@ const Navigation = () => {
 
           {/* Desktop auth buttons */}
           {user ? (
-            <Button 
-              variant="ghost" 
-              onClick={handleSignOut}
-              className="hidden md:inline-flex"
-            >
-              Sign Out
-            </Button>
+            <div className="hidden md:flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-semibold text-primary select-none">
+                {userInitials}
+              </div>
+              <Button 
+                variant="ghost" 
+                onClick={handleSignOut}
+                size="sm"
+              >
+                Sign Out
+              </Button>
+            </div>
           ) : (
             <div className="hidden md:flex items-center gap-2">
               <Link to="/auth">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import { pageSEO, siteConfig } from "@/lib/seo-config";
 import { Button } from "@/components/ui/button";
@@ -174,8 +175,8 @@ const Pricing = () => {
       />
       <Navigation />
       
-      <main className="pt-32 pb-20">
-        <div className="container mx-auto px-6">
+      <main className="pt-24 sm:pt-32 pb-16 sm:pb-20">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center max-w-3xl mx-auto mb-8">
             <h1 className="font-display text-4xl md:text-5xl font-bold mb-6">
@@ -204,13 +205,13 @@ const Pricing = () => {
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
             {plans.map((plan) => (
               <Card 
                 key={plan.name}
                 className={`relative flex flex-col ${
                   plan.popular 
-                    ? "border-primary shadow-lg shadow-primary/10 scale-105" 
+                    ? "border-primary shadow-lg shadow-primary/10 md:scale-105" 
                     : "border-border"
                 }`}
               >
@@ -314,12 +315,12 @@ const Pricing = () => {
           </div>
 
           {/* Feature Comparison Table */}
-          <div className="mt-24 max-w-5xl mx-auto">
-            <h2 className="font-display text-2xl font-bold text-center mb-12">
+          <div className="mt-16 sm:mt-24 max-w-5xl mx-auto">
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-center mb-8 sm:mb-12">
               Compare Plans
             </h2>
             
-            <div className="border border-border rounded-lg overflow-hidden">
+            <div className="border border-border rounded-lg overflow-hidden overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
@@ -503,15 +504,15 @@ const Pricing = () => {
           </div>
 
           {/* Competitor Comparison */}
-          <div className="mt-24 max-w-4xl mx-auto">
-            <h2 className="font-display text-2xl font-bold text-center mb-4">
+          <div className="mt-16 sm:mt-24 max-w-4xl mx-auto">
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-center mb-4">
               Why choose BookMe.cool?
             </h2>
-            <p className="text-muted-foreground text-center mb-12">
+            <p className="text-muted-foreground text-center mb-8 sm:mb-12">
               See how we stack up against the competition
             </p>
             
-            <div className="border border-border rounded-lg overflow-hidden">
+            <div className="border border-border rounded-lg overflow-hidden overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
@@ -703,27 +704,7 @@ const Pricing = () => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-12 bg-muted/30">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-muted-foreground">
-              © 2024 CalendarPal. Built with love for better scheduling.
-            </div>
-            <div className="flex gap-6 text-sm">
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                Privacy
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                Terms
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
-                Support
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

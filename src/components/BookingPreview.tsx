@@ -11,35 +11,35 @@ const BookingPreview = () => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
   return (
-    <section className="py-24 bg-muted/30">
-      <div className="container mx-auto px-6">
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <h2 className="text-4xl lg:text-5xl font-bold">
+    <section id="preview" className="py-16 sm:py-24 bg-muted/30">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16 space-y-3 sm:space-y-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
             Book in <span className="text-accent">seconds</span>,
             <br />
             not minutes
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base sm:text-lg text-muted-foreground">
             See how simple and beautiful the booking experience is for your clients.
           </p>
         </div>
 
         <div className="max-w-4xl mx-auto">
           <Card className="overflow-hidden border-border shadow-lg">
-            <div className="grid md:grid-cols-2 divide-x divide-border">
+            <div className="grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
               {/* Left side - Event info */}
-              <div className="p-8 space-y-6">
+              <div className="p-5 sm:p-8 space-y-5 sm:space-y-6">
                 <div>
-                  <h3 className="text-2xl font-bold mb-2">30 Minute Meeting</h3>
-                  <p className="text-muted-foreground">
+                  <h3 className="text-xl sm:text-2xl font-bold mb-2">30 Minute Meeting</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">
                     Let's discuss your project and see how we can help
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-center gap-3 text-sm">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Clock className="w-5 h-5 text-primary" />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
                     <div>
                       <div className="font-medium">30 minutes</div>
@@ -48,8 +48,8 @@ const BookingPreview = () => {
                   </div>
 
                   <div className="flex items-center gap-3 text-sm">
-                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                      <Video className="w-5 h-5 text-accent" />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                      <Video className="w-4 h-4 sm:w-5 sm:h-5 text-accent" />
                     </div>
                     <div>
                       <div className="font-medium">Google Meet</div>
@@ -58,8 +58,8 @@ const BookingPreview = () => {
                   </div>
 
                   <div className="flex items-center gap-3 text-sm">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Calendar className="w-5 h-5 text-primary" />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
                     <div>
                       <div className="font-medium">Monday, Dec 18</div>
@@ -69,23 +69,23 @@ const BookingPreview = () => {
                 </div>
 
                 {selectedTime && (
-                  <div className="pt-6 border-t border-border animate-fade-in">
+                  <div className="pt-4 sm:pt-6 border-t border-border animate-fade-in">
                     <Button variant="hero" size="lg" className="w-full" asChild>
-                      <a href="/booking">Try It Live</a>
+                      <a href="/auth">Get Started Free</a>
                     </Button>
                   </div>
                 )}
               </div>
 
               {/* Right side - Time slots */}
-              <div className="p-8 bg-muted/50">
-                <h4 className="font-semibold mb-4">Select a time</h4>
+              <div className="p-5 sm:p-8 bg-muted/50">
+                <h4 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Select a time</h4>
                 <div className="space-y-2">
                   {timeSlots.map((time) => (
                     <button
                       key={time}
                       onClick={() => setSelectedTime(time)}
-                      className={`w-full px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                      className={`w-full px-4 py-3 rounded-lg text-sm font-medium transition-all touch-target ${
                         selectedTime === time
                           ? "bg-primary text-primary-foreground shadow-md"
                           : "bg-background hover:bg-muted border border-border hover:border-primary/50"
