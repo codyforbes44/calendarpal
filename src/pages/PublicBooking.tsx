@@ -28,6 +28,7 @@ interface Profile {
   username: string | null;
   avatar_url: string | null;
   timezone: string | null;
+  bio: string | null;
 }
 
 interface EventType {
@@ -519,6 +520,13 @@ const PublicBooking = () => {
 
               {/* Username handle */}
               <p className="text-sm text-muted-foreground mb-3">@{profile?.username}</p>
+
+              {/* Bio */}
+              {profile?.bio && (
+                <p className="text-sm text-foreground/80 leading-relaxed mb-3 max-w-xs mx-auto">
+                  {profile.bio}
+                </p>
+              )}
 
               {/* Divider */}
               <div className="w-10 h-px bg-border mx-auto mb-3" />
