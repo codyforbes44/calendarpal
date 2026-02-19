@@ -334,6 +334,7 @@ const Bookings = () => {
                           guestEmail={booking.guest_email}
                           eventTitle={booking.event_types.title}
                           scheduledDate={format(parseISO(booking.scheduled_date), "MMM d, yyyy")}
+                          scheduledDateRaw={booking.scheduled_date}
                           startTime={booking.start_time}
                           endTime={booking.end_time}
                           duration={booking.event_types.duration}
@@ -446,6 +447,7 @@ const Bookings = () => {
                                   guestEmail={child.guest_email}
                                   eventTitle={child.event_types.title}
                                   scheduledDate={format(parseISO(child.scheduled_date), "MMM d, yyyy")}
+                                  scheduledDateRaw={child.scheduled_date}
                                   startTime={child.start_time}
                                   endTime={child.end_time}
                                   duration={child.event_types.duration}
