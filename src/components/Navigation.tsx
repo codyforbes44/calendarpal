@@ -64,7 +64,7 @@ const Navigation = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <Calendar className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-          <span className="text-base md:text-lg">CalendarPal</span>
+          <span className="text-base md:text-lg">BookMe.cool</span>
           {isPro && (
             <Badge variant="secondary" className="hidden sm:flex text-xs gap-1">
               <Crown className="w-3 h-3" />
@@ -148,7 +148,7 @@ const Navigation = () => {
                 <div className="flex items-center justify-between pb-4 border-b">
                   <Link to="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
                     <Calendar className="h-5 w-5 text-primary" />
-                    <span className="font-semibold">CalendarPal</span>
+                    <span className="font-semibold">BookMe.cool</span>
                   </Link>
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">

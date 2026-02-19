@@ -81,7 +81,7 @@ const Pricing = () => {
     }
 
     if (planName === "Enterprise") {
-      window.location.href = "mailto:sales@calendarpal.com?subject=Enterprise%20Plan%20Inquiry";
+      window.location.href = "mailto:sales@bookme.cool?subject=Enterprise%20Plan%20Inquiry";
       return;
     }
 
@@ -130,9 +130,9 @@ const Pricing = () => {
   const pricingSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
-    "name": "CalendarPal Pro",
+    "name": "BookMe.cool Pro",
     "description": "Professional scheduling software with unlimited bookings, calendar sync, and custom branding.",
-    "brand": { "@type": "Brand", "name": "CalendarPal" },
+    "brand": { "@type": "Brand", "name": "BookMe.cool" },
     "offers": [
       {
         "@type": "Offer",
@@ -411,7 +411,7 @@ const Pricing = () => {
                     <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell>Remove CalendarPal branding</TableCell>
+                    <TableCell>Remove BookMe.cool branding</TableCell>
                     <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
                     <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
                     <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
@@ -505,7 +505,7 @@ const Pricing = () => {
           {/* Competitor Comparison */}
           <div className="mt-24 max-w-4xl mx-auto">
             <h2 className="font-display text-2xl font-bold text-center mb-4">
-              Why choose CalendarPal?
+              Why choose BookMe.cool?
             </h2>
             <p className="text-muted-foreground text-center mb-12">
               See how we stack up against the competition
@@ -517,7 +517,7 @@ const Pricing = () => {
                   <TableRow className="bg-muted/50">
                     <TableHead className="w-[200px] font-semibold">Feature</TableHead>
                     <TableHead className="text-center font-semibold bg-primary/10">
-                      <span className="text-primary">CalendarPal</span>
+                      <span className="text-primary">BookMe.cool</span>
                     </TableHead>
                     <TableHead className="text-center font-semibold">Calendly</TableHead>
                     <TableHead className="text-center font-semibold">Cal.com</TableHead>
@@ -601,7 +601,7 @@ const Pricing = () => {
               Loved by thousands of professionals
             </h2>
             <p className="text-muted-foreground text-center mb-12">
-              See what our customers have to say about CalendarPal
+              See what our customers have to say about BookMe.cool
             </p>
             
             <div className="grid md:grid-cols-3 gap-6">
@@ -610,7 +610,7 @@ const Pricing = () => {
                 <CardContent className="pt-6">
                   <Quote className="w-8 h-8 text-primary/30 mb-4" />
                   <p className="text-foreground mb-6">
-                    "CalendarPal has completely transformed how I manage client meetings. The interface is intuitive and the calendar sync works flawlessly. I've saved hours every week."
+                    "BookMe.cool has completely transformed how I manage client meetings. The interface is intuitive and the calendar sync works flawlessly. I've saved hours every week."
                   </p>
                   <div className="flex items-center gap-3">
                     <Avatar>
@@ -629,7 +629,7 @@ const Pricing = () => {
                 <CardContent className="pt-6">
                   <Quote className="w-8 h-8 text-primary/30 mb-4" />
                   <p className="text-foreground mb-6">
-                    "As a freelancer, time is money. CalendarPal eliminated the back-and-forth emails for scheduling. The Pro plan's custom branding makes me look more professional."
+                    "As a freelancer, time is money. BookMe.cool eliminated the back-and-forth emails for scheduling. The Pro plan's custom branding makes me look more professional."
                   </p>
                   <div className="flex items-center gap-3">
                     <Avatar>
@@ -648,7 +648,7 @@ const Pricing = () => {
                 <CardContent className="pt-6">
                   <Quote className="w-8 h-8 text-primary/30 mb-4" />
                   <p className="text-foreground mb-6">
-                    "We switched our entire sales team to CalendarPal. The team scheduling and analytics features have improved our booking rates by 40%. Highly recommend!"
+                    "We switched our entire sales team to BookMe.cool. The team scheduling and analytics features have improved our booking rates by 40%. Highly recommend!"
                   </p>
                   <div className="flex items-center gap-3">
                     <Avatar>
