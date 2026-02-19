@@ -10,6 +10,7 @@ import {
   Settings,
   ChevronDown,
   LogOut,
+  ImageIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -95,6 +96,11 @@ const settingsNavItems: NavItem[] = [
     title: "Settings",
     href: "/admin/settings",
     icon: Settings,
+  },
+  {
+    title: "OG Images",
+    href: "/admin/og-images",
+    icon: ImageIcon,
   },
 ];
 

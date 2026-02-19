@@ -41,6 +41,7 @@ import AdminAppeals from "./pages/admin/AdminAppeals";
 import AdminBlockedLogs from "./pages/admin/AdminBlockedLogs";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminOGImages from "./pages/admin/AdminOGImages";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -152,6 +153,7 @@ const App = () => (
                       <Route path="logs" element={<AdminBlockedLogs />} />
                       <Route path="analytics" element={<AdminAnalytics />} />
                       <Route path="settings" element={<AdminSettings />} />
+                      <Route path="og-images" element={<AdminOGImages />} />
                     </Route>
 
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
