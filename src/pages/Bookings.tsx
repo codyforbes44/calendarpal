@@ -31,11 +31,20 @@ import EmptyState from "@/components/EmptyState";
 import { toast } from "sonner";
 
 type ViewMode = "list" | "calendar";
+type StatusFilter = "all" | "confirmed" | "completed" | "cancelled";
+
+const STATUS_TABS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "confirmed", label: "Upcoming" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
+];
 
 const Bookings = () => {
   const { data: bookings = [], isLoading, refetch } = useBookings();
   const updateStatus = useUpdateBookingStatus();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [rescheduleBooking, setRescheduleBooking] = useState<Booking | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
@@ -62,20 +71,32 @@ const Bookings = () => {
 
   const { parentBookings, childBookingsMap } = groupedBookings();
 
-  const filteredBookings = parentBookings.filter(
-    (booking) =>
+  const filteredBookings = parentBookings.filter((booking) => {
+    const matchesSearch =
       booking.guest_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.guest_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.event_types.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      booking.event_types.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   // For calendar view, include all bookings (not just parents)
-  const allFilteredBookings = bookings.filter(
-    (booking) =>
+  const allFilteredBookings = bookings.filter((booking) => {
+    const matchesSearch =
       booking.guest_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.guest_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.event_types.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+      booking.event_types.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  // Count per status for tab badges
+  const statusCounts: Record<StatusFilter, number> = {
+    all: parentBookings.length,
+    confirmed: parentBookings.filter((b) => b.status === "confirmed").length,
+    completed: parentBookings.filter((b) => b.status === "completed").length,
+    cancelled: parentBookings.filter((b) => b.status === "cancelled").length,
+  };
 
   const toggleSeriesExpanded = (bookingId: string) => {
     setExpandedSeries((prev) => {
@@ -201,17 +222,45 @@ const Bookings = () => {
           </div>
         </div>
 
-        <Card className="p-4 sm:p-6 mb-4 sm:mb-6">
+
+        {/* Search */}
+        <Card className="p-3 sm:p-4 mb-3 sm:mb-4">
           <div className="flex items-center gap-2">
-            <Search className="w-5 h-5 text-muted-foreground shrink-0" />
+            <Search className="w-4 h-4 text-muted-foreground shrink-0" />
             <Input
               placeholder="Search by name, email, or event..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="border-0 focus-visible:ring-0"
+              className="border-0 focus-visible:ring-0 h-8 text-sm"
             />
           </div>
         </Card>
+
+        {/* Status filter tabs */}
+        <div className="flex gap-1.5 sm:gap-2 mb-4 sm:mb-6 overflow-x-auto pb-1 scrollbar-hide">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => setStatusFilter(tab.value)}
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all border ${
+                statusFilter === tab.value
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-card text-muted-foreground border-border hover:border-primary/40 hover:text-foreground"
+              }`}
+            >
+              {tab.label}
+              <span
+                className={`inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full text-[10px] font-semibold px-1 ${
+                  statusFilter === tab.value
+                    ? "bg-primary-foreground/20 text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
+                {statusCounts[tab.value]}
+              </span>
+            </button>
+          ))}
+        </div>
 
         {viewMode === "calendar" ? (
           <BookingsCalendarView
@@ -224,15 +273,17 @@ const Bookings = () => {
           <Card className="p-6">
             <EmptyState
               icon={Calendar}
-              title={searchTerm ? "No bookings found" : "No bookings yet"}
+              title={searchTerm || statusFilter !== "all" ? "No bookings found" : "No bookings yet"}
               description={
                 searchTerm
                   ? "Try adjusting your search terms"
+                  : statusFilter !== "all"
+                  ? `You have no ${statusFilter} bookings`
                   : "Your scheduled meetings will appear here when someone books with you."
               }
-              actionLabel={searchTerm ? undefined : "Share Your Booking Link"}
-              actionHref={searchTerm ? undefined : "/settings"}
-              tip={searchTerm ? undefined : "Share your booking page link to start receiving bookings"}
+              actionLabel={searchTerm || statusFilter !== "all" ? undefined : "Share Your Booking Link"}
+              actionHref={searchTerm || statusFilter !== "all" ? undefined : "/settings"}
+              tip={searchTerm || statusFilter !== "all" ? undefined : "Share your booking page link to start receiving bookings"}
             />
           </Card>
         ) : (
