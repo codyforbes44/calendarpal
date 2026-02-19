@@ -36,31 +36,31 @@ const features = [
 
 const Features = () => {
   return (
-    <section className="py-24 bg-background">
-      <div className="container mx-auto px-6">
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <h2 className="text-4xl lg:text-5xl font-bold">
+    <section className="py-16 sm:py-24 bg-background">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16 space-y-3 sm:space-y-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
             Everything you need,
             <br />
             <span className="text-primary">nothing you don't</span>
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-base sm:text-lg text-muted-foreground">
             Powerful features that make scheduling effortless, wrapped in an interface you'll love to use.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
           {features.map((feature, index) => (
             <Card 
               key={index} 
-              className="p-8 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border bg-card group"
+              className="p-5 sm:p-8 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border bg-card group"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center mb-6 group-hover:shadow-glow transition-shadow">
-                <feature.icon className="w-6 h-6 text-primary-foreground" />
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-primary flex items-center justify-center mb-4 sm:mb-6 group-hover:shadow-glow transition-shadow">
+                <feature.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-              <p className="text-muted-foreground leading-relaxed">
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">{feature.title}</h3>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                 {feature.description}
               </p>
             </Card>

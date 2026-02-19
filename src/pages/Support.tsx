@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import Footer from "@/components/Footer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,54 +85,54 @@ const Support = () => {
       />
       <Navigation />
       
-      <main className="container mx-auto px-6 py-24">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold mb-4">How can we help?</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 sm:pb-20">
+        <div className="text-center mb-10 sm:mb-16">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4">How can we help?</h1>
+          <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
             Find answers to common questions or reach out to our team for personalized support.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 mb-16">
-          <Card className="text-center hover:shadow-lg transition-shadow">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 mb-12 sm:mb-16">
+          <Card className="text-center hover:shadow-lg transition-shadow min-h-[130px] flex flex-col">
             <CardHeader>
-              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 touch-target">
                 <FileText className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle>Documentation</CardTitle>
+              <CardTitle className="text-lg">Documentation</CardTitle>
               <CardDescription>Browse our guides and tutorials</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1">
               <p className="text-sm text-muted-foreground">
                 Learn how to get the most out of BookMe.cool with step-by-step guides.
               </p>
             </CardContent>
           </Card>
 
-          <Card className="text-center hover:shadow-lg transition-shadow">
+          <Card className="text-center hover:shadow-lg transition-shadow min-h-[130px] flex flex-col">
             <CardHeader>
-              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 touch-target">
                 <MessageSquare className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle>FAQ</CardTitle>
+              <CardTitle className="text-lg">FAQ</CardTitle>
               <CardDescription>Quick answers to common questions</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1">
               <p className="text-sm text-muted-foreground">
                 Find instant answers to frequently asked questions below.
               </p>
             </CardContent>
           </Card>
 
-          <Card className="text-center hover:shadow-lg transition-shadow">
+          <Card className="text-center hover:shadow-lg transition-shadow min-h-[130px] flex flex-col sm:col-span-2 lg:col-span-1">
             <CardHeader>
-              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 touch-target">
                 <Lightbulb className="h-6 w-6 text-primary" />
               </div>
-              <CardTitle>Feature Requests</CardTitle>
+              <CardTitle className="text-lg">Feature Requests</CardTitle>
               <CardDescription>Share your ideas with us</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1">
               <p className="text-sm text-muted-foreground">
                 Have a suggestion? We'd love to hear how we can improve BookMe.cool.
               </p>
@@ -207,11 +208,7 @@ const Support = () => {
         </div>
       </main>
 
-      <footer className="border-t border-border py-8 bg-muted/30">
-        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © 2025 BookMe.cool. All rights reserved.
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
