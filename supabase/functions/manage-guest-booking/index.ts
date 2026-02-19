@@ -58,12 +58,6 @@ serve(async (req: Request) => {
           title,
           duration,
           color
-        ),
-        profiles:host_user_id (
-          full_name,
-          email,
-          username,
-          timezone
         )
       `)
       .eq("id", bookingId)
@@ -77,6 +71,16 @@ serve(async (req: Request) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
       );
     }
+
+    // Fetch host profile separately (no FK relationship in schema)
+    const { data: hostProfile } = await supabase
+      .from("profiles")
+      .select("full_name, email, username, timezone")
+      .eq("user_id", booking.host_user_id)
+      .single();
+
+    // Attach profile to booking object for use in email payloads
+    booking.profiles = hostProfile;
 
     logStep("Booking validated", { bookingId: booking.id, status: booking.status });
 
