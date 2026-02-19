@@ -37,9 +37,7 @@ interface BookingDetails {
     color: string;
     location_type: string;
   };
-  profiles: {
-    full_name: string;
-  };
+  host_full_name: string | null;
 }
 
 const GuestBookingManage = () => {
@@ -97,9 +95,6 @@ const GuestBookingManage = () => {
             duration,
             color,
             location_type
-          ),
-          profiles:host_user_id (
-            full_name
           )
         `)
         .eq("id", bookingId)
@@ -113,7 +108,14 @@ const GuestBookingManage = () => {
         return;
       }
 
-      setBooking(data as any);
+      // Fetch host profile separately (no FK constraint between bookings.host_user_id and profiles.user_id)
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", data.host_user_id)
+        .maybeSingle();
+
+      setBooking({ ...(data as any), host_full_name: profileData?.full_name ?? null });
     } catch (error) {
       console.error("Error loading booking:", error);
       toast.error("Failed to load booking");
@@ -250,7 +252,7 @@ const GuestBookingManage = () => {
           </div>
           <h1 className="text-2xl font-bold mb-2">Booking Cancelled</h1>
           <p className="text-muted-foreground">
-            Your meeting with {(booking.profiles as any)?.full_name} has been cancelled.
+            Your meeting with {booking.host_full_name} has been cancelled.
           </p>
         </Card>
       </div>
@@ -377,7 +379,7 @@ const GuestBookingManage = () => {
             <div>
               <div className="font-semibold">{booking.event_types.title}</div>
               <div className="text-sm text-muted-foreground">
-                with {(booking.profiles as any)?.full_name}
+                with {booking.host_full_name}
               </div>
             </div>
           </div>
@@ -428,7 +430,7 @@ const GuestBookingManage = () => {
             <AlertDialogTitle>Cancel Booking?</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to cancel your {booking.event_types.title} with{" "}
-              {(booking.profiles as any)?.full_name} on{" "}
+              {booking.host_full_name} on{" "}
               {format(parseISO(booking.scheduled_date), "MMMM d, yyyy")} at{" "}
               {formatTime(booking.start_time)}?
             </AlertDialogDescription>
