@@ -192,7 +192,7 @@ export function AdminSidebar() {
           {!isCollapsed && (
             <div className="flex flex-col">
               <span className="text-sm font-semibold">Admin Portal</span>
-              <span className="text-xs text-muted-foreground">CalendarPal</span>
+              <span className="text-xs text-muted-foreground">BookMe.cool</span>
             </div>
           )}
         </div>

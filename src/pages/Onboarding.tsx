@@ -158,7 +158,7 @@ const Onboarding = () => {
         if (availError) throw availError;
       }
 
-      toast.success("You're all set! Welcome to CalendarPal 🎉");
+      toast.success("You're all set! Welcome to BookMe.cool 🎉");
       navigate("/dashboard");
     } catch (error: any) {
       toast.error(error.message || "Failed to complete setup");
@@ -178,8 +178,8 @@ const Onboarding = () => {
   return (
     <>
       <SEO
-        title={pageSEO.onboarding?.title || "Get Started | CalendarPal"}
-        description={pageSEO.onboarding?.description || "Set up your CalendarPal account in minutes"}
+        title={pageSEO.onboarding?.title || "Get Started | BookMe.cool"}
+        description={pageSEO.onboarding?.description || "Set up your BookMe.cool account in minutes"}
         canonical={`${siteConfig.url}/onboarding`}
       />
       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-6">
@@ -252,7 +252,7 @@ const Onboarding = () => {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Your booking URL: calendarpal.com/book/{username || "username"}
+                    Your booking URL: bookme.cool/book/{username || "username"}
                   </p>
                 </div>
               </div>

@@ -102,7 +102,7 @@ const Privacy = () => {
 
       <footer className="border-t border-border py-8 bg-muted/30">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © 2025 CalendarPal. All rights reserved.
+          © 2025 BookMe.cool. All rights reserved.
         </div>
       </footer>
     </div>

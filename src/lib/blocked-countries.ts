@@ -37,9 +37,9 @@ export const BLOCKED_COUNTRY_CODES = BLOCKED_COUNTRIES.map(c => c.code);
 // Messages shown to blocked users
 export const BLOCK_MESSAGES = {
   title: 'Service Unavailable in Your Region',
-  description: 'CalendarPal is not available in your region due to regulatory requirements and compliance policies.',
+  description: 'BookMe.cool is not available in your region due to regulatory requirements and compliance policies.',
   support: 'If you believe this is an error or you are traveling, please contact our support team for assistance.',
-  contactEmail: 'support@calendarpal.com',
+  contactEmail: 'support@bookme.cool',
 } as const;
 
 // Check if a country code is blocked

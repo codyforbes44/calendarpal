@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "CalendarPal <contact@notifications.3bi.io>";
+const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "BookMe.cool <contact@notifications.3bi.io>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -173,17 +173,17 @@ function generateICS(booking: EmailRequest["booking"], method: "REQUEST" | "CANC
 
   const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//CalendarPal//Booking//EN
+PRODID:-//BookMe.cool//Booking//EN
 CALSCALE:GREGORIAN
 METHOD:${method}
 BEGIN:VEVENT
-UID:booking-${booking.id}@calendarpal.com
+UID:booking-${booking.id}@bookme.cool
 DTSTAMP:${timestamp}
 DTSTART:${startDateTime}
 DTEND:${endDateTime}
 SUMMARY:${booking.eventTitle} with ${booking.guestName}
-DESCRIPTION:Meeting booked via CalendarPal.${booking.meetingLink ? `\\n\\nMeeting Link: ${booking.meetingLink}` : ""}
-ORGANIZER;CN=${booking.hostName}:mailto:${booking.hostEmail || "noreply@calendarpal.com"}
+DESCRIPTION:Meeting booked via BookMe.cool.${booking.meetingLink ? `\\n\\nMeeting Link: ${booking.meetingLink}` : ""}
+ORGANIZER;CN=${booking.hostName}:mailto:${booking.hostEmail || "noreply@bookme.cool"}
 ATTENDEE;CN=${booking.guestName};RSVP=TRUE:mailto:${booking.guestEmail}
 STATUS:${method === "CANCEL" ? "CANCELLED" : "CONFIRMED"}
 SEQUENCE:${method === "CANCEL" ? "1" : "0"}
@@ -273,7 +273,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
           
           <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-            Powered by CalendarPal - Scheduling Made Simple
+            Powered by BookMe.cool - Scheduling Made Simple
           </p>
         </div>
       `,
@@ -332,7 +332,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              Powered by CalendarPal - Scheduling Made Simple
+              Powered by BookMe.cool - Scheduling Made Simple
             </p>
           </div>
         `,
@@ -406,7 +406,7 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
           
           <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-            Powered by CalendarPal - Scheduling Made Simple
+              Powered by BookMe.cool - Scheduling Made Simple
           </p>
         </div>
       `,
@@ -458,7 +458,7 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              Powered by CalendarPal - Scheduling Made Simple
+              Powered by BookMe.cool - Scheduling Made Simple
             </p>
           </div>
         `,
@@ -553,7 +553,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
           
           <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-            Powered by CalendarPal - Scheduling Made Simple
+              Powered by BookMe.cool - Scheduling Made Simple
           </p>
         </div>
       `,
@@ -615,7 +615,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              Powered by CalendarPal - Scheduling Made Simple
+              Powered by BookMe.cool - Scheduling Made Simple
             </p>
           </div>
         `,

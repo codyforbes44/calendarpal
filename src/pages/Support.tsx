@@ -50,8 +50,8 @@ const Support = () => {
       answer: "Go to the Subscription page in your dashboard and click 'Manage Subscription'. This will open the billing portal where you can cancel, update payment methods, or view invoices."
     },
     {
-      question: "What timezone does CalendarPal use?",
-      answer: "CalendarPal automatically detects and displays times in each user's local timezone. When a guest books, they see times in their timezone while you see them in yours. All conversions are handled automatically."
+      question: "What timezone does BookMe.cool use?",
+      answer: "BookMe.cool automatically detects and displays times in each user's local timezone. When a guest books, they see times in their timezone while you see them in yours. All conversions are handled automatically."
     },
     {
       question: "Is my data secure?",
@@ -103,7 +103,7 @@ const Support = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Learn how to get the most out of CalendarPal with step-by-step guides.
+                Learn how to get the most out of BookMe.cool with step-by-step guides.
               </p>
             </CardContent>
           </Card>
@@ -133,7 +133,7 @@ const Support = () => {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Have a suggestion? We'd love to hear how we can improve CalendarPal.
+                Have a suggestion? We'd love to hear how we can improve BookMe.cool.
               </p>
             </CardContent>
           </Card>
@@ -209,7 +209,7 @@ const Support = () => {
 
       <footer className="border-t border-border py-8 bg-muted/30">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © 2025 CalendarPal. All rights reserved.
+          © 2025 BookMe.cool. All rights reserved.
         </div>
       </footer>
     </div>

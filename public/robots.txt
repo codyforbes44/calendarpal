@@ -21,4 +21,4 @@ Disallow: /subscription
 Disallow: /booking/*/manage
 
 # Sitemap
-Sitemap: https://calendarpal.com/sitemap.xml
+Sitemap: https://bookme.cool/sitemap.xml
