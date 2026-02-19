@@ -1,10 +1,23 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
+import { Loader2, Send } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -35,7 +48,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
-import { Search, Calendar, ChevronLeft, ChevronRight, Clock, User, Mail, CheckCircle, XCircle, MinusCircle, AlertCircle } from "lucide-react";
+import { Search, Calendar, ChevronLeft, ChevronRight, Clock, User, Mail, CheckCircle, XCircle, MinusCircle } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -87,6 +100,62 @@ const AdminBookings = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [page, setPage] = useState(0);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [isSendingBulk, setIsSendingBulk] = useState(false);
+  const queryClient = useQueryClient();
+
+  const { data: pendingCount } = useQuery({
+    queryKey: ["admin-pending-emails-count"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .eq("email_status", "not_sent")
+        .eq("status", "confirmed");
+      return count || 0;
+    },
+  });
+
+  const handleBulkSend = async () => {
+    setIsSendingBulk(true);
+    toast({
+      title: "Sending emails…",
+      description: `Processing ${pendingCount} pending bookings. This may take a minute.`,
+    });
+
+    try {
+      const { data, error } = await supabase.functions.invoke("bulk-send-emails");
+
+      if (error) throw error;
+
+      const { sent, failed, errors } = data as { sent: number; failed: number; errors: string[] };
+
+      if (failed === 0) {
+        toast({
+          title: "All emails sent!",
+          description: `Successfully sent ${sent} confirmation email${sent !== 1 ? "s" : ""}.`,
+        });
+      } else {
+        toast({
+          title: `Completed with ${failed} failure${failed !== 1 ? "s" : ""}`,
+          description: `${sent} sent, ${failed} failed. Check console for details.`,
+          variant: "destructive",
+        });
+        console.error("Bulk send errors:", errors);
+      }
+
+      // Refresh both queries
+      queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-pending-emails-count"] });
+    } catch (err: any) {
+      toast({
+        title: "Bulk send failed",
+        description: err.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingBulk(false);
+    }
+  };
 
   const { data: bookingsData, isLoading } = useQuery({
     queryKey: ["admin-bookings", searchQuery, statusFilter, page],
@@ -156,11 +225,49 @@ const AdminBookings = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Booking Management</h1>
-        <p className="text-muted-foreground">
-          View and manage all platform bookings.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Booking Management</h1>
+          <p className="text-muted-foreground">
+            View and manage all platform bookings.
+          </p>
+        </div>
+
+        {!!pendingCount && pendingCount > 0 && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="default" disabled={isSendingBulk} className="shrink-0">
+                {isSendingBulk ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Sending…
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Send Pending Emails ({pendingCount})
+                  </>
+                )}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Send confirmation emails?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will send booking confirmation emails to the guests and hosts of{" "}
+                  <strong>{pendingCount} confirmed booking{pendingCount !== 1 ? "s" : ""}</strong> that haven't received
+                  one yet. Emails are sent one at a time. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleBulkSend}>
+                  Send {pendingCount} email{pendingCount !== 1 ? "s" : ""}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
 
       <Card>
