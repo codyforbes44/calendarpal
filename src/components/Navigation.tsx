@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Menu, Calendar, Sun, Moon, X, Shield, Crown } from "lucide-react";
+import { Menu, Sun, Moon, X, Shield, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -63,7 +63,7 @@ const Navigation = () => {
       <div className="container flex h-14 md:h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-semibold">
-          <Calendar className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+          <img src="/bookme-logo.png" alt="BookMe.cool" className="h-7 w-7 md:h-8 md:w-8 rounded-lg object-cover" />
           <span className="text-base md:text-lg">BookMe.cool</span>
           {isPro && (
             <Badge variant="secondary" className="hidden sm:flex text-xs gap-1">
@@ -147,7 +147,7 @@ const Navigation = () => {
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between pb-4 border-b">
                   <Link to="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-                    <Calendar className="h-5 w-5 text-primary" />
+                    <img src="/bookme-logo.png" alt="BookMe.cool" className="h-6 w-6 rounded-lg object-cover" />
                     <span className="font-semibold">BookMe.cool</span>
                   </Link>
                   <SheetClose asChild>
