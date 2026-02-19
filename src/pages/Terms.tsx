@@ -22,14 +22,14 @@ const Terms = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
             <p className="text-muted-foreground">
-              By accessing or using BookMe.cool's services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
+              By accessing or using BookMe.Bet's services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
             <p className="text-muted-foreground">
-              BookMe.cool provides an online scheduling platform that allows users to create booking pages, manage availability, and schedule meetings with others. We reserve the right to modify, suspend, or discontinue any aspect of the service at any time.
+              BookMe.Bet provides an online scheduling platform that allows users to create booking pages, manage availability, and schedule meetings with others. We reserve the right to modify, suspend, or discontinue any aspect of the service at any time.
             </p>
           </section>
 
@@ -46,7 +46,7 @@ const Terms = () => {
 
           <section>
             <h2 className="text-2xl font-semibold mb-4">4. Acceptable Use</h2>
-            <p className="text-muted-foreground mb-4">You agree not to use BookMe.cool to:</p>
+            <p className="text-muted-foreground mb-4">You agree not to use BookMe.Bet to:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
               <li>Violate any applicable laws or regulations</li>
               <li>Infringe on the rights of others</li>
@@ -72,14 +72,14 @@ const Terms = () => {
           <section>
             <h2 className="text-2xl font-semibold mb-4">6. Intellectual Property</h2>
             <p className="text-muted-foreground">
-              BookMe.cool and its original content, features, and functionality are owned by BookMe.cool and are protected by international copyright, trademark, and other intellectual property laws. You retain ownership of content you create and upload to the platform.
+              BookMe.Bet and its original content, features, and functionality are owned by BookMe.Bet and are protected by international copyright, trademark, and other intellectual property laws. You retain ownership of content you create and upload to the platform.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-semibold mb-4">7. Limitation of Liability</h2>
             <p className="text-muted-foreground">
-              BookMe.cool shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service. Our total liability shall not exceed the amount you paid us in the twelve months preceding the claim.
+              BookMe.Bet shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service. Our total liability shall not exceed the amount you paid us in the twelve months preceding the claim.
             </p>
           </section>
 
