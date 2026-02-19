@@ -183,6 +183,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "bookings_host_user_id_profiles_fkey"
+            columns: ["host_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "bookings_parent_booking_id_fkey"
             columns: ["parent_booking_id"]
             isOneToOne: false

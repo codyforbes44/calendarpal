@@ -95,6 +95,9 @@ const GuestBookingManage = () => {
             duration,
             color,
             location_type
+          ),
+          profiles:host_user_id (
+            full_name
           )
         `)
         .eq("id", bookingId)
@@ -108,13 +111,7 @@ const GuestBookingManage = () => {
         return;
       }
 
-      // Fetch host profile separately (no FK constraint between bookings.host_user_id and profiles.user_id)
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("user_id", data.host_user_id)
-        .maybeSingle();
-
+      const profileData = data.profiles as any;
       setBooking({ ...(data as any), host_full_name: profileData?.full_name ?? null });
     } catch (error) {
       console.error("Error loading booking:", error);
