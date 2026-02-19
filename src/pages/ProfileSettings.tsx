@@ -33,6 +33,7 @@ import {
 import { User, Link, Copy, Check, ExternalLink, Globe, Share2, Trash2, Loader2 } from "lucide-react";
 import TimezoneSelector from "@/components/TimezoneSelector";
 import { getLocalTimezone } from "@/lib/timezones";
+import AvatarUpload from "@/components/profile/AvatarUpload";
 import ShareModal from "@/components/ShareModal";
 import { SkeletonProfile } from "@/components/ui/skeleton-card";
 import { toast } from "sonner";
@@ -63,6 +64,7 @@ const ProfileSettings = () => {
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -83,6 +85,7 @@ const ProfileSettings = () => {
         timezone: profile.timezone || getLocalTimezone(),
         bio: profile.bio || "",
       });
+      setAvatarUrl(profile.avatar_url || null);
     }
   }, [profile, form]);
 
@@ -192,6 +195,16 @@ const ProfileSettings = () => {
                 </h2>
 
                 <div className="space-y-4">
+                  {/* Avatar Upload */}
+                  <div className="pb-2 border-b border-border">
+                    <p className="text-sm font-medium mb-3">Profile Photo</p>
+                    <AvatarUpload
+                      currentUrl={avatarUrl}
+                      fullName={form.watch("full_name")}
+                      onUpload={setAvatarUrl}
+                    />
+                  </div>
+
                   <FormField
                     control={form.control}
                     name="full_name"
@@ -231,7 +244,7 @@ const ProfileSettings = () => {
                             {!checkUsername.isPending && field.value && field.value.length >= 3 && usernameAvailable !== null && (
                               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                                 {usernameAvailable ? (
-                                  <Check className="w-4 h-4 text-green-500" />
+                                  <Check className="w-4 h-4 text-green-600" />
                                 ) : (
                                   <span className="text-xs text-destructive">Taken</span>
                                 )}
