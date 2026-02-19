@@ -27,9 +27,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
-import { Search, Calendar, ChevronLeft, ChevronRight, Clock, User, Mail } from "lucide-react";
+import { Search, Calendar, ChevronLeft, ChevronRight, Clock, User, Mail, CheckCircle, XCircle, MinusCircle, AlertCircle } from "lucide-react";
 
 interface Booking {
   id: string;
@@ -42,6 +48,9 @@ interface Booking {
   status: string;
   meeting_link: string | null;
   created_at: string;
+  email_status: string | null;
+  email_sent_at: string | null;
+  last_email_type: string | null;
   event_types: {
     title: string;
     duration: number;
@@ -59,6 +68,18 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-red-500/10 text-red-600 border-red-200",
   completed: "bg-blue-500/10 text-blue-600 border-blue-200",
   pending: "bg-yellow-500/10 text-yellow-600 border-yellow-200",
+};
+
+const emailStatusConfig: Record<string, { label: string; icon: React.ElementType; className: string }> = {
+  sent: { label: "Sent", icon: CheckCircle, className: "bg-green-500/10 text-green-600 border-green-200" },
+  failed: { label: "Failed", icon: XCircle, className: "bg-red-500/10 text-red-600 border-red-200" },
+  not_sent: { label: "Not Sent", icon: MinusCircle, className: "bg-muted text-muted-foreground border-border" },
+};
+
+const emailTypeLabels: Record<string, string> = {
+  confirmation: "Booking confirmed",
+  cancellation: "Cancellation notice",
+  reschedule: "Reschedule notice",
 };
 
 const AdminBookings = () => {
@@ -85,6 +106,9 @@ const AdminBookings = () => {
           meeting_link,
           created_at,
           host_user_id,
+          email_status,
+          email_sent_at,
+          last_email_type,
           event_types (
             title,
             duration
@@ -196,14 +220,15 @@ const AdminBookings = () => {
                       <TableHead>Host</TableHead>
                       <TableHead>Date & Time</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Email</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {bookingsData?.bookings?.length === 0 ? (
+                     {bookingsData?.bookings?.length === 0 ? (
                       <TableRow>
                         <TableCell
-                          colSpan={6}
+                          colSpan={7}
                           className="text-center py-8 text-muted-foreground"
                         >
                           No bookings found
@@ -253,6 +278,36 @@ const AdminBookings = () => {
                             >
                               {booking.status}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {(() => {
+                              const key = booking.email_status || "not_sent";
+                              const cfg = emailStatusConfig[key] || emailStatusConfig.not_sent;
+                              const Icon = cfg.icon;
+                              const typeLabel = booking.last_email_type ? emailTypeLabels[booking.last_email_type] || booking.last_email_type : null;
+                              const sentAt = booking.email_sent_at ? format(new Date(booking.email_sent_at), "MMM d, HH:mm") : null;
+                              return (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Badge variant="outline" className={`gap-1 cursor-default ${cfg.className}`}>
+                                        <Icon className="h-3 w-3" />
+                                        {cfg.label}
+                                      </Badge>
+                                    </TooltipTrigger>
+                                    {(typeLabel || sentAt) && (
+                                      <TooltipContent>
+                                        <p className="text-xs">
+                                          {typeLabel && <span className="capitalize">{typeLabel}</span>}
+                                          {typeLabel && sentAt && " · "}
+                                          {sentAt && <span>{sentAt}</span>}
+                                        </p>
+                                      </TooltipContent>
+                                    )}
+                                  </Tooltip>
+                                </TooltipProvider>
+                              );
+                            })()}
                           </TableCell>
                           <TableCell className="text-right">
                             <Button
@@ -395,6 +450,32 @@ const AdminBookings = () => {
                   {selectedBooking.host_profile?.full_name || "Unknown"} (
                   {selectedBooking.host_profile?.email})
                 </p>
+              </div>
+
+              <div className="pt-2 border-t">
+                <p className="text-sm font-medium mb-2">Email Delivery</p>
+                {(() => {
+                  const key = selectedBooking.email_status || "not_sent";
+                  const cfg = emailStatusConfig[key] || emailStatusConfig.not_sent;
+                  const Icon = cfg.icon;
+                  const typeLabel = selectedBooking.last_email_type ? emailTypeLabels[selectedBooking.last_email_type] || selectedBooking.last_email_type : null;
+                  return (
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className={`gap-1 ${cfg.className}`}>
+                        <Icon className="h-3 w-3" />
+                        {cfg.label}
+                      </Badge>
+                      <div className="text-sm text-muted-foreground">
+                        {typeLabel && <span className="capitalize">{typeLabel}</span>}
+                        {typeLabel && selectedBooking.email_sent_at && " · "}
+                        {selectedBooking.email_sent_at && (
+                          <span>{format(new Date(selectedBooking.email_sent_at), "PPP 'at' HH:mm")}</span>
+                        )}
+                        {!typeLabel && !selectedBooking.email_sent_at && "No emails have been sent for this booking."}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           )}

@@ -107,6 +107,7 @@ export type Database = {
           confirmation_email_sent: boolean | null
           created_at: string
           email_sent_at: string | null
+          email_status: string | null
           end_time: string
           event_type_id: string
           guest_email: string
@@ -116,6 +117,7 @@ export type Database = {
           host_timezone: string | null
           host_user_id: string
           id: string
+          last_email_type: string | null
           meeting_link: string | null
           parent_booking_id: string | null
           recurrence_count: number | null
@@ -131,6 +133,7 @@ export type Database = {
           confirmation_email_sent?: boolean | null
           created_at?: string
           email_sent_at?: string | null
+          email_status?: string | null
           end_time: string
           event_type_id: string
           guest_email: string
@@ -140,6 +143,7 @@ export type Database = {
           host_timezone?: string | null
           host_user_id: string
           id?: string
+          last_email_type?: string | null
           meeting_link?: string | null
           parent_booking_id?: string | null
           recurrence_count?: number | null
@@ -155,6 +159,7 @@ export type Database = {
           confirmation_email_sent?: boolean | null
           created_at?: string
           email_sent_at?: string | null
+          email_status?: string | null
           end_time?: string
           event_type_id?: string
           guest_email?: string
@@ -164,6 +169,7 @@ export type Database = {
           host_timezone?: string | null
           host_user_id?: string
           id?: string
+          last_email_type?: string | null
           meeting_link?: string | null
           parent_booking_id?: string | null
           recurrence_count?: number | null
