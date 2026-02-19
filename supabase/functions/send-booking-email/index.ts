@@ -210,6 +210,96 @@ function formatDate(dateStr: string): string {
   });
 }
 
+function getTimezoneAbbr(tz: string): string {
+  try {
+    return (
+      new Intl.DateTimeFormat("en-US", { timeZone: tz, timeZoneName: "short" })
+        .formatToParts(new Date())
+        .find((p) => p.type === "timeZoneName")?.value ?? tz
+    );
+  } catch {
+    return tz;
+  }
+}
+
+function convertTimeBetweenZones(
+  dateStr: string,
+  timeStr: string,
+  fromTz: string,
+  toTz: string
+): { time: string; abbr: string; dateDiff: number } {
+  try {
+    const [sh, sm] = timeStr.split(":").map(Number);
+    const [sy, smo, sd] = dateStr.split("-").map(Number);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const localIso = `${sy}-${pad(smo)}-${pad(sd)}T${pad(sh)}:${pad(sm)}:00`;
+
+    const fromFormatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: fromTz,
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: false,
+    });
+    let utcMs = new Date(localIso).getTime();
+    for (let i = 0; i < 3; i++) {
+      const parts = fromFormatter.formatToParts(new Date(utcMs));
+      const p: Record<string, number> = {};
+      for (const { type, value } of parts) p[type] = Number(value);
+      const rendered = Date.UTC(p.year, p.month - 1, p.day, p.hour === 24 ? 0 : p.hour, p.minute, p.second);
+      utcMs = new Date(localIso).getTime() - (rendered - utcMs);
+    }
+
+    const toTimeStr = new Intl.DateTimeFormat("en-US", {
+      timeZone: toTz, hour: "numeric", minute: "2-digit", hour12: true,
+    }).format(new Date(utcMs));
+
+    const abbr =
+      new Intl.DateTimeFormat("en-US", { timeZone: toTz, timeZoneName: "short" })
+        .formatToParts(new Date(utcMs))
+        .find((p) => p.type === "timeZoneName")?.value ?? toTz;
+
+    const origDay = sd;
+    const convDayStr = new Intl.DateTimeFormat("en-US", {
+      timeZone: toTz, day: "2-digit",
+    }).format(new Date(utcMs));
+    const dateDiff = parseInt(convDayStr) - origDay;
+
+    return { time: toTimeStr, abbr, dateDiff };
+  } catch {
+    return { time: formatTime(timeStr), abbr: toTz, dateDiff: 0 };
+  }
+}
+
+function buildTimezoneBlock(params: {
+  primaryTime: string;
+  primaryTzAbbr: string;
+  secondaryTime: string;
+  secondaryTzAbbr: string;
+  secondaryLabel: string;
+  dateDiff: number;
+}): string {
+  const crossDayWarning =
+    params.dateDiff > 0
+      ? ` <span style="color:#ef4444;font-weight:600;">(next day ⚠️)</span>`
+      : params.dateDiff < 0
+      ? ` <span style="color:#ef4444;font-weight:600;">(previous day ⚠️)</span>`
+      : "";
+
+  return `
+    <div style="margin:14px 0 6px;padding:14px 18px;background:white;border-radius:10px;border:1px solid #e5e7eb;">
+      <p style="margin:0 0 4px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">Your local time</p>
+      <p style="margin:0;font-size:24px;font-weight:700;color:#111827;line-height:1.2;">
+        ${params.primaryTime}
+        <span style="display:inline-block;font-size:12px;font-weight:700;background:#6366f1;color:white;padding:3px 9px;border-radius:5px;margin-left:10px;vertical-align:middle;">${params.primaryTzAbbr}</span>
+      </p>
+    </div>
+    <p style="margin:6px 0 14px 4px;font-size:14px;color:#6b7280;">
+      ${params.secondaryLabel}:
+      <strong style="color:#374151;">${params.secondaryTime}</strong>
+      <span style="color:#9ca3af;">&nbsp;(${params.secondaryTzAbbr})</span>${crossDayWarning}
+    </p>`;
+}
+
 async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise<{ guestSent: boolean; hostSent: boolean }> {
   console.log(`[Confirmation] Processing confirmation emails for booking ${booking.id}`);
   console.log(`[Confirmation] Guest: ${maskEmail(booking.guestEmail)}, Host: ${booking.hostEmail ? maskEmail(booking.hostEmail) : "NOT PROVIDED"}`);
@@ -218,12 +308,18 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
   const icsBase64 = btoa(icsContent);
   
   const formattedDate = formatDate(booking.scheduledDate);
-  const formattedTime = formatTime(booking.startTime);
-  
+  const hostTz = booking.hostTimezone || "UTC";
+  const guestTz = booking.guestTimezone || "UTC";
+  const hostTimeFormatted = formatTime(booking.startTime);
+  const hostTzAbbr = getTimezoneAbbr(hostTz);
+
+  // Convert host time → guest local time (times are stored in host tz)
+  const guestConverted = convertTimeBetweenZones(booking.scheduledDate, booking.startTime, hostTz, guestTz);
+
   let guestSent = false;
   let hostSent = false;
   
-  // Email to guest (with reply-to set to host email)
+  // Email to guest — primary: guest local time, secondary: host time
   try {
     await sendEmailWithRetry({
       from: RESEND_FROM_EMAIL,
@@ -231,59 +327,41 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
       replyTo: booking.hostEmail,
       subject: `Confirmed: Meeting with ${booking.hostName} on ${formattedDate}`,
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #6366f1; margin: 0;">✓ Booking Confirmed</h1>
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <div style="text-align:center;margin-bottom:30px;">
+            <h1 style="color:#6366f1;margin:0;">✓ Booking Confirmed</h1>
           </div>
-          
-          <p style="font-size: 16px; color: #374151;">Hi ${booking.guestName},</p>
-          
-          <p style="font-size: 16px; color: #374151;">Your meeting has been confirmed! Here are the details:</p>
-          
-          <div style="background: #f3f4f6; border-radius: 12px; padding: 24px; margin: 24px 0;">
-            <h2 style="margin: 0 0 16px 0; color: #111827;">${booking.eventTitle}</h2>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>📅 Date:</strong> ${formattedDate}
-            </p>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>🕐 Time:</strong> ${formattedTime}${booking.guestTimezone ? ` (${booking.guestTimezone})` : ""}
-            </p>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>⏱️ Duration:</strong> ${booking.duration} minutes
-            </p>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>👤 Host:</strong> ${booking.hostName}
-            </p>
-            ${booking.meetingLink ? `<p style="margin: 8px 0; color: #4b5563;"><strong>🔗 Meeting Link:</strong> <a href="${booking.meetingLink}" style="color: #6366f1;">${booking.meetingLink}</a></p>` : ""}
+          <p style="font-size:16px;color:#374151;">Hi ${booking.guestName},</p>
+          <p style="font-size:16px;color:#374151;">Your meeting has been confirmed! Here are the details:</p>
+          <div style="background:#f3f4f6;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #6366f1;">
+            <h2 style="margin:0 0 16px 0;color:#111827;">${booking.eventTitle}</h2>
+            <p style="margin:8px 0;color:#4b5563;"><strong>📅 Date:</strong> ${formattedDate}</p>
+            ${buildTimezoneBlock({
+              primaryTime: guestConverted.time,
+              primaryTzAbbr: guestConverted.abbr,
+              secondaryTime: hostTimeFormatted,
+              secondaryTzAbbr: hostTzAbbr,
+              secondaryLabel: "Host's time",
+              dateDiff: -guestConverted.dateDiff,
+            })}
+            <p style="margin:8px 0;color:#4b5563;"><strong>⏱️ Duration:</strong> ${booking.duration} minutes</p>
+            <p style="margin:8px 0;color:#4b5563;"><strong>👤 Host:</strong> ${booking.hostName}</p>
+            ${booking.meetingLink ? `
+            <p style="margin:16px 0 8px;color:#4b5563;"><strong>🔗 Meeting Link:</strong></p>
+            <a href="${booking.meetingLink}" style="display:inline-block;background:#6366f1;color:white;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;">Join Meeting</a>
+            ` : ""}
           </div>
-          
           ${booking.manageUrl ? `
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${booking.manageUrl}" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">
-              Manage Booking
-            </a>
-            <p style="font-size: 14px; color: #6b7280; margin-top: 10px;">Reschedule or cancel if needed</p>
+          <div style="text-align:center;margin:20px 0;">
+            <a href="${booking.manageUrl}" style="display:inline-block;background:#f3f4f6;color:#374151;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;border:1px solid #e5e7eb;">Reschedule or Cancel</a>
           </div>
           ` : ""}
-          
-          <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
-            Add this event to your calendar using the attached .ics file.
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-          
-          <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-            Powered by BookMe.cool - Scheduling Made Simple
-          </p>
+          <p style="font-size:14px;color:#6b7280;margin-top:20px;">Add this event to your calendar using the attached .ics file.</p>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
+          <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">BookMe.Bet</a> — Scheduling Made Simple</p>
         </div>
       `,
-      attachments: [
-        {
-          filename: "meeting.ics",
-          content: icsBase64,
-          content_type: "text/calendar",
-        },
-      ],
+      attachments: [{ filename: "meeting.ics", content: icsBase64, content_type: "text/calendar" }],
     });
     guestSent = true;
     console.log(`[Confirmation] Guest email sent successfully to ${maskEmail(booking.guestEmail)}`);
@@ -291,7 +369,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
     console.error(`[Confirmation] Failed to send guest email: ${error.message}`);
   }
 
-  // Email to host (if host email provided)
+  // Email to host — primary: host local time, secondary: guest time
   if (booking.hostEmail) {
     try {
       await sendEmailWithRetry({
@@ -300,49 +378,33 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
         replyTo: booking.guestEmail,
         subject: `New Booking: ${booking.guestName} on ${formattedDate}`,
         html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #6366f1;">📅 New Booking</h1>
+          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+            <div style="text-align:center;margin-bottom:30px;">
+              <h1 style="color:#6366f1;">📅 New Booking</h1>
             </div>
-            
-            <p style="font-size: 16px; color: #374151;">Hi ${booking.hostName},</p>
-            
-            <p style="font-size: 16px; color: #374151;">You have a new booking! Here are the details:</p>
-            
-            <div style="background: #f3f4f6; border-radius: 12px; padding: 24px; margin: 24px 0;">
-              <h2 style="margin: 0 0 16px 0; color: #111827;">${booking.eventTitle}</h2>
-              <p style="margin: 8px 0; color: #4b5563;">
-                <strong>👤 Guest:</strong> ${booking.guestName} (${booking.guestEmail})
-              </p>
-              <p style="margin: 8px 0; color: #4b5563;">
-                <strong>📅 Date:</strong> ${formattedDate}
-              </p>
-              <p style="margin: 8px 0; color: #4b5563;">
-                <strong>🕐 Time:</strong> ${formattedTime}${booking.hostTimezone ? ` (${booking.hostTimezone})` : ""}
-              </p>
-              <p style="margin: 8px 0; color: #4b5563;">
-                <strong>⏱️ Duration:</strong> ${booking.duration} minutes
-              </p>
+            <p style="font-size:16px;color:#374151;">Hi ${booking.hostName},</p>
+            <p style="font-size:16px;color:#374151;">You have a new booking! Here are the details:</p>
+            <div style="background:#f3f4f6;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #6366f1;">
+              <h2 style="margin:0 0 16px 0;color:#111827;">${booking.eventTitle}</h2>
+              <p style="margin:8px 0;color:#4b5563;"><strong>👤 Guest:</strong> ${booking.guestName} (${booking.guestEmail})</p>
+              <p style="margin:8px 0;color:#4b5563;"><strong>📅 Date:</strong> ${formattedDate}</p>
+              ${buildTimezoneBlock({
+                primaryTime: hostTimeFormatted,
+                primaryTzAbbr: hostTzAbbr,
+                secondaryTime: guestConverted.time,
+                secondaryTzAbbr: guestConverted.abbr,
+                secondaryLabel: "Guest's time",
+                dateDiff: guestConverted.dateDiff,
+              })}
+              <p style="margin:8px 0;color:#4b5563;"><strong>⏱️ Duration:</strong> ${booking.duration} minutes</p>
+              ${booking.meetingLink ? `<p style="margin:8px 0;color:#4b5563;"><strong>🔗 Meeting Link:</strong> <a href="${booking.meetingLink}" style="color:#6366f1;">${booking.meetingLink}</a></p>` : ""}
             </div>
-            
-            <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
-              Add this event to your calendar using the attached .ics file.
-            </p>
-            
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-            
-            <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              Powered by BookMe.cool - Scheduling Made Simple
-            </p>
+            <p style="font-size:14px;color:#6b7280;margin-top:20px;">Add this event to your calendar using the attached .ics file.</p>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
+            <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">BookMe.Bet</a> — Scheduling Made Simple</p>
           </div>
         `,
-        attachments: [
-          {
-            filename: "meeting.ics",
-            content: icsBase64,
-            content_type: "text/calendar",
-          },
-        ],
+        attachments: [{ filename: "meeting.ics", content: icsBase64, content_type: "text/calendar" }],
       });
       hostSent = true;
       console.log(`[Confirmation] Host email sent successfully to ${maskEmail(booking.hostEmail)}`);
@@ -491,14 +553,18 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
   const icsBase64 = btoa(icsContent);
   
   const newFormattedDate = formatDate(booking.scheduledDate);
-  const newFormattedTime = formatTime(booking.startTime);
   const oldFormattedDate = formatDate(oldDateTime.date);
   const oldFormattedTime = formatTime(oldDateTime.time);
-  
+  const hostTz = booking.hostTimezone || "UTC";
+  const guestTz = booking.guestTimezone || "UTC";
+  const hostTimeFormatted = formatTime(booking.startTime);
+  const hostTzAbbr = getTimezoneAbbr(hostTz);
+  const guestConverted = convertTimeBetweenZones(booking.scheduledDate, booking.startTime, hostTz, guestTz);
+
   let guestSent = false;
   let hostSent = false;
   
-  // Email to guest
+  // Email to guest — primary: guest local time, secondary: host time
   try {
     await sendEmailWithRetry({
       from: RESEND_FROM_EMAIL,
@@ -506,64 +572,42 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
       replyTo: booking.hostEmail,
       subject: `Rescheduled: Meeting with ${booking.hostName} - New time: ${newFormattedDate}`,
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #f59e0b;">🔄 Meeting Rescheduled</h1>
+        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <div style="text-align:center;margin-bottom:30px;">
+            <h1 style="color:#f59e0b;">🔄 Meeting Rescheduled</h1>
           </div>
-          
-          <p style="font-size: 16px; color: #374151;">Hi ${booking.guestName},</p>
-          
-          <p style="font-size: 16px; color: #374151;">Your meeting has been rescheduled. Here's the updated information:</p>
-          
-          <div style="background: #fef2f2; border-radius: 12px; padding: 20px; margin: 24px 0; border-left: 4px solid #ef4444;">
-            <p style="margin: 0 0 8px 0; font-weight: bold; color: #ef4444;">Previous Time</p>
-            <p style="margin: 4px 0; color: #4b5563; text-decoration: line-through;">${oldFormattedDate}</p>
-            <p style="margin: 4px 0; color: #4b5563; text-decoration: line-through;">${oldFormattedTime}</p>
+          <p style="font-size:16px;color:#374151;">Hi ${booking.guestName},</p>
+          <p style="font-size:16px;color:#374151;">Your meeting has been rescheduled. Here's the updated information:</p>
+          <div style="background:#fef2f2;border-radius:12px;padding:20px;margin:24px 0;border-left:4px solid #ef4444;">
+            <p style="margin:0 0 8px 0;font-weight:bold;color:#ef4444;">Previous Time</p>
+            <p style="margin:4px 0;color:#4b5563;text-decoration:line-through;">${oldFormattedDate} at ${oldFormattedTime}</p>
           </div>
-          
-          <div style="background: #f0fdf4; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #22c55e;">
-            <p style="margin: 0 0 8px 0; font-weight: bold; color: #22c55e;">✓ New Time</p>
-            <h2 style="margin: 0 0 16px 0; color: #111827;">${booking.eventTitle}</h2>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>📅 Date:</strong> ${newFormattedDate}
-            </p>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>🕐 Time:</strong> ${newFormattedTime}${booking.guestTimezone ? ` (${booking.guestTimezone})` : ""}
-            </p>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>⏱️ Duration:</strong> ${booking.duration} minutes
-            </p>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>👤 Host:</strong> ${booking.hostName}
-            </p>
+          <div style="background:#f0fdf4;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #22c55e;">
+            <p style="margin:0 0 8px 0;font-weight:bold;color:#22c55e;">✓ New Time</p>
+            <h2 style="margin:0 0 16px 0;color:#111827;">${booking.eventTitle}</h2>
+            <p style="margin:8px 0;color:#4b5563;"><strong>📅 Date:</strong> ${newFormattedDate}</p>
+            ${buildTimezoneBlock({
+              primaryTime: guestConverted.time,
+              primaryTzAbbr: guestConverted.abbr,
+              secondaryTime: hostTimeFormatted,
+              secondaryTzAbbr: hostTzAbbr,
+              secondaryLabel: "Host's time",
+              dateDiff: -guestConverted.dateDiff,
+            })}
+            <p style="margin:8px 0;color:#4b5563;"><strong>⏱️ Duration:</strong> ${booking.duration} minutes</p>
+            <p style="margin:8px 0;color:#4b5563;"><strong>👤 Host:</strong> ${booking.hostName}</p>
           </div>
-          
           ${booking.manageUrl ? `
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${booking.manageUrl}" style="display: inline-block; background: #6366f1; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">
-              Manage Booking
-            </a>
+          <div style="text-align:center;margin:20px 0;">
+            <a href="${booking.manageUrl}" style="display:inline-block;background:#f3f4f6;color:#374151;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;border:1px solid #e5e7eb;">Reschedule or Cancel</a>
           </div>
           ` : ""}
-          
-          <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
-            The attached .ics file will update this event in your calendar.
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-          
-          <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              Powered by BookMe.cool - Scheduling Made Simple
-          </p>
+          <p style="font-size:14px;color:#6b7280;margin-top:20px;">The attached .ics file will update this event in your calendar.</p>
+          <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
+          <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">BookMe.Bet</a> — Scheduling Made Simple</p>
         </div>
       `,
-      attachments: [
-        {
-          filename: "meeting-updated.ics",
-          content: icsBase64,
-          content_type: "text/calendar",
-        },
-      ],
+      attachments: [{ filename: "meeting-updated.ics", content: icsBase64, content_type: "text/calendar" }],
     });
     guestSent = true;
     console.log(`[Reschedule] Guest email sent successfully`);
@@ -571,7 +615,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
     console.error(`[Reschedule] Failed to send guest email: ${error.message}`);
   }
 
-  // Email to host
+  // Email to host — primary: host local time, secondary: guest time
   if (booking.hostEmail) {
     try {
       await sendEmailWithRetry({
@@ -580,52 +624,37 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
         replyTo: booking.guestEmail,
         subject: `Rescheduled: Meeting with ${booking.guestName} - New time: ${newFormattedDate}`,
         html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #f59e0b;">🔄 Booking Rescheduled</h1>
+          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+            <div style="text-align:center;margin-bottom:30px;">
+              <h1 style="color:#f59e0b;">🔄 Booking Rescheduled</h1>
             </div>
-            
-            <p style="font-size: 16px; color: #374151;">Hi ${booking.hostName},</p>
-            
-            <p style="font-size: 16px; color: #374151;">A booking has been rescheduled:</p>
-            
-            <div style="background: #fef2f2; border-radius: 12px; padding: 20px; margin: 24px 0; border-left: 4px solid #ef4444;">
-              <p style="margin: 0 0 8px 0; font-weight: bold; color: #ef4444;">Previous Time</p>
-              <p style="margin: 4px 0; color: #4b5563; text-decoration: line-through;">${oldFormattedDate} at ${oldFormattedTime}</p>
+            <p style="font-size:16px;color:#374151;">Hi ${booking.hostName},</p>
+            <p style="font-size:16px;color:#374151;">A booking has been rescheduled:</p>
+            <div style="background:#fef2f2;border-radius:12px;padding:20px;margin:24px 0;border-left:4px solid #ef4444;">
+              <p style="margin:0 0 8px 0;font-weight:bold;color:#ef4444;">Previous Time</p>
+              <p style="margin:4px 0;color:#4b5563;text-decoration:line-through;">${oldFormattedDate} at ${oldFormattedTime}</p>
             </div>
-            
-            <div style="background: #f0fdf4; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #22c55e;">
-              <p style="margin: 0 0 8px 0; font-weight: bold; color: #22c55e;">✓ New Time</p>
-              <h2 style="margin: 0 0 16px 0; color: #111827;">${booking.eventTitle}</h2>
-              <p style="margin: 8px 0; color: #4b5563;">
-                <strong>👤 Guest:</strong> ${booking.guestName} (${booking.guestEmail})
-              </p>
-              <p style="margin: 8px 0; color: #4b5563;">
-                <strong>📅 Date:</strong> ${newFormattedDate}
-              </p>
-              <p style="margin: 8px 0; color: #4b5563;">
-                <strong>🕐 Time:</strong> ${newFormattedTime}${booking.hostTimezone ? ` (${booking.hostTimezone})` : ""}
-              </p>
+            <div style="background:#f0fdf4;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #22c55e;">
+              <p style="margin:0 0 8px 0;font-weight:bold;color:#22c55e;">✓ New Time</p>
+              <h2 style="margin:0 0 16px 0;color:#111827;">${booking.eventTitle}</h2>
+              <p style="margin:8px 0;color:#4b5563;"><strong>👤 Guest:</strong> ${booking.guestName} (${booking.guestEmail})</p>
+              <p style="margin:8px 0;color:#4b5563;"><strong>📅 Date:</strong> ${newFormattedDate}</p>
+              ${buildTimezoneBlock({
+                primaryTime: hostTimeFormatted,
+                primaryTzAbbr: hostTzAbbr,
+                secondaryTime: guestConverted.time,
+                secondaryTzAbbr: guestConverted.abbr,
+                secondaryLabel: "Guest's time",
+                dateDiff: guestConverted.dateDiff,
+              })}
+              <p style="margin:8px 0;color:#4b5563;"><strong>⏱️ Duration:</strong> ${booking.duration} minutes</p>
             </div>
-            
-            <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
-              The attached .ics file will update this event in your calendar.
-            </p>
-            
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-            
-            <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              Powered by BookMe.cool - Scheduling Made Simple
-            </p>
+            <p style="font-size:14px;color:#6b7280;margin-top:20px;">The attached .ics file will update this event in your calendar.</p>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
+            <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">BookMe.Bet</a> — Scheduling Made Simple</p>
           </div>
         `,
-        attachments: [
-          {
-            filename: "meeting-updated.ics",
-            content: icsBase64,
-            content_type: "text/calendar",
-          },
-        ],
+        attachments: [{ filename: "meeting-updated.ics", content: icsBase64, content_type: "text/calendar" }],
       });
       hostSent = true;
       console.log(`[Reschedule] Host email sent successfully`);
