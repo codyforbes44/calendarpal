@@ -297,7 +297,40 @@ const PublicBooking = () => {
 
       if (parentError) throw parentError;
 
-      // Create remaining recurring bookings
+      // Fetch host email from profiles table
+      const { data: hostProfile } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("user_id", profile.user_id)
+        .single();
+
+      const hostEmail = hostProfile?.email || undefined;
+      const hostName = profile.full_name || "Host";
+
+      // Send confirmation email for parent booking
+      const manageUrl = `${window.location.origin}/booking/${parentBooking.id}/manage?token=${parentBooking.cancellation_token}`;
+      
+      const emailResult = await sendConfirmationEmail({
+        id: parentBooking.id,
+        guestName: formData.name,
+        guestEmail: formData.email,
+        hostName,
+        hostEmail,
+        eventTitle: selectedEvent.title,
+        scheduledDate: format(bookingDates[0], "yyyy-MM-dd"),
+        startTime: startTime,
+        endTime: endTime,
+        duration: selectedEvent.duration,
+        guestTimezone: guestTimezone,
+        hostTimezone: hostTimezone,
+        manageUrl: manageUrl,
+      });
+
+      if (!emailResult.success) {
+        console.warn("Confirmation email could not be sent for parent booking:", emailResult.error);
+      }
+
+      // Create remaining recurring bookings and send individual emails for each
       if (bookingDates.length > 1) {
         const childBookings = bookingDates.slice(1).map(date => ({
           host_user_id: profile.user_id,
@@ -315,38 +348,35 @@ const PublicBooking = () => {
           recurrence_pattern: recurrencePattern,
         }));
 
-        const { error: childError } = await supabase.from("bookings").insert(childBookings);
+        const { data: insertedChildren, error: childError } = await supabase
+          .from("bookings")
+          .insert(childBookings)
+          .select("id, cancellation_token, scheduled_date");
         if (childError) throw childError;
-      }
 
-      // Fetch host email from profiles table
-      const { data: hostProfile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("user_id", profile.user_id)
-        .single();
-
-      // Send confirmation emails using the email service
-      const manageUrl = `${window.location.origin}/booking/${parentBooking.id}/manage?token=${parentBooking.cancellation_token}`;
-      
-      const emailResult = await sendConfirmationEmail({
-        id: parentBooking.id,
-        guestName: formData.name,
-        guestEmail: formData.email,
-        hostName: profile.full_name || "Host",
-        hostEmail: hostProfile?.email || undefined,
-        eventTitle: selectedEvent.title,
-        scheduledDate: format(bookingDates[0], "yyyy-MM-dd"),
-        startTime: startTime,
-        endTime: endTime,
-        duration: selectedEvent.duration,
-        guestTimezone: guestTimezone,
-        hostTimezone: hostTimezone,
-        manageUrl: manageUrl,
-      });
-
-      if (!emailResult.success) {
-        console.warn("Confirmation email could not be sent:", emailResult.error);
+        // Send a confirmation email for each child booking
+        if (insertedChildren) {
+          await Promise.all(
+            insertedChildren.map((child) => {
+              const childManageUrl = `${window.location.origin}/booking/${child.id}/manage?token=${child.cancellation_token}`;
+              return sendConfirmationEmail({
+                id: child.id,
+                guestName: formData.name,
+                guestEmail: formData.email,
+                hostName,
+                hostEmail,
+                eventTitle: selectedEvent.title,
+                scheduledDate: child.scheduled_date,
+                startTime: startTime,
+                endTime: endTime,
+                duration: selectedEvent.duration,
+                guestTimezone: guestTimezone,
+                hostTimezone: hostTimezone,
+                manageUrl: childManageUrl,
+              });
+            })
+          );
+        }
       }
 
       setCreatedBookingId(parentBooking.id);
