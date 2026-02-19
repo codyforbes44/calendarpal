@@ -68,6 +68,7 @@ const PublicBooking = () => {
     name: "",
     email: "",
     notes: "",
+    meetingLink: "",
   });
 
   // Recurring booking state
@@ -289,6 +290,7 @@ const PublicBooking = () => {
         guest_name: formData.name,
         guest_email: formData.email,
         guest_notes: formData.notes || null,
+        meeting_link: formData.meetingLink.trim() || null,
         status: "confirmed",
         host_timezone: hostTimezone,
         guest_timezone: guestTimezone,
@@ -325,6 +327,7 @@ const PublicBooking = () => {
         duration: selectedEvent.duration,
         guestTimezone: guestTimezone,
         hostTimezone: hostTimezone,
+        meetingLink: formData.meetingLink.trim() || undefined,
         manageUrl: manageUrl,
       });
 
@@ -343,6 +346,7 @@ const PublicBooking = () => {
           guest_name: formData.name,
           guest_email: formData.email,
           guest_notes: formData.notes || null,
+          meeting_link: formData.meetingLink.trim() || null,
           status: "confirmed",
           host_timezone: hostTimezone,
           guest_timezone: guestTimezone,
@@ -374,6 +378,7 @@ const PublicBooking = () => {
                 duration: selectedEvent.duration,
                 guestTimezone: guestTimezone,
                 hostTimezone: hostTimezone,
+                meetingLink: formData.meetingLink.trim() || undefined,
                 manageUrl: childManageUrl,
               });
             })
@@ -762,11 +767,27 @@ const PublicBooking = () => {
                   placeholder="Anything you'd like to discuss?"
                   value={formData.notes}
                   onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-                  rows={4}
+                  rows={3}
                 />
               </div>
 
-              {/* Recurring Options */}
+              <div className="space-y-2">
+                <Label htmlFor="meetingLink" className="flex items-center gap-2">
+                  <Video className="w-4 h-4" />
+                  Meeting Link (Optional)
+                </Label>
+                <Input
+                  id="meetingLink"
+                  type="url"
+                  placeholder="https://meet.google.com/... or Zoom link"
+                  value={formData.meetingLink}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, meetingLink: e.target.value }))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Paste a Google Meet, Zoom, or any video call link. This will be included in the confirmation email.
+                </p>
+              </div>
+
               {selectedEvent?.allow_recurring && (
                 <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
                   <div className="flex items-center justify-between">
