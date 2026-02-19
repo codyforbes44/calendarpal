@@ -119,17 +119,55 @@ async function sendEmailWithRetry(
   throw lastError || new Error("Unknown error sending email");
 }
 
-// Generate ICS calendar file content
+// Generate ICS calendar file content with UTC timestamps for universal timezone compatibility
 function generateICS(booking: EmailRequest["booking"], method: "REQUEST" | "CANCEL" = "REQUEST"): string {
-  const formatDate = (dateStr: string, timeStr: string): string => {
+  // Convert a local date+time string to a UTC ICS timestamp (Z-suffix = unambiguous in all calendar apps)
+  const toUtcIcsString = (dateStr: string, timeStr: string, timezone?: string): string => {
     const [year, month, day] = dateStr.split("-").map(Number);
     const [hour, minute] = timeStr.split(":").map(Number);
+
+    // Build an ISO string in the source timezone for correct DST handling
     const pad = (n: number) => n.toString().padStart(2, "0");
-    return `${year}${pad(month)}${pad(day)}T${pad(hour)}${pad(minute)}00`;
+    const localIso = `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00`;
+
+    let utcMs: number;
+    if (timezone) {
+      try {
+        // Use Intl to find the UTC offset at this exact moment in the given timezone
+        const refDate = new Date(`${localIso}`);
+        // Get what UTC time Intl thinks this local time maps to
+        const formatter = new Intl.DateTimeFormat("en-US", {
+          timeZone: timezone,
+          year: "numeric", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit", second: "2-digit",
+          hour12: false,
+        });
+        // Find offset by comparing how the timezone renders a known UTC instant
+        // We iterate to converge on the correct UTC time
+        let utcGuess = refDate.getTime();
+        for (let i = 0; i < 3; i++) {
+          const parts = formatter.formatToParts(new Date(utcGuess));
+          const p: Record<string, number> = {};
+          for (const { type, value } of parts) p[type] = Number(value);
+          const rendered = Date.UTC(p.year, p.month - 1, p.day, p.hour === 24 ? 0 : p.hour, p.minute, p.second);
+          const offset = rendered - utcGuess;
+          utcGuess = refDate.getTime() - offset;
+        }
+        utcMs = utcGuess;
+      } catch {
+        utcMs = new Date(localIso).getTime();
+      }
+    } else {
+      utcMs = new Date(localIso).getTime();
+    }
+
+    const d = new Date(utcMs);
+    return `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
   };
 
-  const startDateTime = formatDate(booking.scheduledDate, booking.startTime);
-  const endDateTime = formatDate(booking.scheduledDate, booking.endTime);
+  const tz = booking.hostTimezone || booking.guestTimezone;
+  const startDateTime = toUtcIcsString(booking.scheduledDate, booking.startTime, tz);
+  const endDateTime = toUtcIcsString(booking.scheduledDate, booking.endTime, tz);
   const now = new Date();
   const timestamp = now.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
 

@@ -319,9 +319,6 @@ const PublicBooking = () => {
         if (childError) throw childError;
       }
 
-      // Get host email for notifications
-      const { data: hostData } = await supabase.auth.admin?.getUserById?.(profile.user_id) || {};
-      
       // Fetch host email from profiles table
       const { data: hostProfile } = await supabase
         .from("profiles")

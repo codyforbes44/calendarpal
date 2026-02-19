@@ -111,15 +111,29 @@ serve(async (req: Request) => {
           throw new Error("Failed to cancel booking");
         }
 
+        // Build correctly shaped BookingEmailData payload
+        const cancelEmailPayload = {
+          id: booking.id,
+          guestName: booking.guest_name,
+          guestEmail: booking.guest_email,
+          hostName: booking.profiles?.full_name || "Host",
+          hostEmail: booking.profiles?.email || undefined,
+          eventTitle: booking.event_types?.title || "Meeting",
+          scheduledDate: booking.scheduled_date,
+          startTime: booking.start_time,
+          endTime: booking.end_time,
+          duration: booking.event_types?.duration || 30,
+          guestTimezone: booking.guest_timezone || undefined,
+          hostTimezone: booking.host_timezone || undefined,
+          meetingLink: booking.meeting_link || undefined,
+        };
+
         // Send cancellation email
         try {
           await supabase.functions.invoke("send-booking-email", {
             body: {
-              type: "cancellation",
-              booking: {
-                ...booking,
-                status: "cancelled"
-              }
+              type: "booking_cancelled",
+              booking: cancelEmailPayload,
             }
           });
           logStep("Cancellation email sent");
@@ -142,6 +156,10 @@ serve(async (req: Request) => {
         }
 
         logStep("Rescheduling booking", { newDate, newStartTime, newEndTime });
+
+        // Capture original date/time BEFORE updating (needed for reschedule email)
+        const originalDate = booking.scheduled_date;
+        const originalStartTime = booking.start_time;
 
         // Check for conflicts
         const { data: conflicts } = await supabase
@@ -176,17 +194,33 @@ serve(async (req: Request) => {
           throw new Error("Failed to reschedule booking");
         }
 
-        // Send reschedule email
+        // Build correctly shaped BookingEmailData payload with updated times
+        const rescheduleEmailPayload = {
+          id: booking.id,
+          guestName: booking.guest_name,
+          guestEmail: booking.guest_email,
+          hostName: booking.profiles?.full_name || "Host",
+          hostEmail: booking.profiles?.email || undefined,
+          eventTitle: booking.event_types?.title || "Meeting",
+          scheduledDate: newDate,
+          startTime: newStartTime,
+          endTime: newEndTime,
+          duration: booking.event_types?.duration || 30,
+          guestTimezone: booking.guest_timezone || undefined,
+          hostTimezone: booking.host_timezone || undefined,
+          meetingLink: booking.meeting_link || undefined,
+        };
+
+        // Send reschedule email with required oldDateTime
         try {
           await supabase.functions.invoke("send-booking-email", {
             body: {
-              type: "reschedule",
-              booking: {
-                ...booking,
-                scheduled_date: newDate,
-                start_time: newStartTime,
-                end_time: newEndTime
-              }
+              type: "booking_rescheduled",
+              booking: rescheduleEmailPayload,
+              oldDateTime: {
+                date: originalDate,
+                time: originalStartTime,
+              },
             }
           });
           logStep("Reschedule email sent");
