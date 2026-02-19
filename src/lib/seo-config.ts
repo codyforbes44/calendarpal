@@ -7,9 +7,9 @@ export const siteConfig = {
   themeColor: "#4F46E5",
   logo: "/bookme-logo.png",
   ogImages: {
-    home: "/og-home.png",
-    pricing: "/og-pricing.png",
-    support: "/og-support.png",
+    home: "https://mscixhmmskdsjaajcafn.supabase.co/storage/v1/object/public/og-images/og-home.png",
+    pricing: "https://mscixhmmskdsjaajcafn.supabase.co/storage/v1/object/public/og-images/og-pricing.png",
+    support: "https://mscixhmmskdsjaajcafn.supabase.co/storage/v1/object/public/og-images/og-support.png",
   },
 };
 
