@@ -1,57 +1,84 @@
 
-# Rename: CalendarPal → BookMe.cool
+# Updated OG Images for BookMe.cool
 
-## Scope
+## Current State
 
-"CalendarPal" appears in **26 files** across UI components, SEO config, legal pages, the email template, and static assets. Every instance will be replaced with "BookMe.cool". The domain references (`calendarpal.com`) will become `bookme.cool`, and email addresses (`support@calendarpal.com`, `sales@calendarpal.com`, `noreply@calendarpal.com`) will become their `@bookme.cool` equivalents.
+The app currently uses three static OG image files that still carry the old CalendarPal identity:
+- `/public/og-home.png` — used on the homepage
+- `/public/og-pricing.png` — used on the Pricing page
+- `/public/og-support.png` — used on the Support page
 
----
-
-## Files to Change
-
-### Core Config (drives most pages automatically)
-- **`src/lib/seo-config.ts`** — `name`, `url`, `author`, `twitterHandle`, `logo` reference, all page titles, organization schema, web app schema, social links. This single file propagates the brand name to every page that uses `siteConfig` and `pageSEO`.
-
-### Static Files
-- **`index.html`** — Page title, OG tags, Twitter tags, hreflang URLs, all hardcoded `calendarpal.com` references.
-- **`public/robots.txt`** — Sitemap URL: `https://bookme.cool/sitemap.xml`
-- **`public/sitemap.xml`** — All 6 `<loc>` URLs updated to `bookme.cool`
-- **`public/manifest.json`** — `name`, `short_name`, `description`
-
-### UI Components
-- **`src/components/Navigation.tsx`** — Brand name display in navbar (desktop + mobile sheet)
-- **`src/components/admin/AdminSidebar.tsx`** — "CalendarPal" subtitle under "Admin Portal"
-- **`src/components/Hero.tsx`** — No direct brand name text (uses imported copy), no change needed
-- **`src/components/SEO.tsx`** — Default title fallback string
-
-### Pages
-- **`src/pages/Index.tsx`** — Footer copyright line
-- **`src/pages/NotFound.tsx`** — Brand name in the 404 logo area
-- **`src/pages/Onboarding.tsx`** — Welcome toast message + booking URL preview text (`calendarpal.com/book/...` → `bookme.cool/book/...`) + SEO fallback strings
-- **`src/pages/ResetPassword.tsx`** — SEO title strings
-- **`src/pages/Auth.tsx`** — Any brand references in SEO/UI (uses `pageSEO` so covered by seo-config)
-- **`src/pages/Support.tsx`** — 3 inline "CalendarPal" mentions + footer copyright + FAQ answer mentioning "CalendarPal"
-- **`src/pages/Terms.tsx`** — 6 inline "CalendarPal" mentions + footer copyright
-- **`src/pages/Privacy.tsx`** — Footer copyright
-- **`src/pages/Pricing.tsx`** — `sales@calendarpal.com` enterprise email link
-
-### Backend / Edge Functions
-- **`src/lib/blocked-countries.ts`** — `support@calendarpal.com` contact email + description text
-- **`supabase/functions/send-booking-email/index.ts`** — Calendar UID domain (`@calendarpal.com`), meeting description text, organizer fallback email (`noreply@calendarpal.com`)
+These are referenced in `src/lib/seo-config.ts` via `siteConfig.ogImages` and consumed by the `<SEO>` component on each page.
 
 ---
 
-## What Stays the Same
+## Approach
 
-- Logo image files (`/calendarpal-logo.png`) — the filename doesn't show to users; changing it would require updating all references and is unnecessary for a name change
-- All routing, database schema, authentication logic — purely a cosmetic/brand rename
-- The `twitterHandle` and social links will be updated to `@bookme_cool` / `bookme.cool` placeholders since the actual social accounts don't exist yet
+AI image generation will be used (via an edge function) to create three new 1200×630px OG images — the standard Open Graph dimensions optimised for Twitter/X, LinkedIn, Facebook, and Slack unfurls — then save them to cloud file storage so they are served from a stable public URL.
+
+### Why an edge function?
+- Image generation produces base64 payloads too large to handle in the browser
+- The edge function generates the image, uploads it to cloud storage, and returns the public URL
+- Generated images are stored permanently and don't need to be regenerated on every page load
+
+---
+
+## Visual Design (per image)
+
+All three images share a consistent brand language:
+
+| Element | Value |
+|---|---|
+| Background | Dark gradient: `#0F172A` → `#1E1B4B` (slate to indigo-dark) |
+| Accent colour | Indigo `#6366F1` / `#4F46E5` |
+| Logo mark | Calendar icon + "BookMe.cool" wordmark, top-left |
+| Typography | Clean sans-serif, white headings |
+| Dimensions | 1200 × 630 px |
+
+**Home OG** — Hero layout: bold "Scheduling Made Simple" headline, subtext "Book meetings in seconds. No back-and-forth.", two floating UI cards showing a mock booking confirmation, indigo glow effect bottom-right.
+
+**Pricing OG** — Three pricing tiers (Free / Pro / Enterprise) shown as cards, "Pro" card highlighted in indigo, headline "Simple, honest pricing."
+
+**Support OG** — FAQ/chat illustration, headline "We're here to help.", subtext "24/7 support for BookMe.cool users."
+
+---
+
+## Implementation Steps
+
+### 1. Create `generate-og-images` edge function
+A new Deno edge function that:
+1. Accepts a `page` parameter (`home`, `pricing`, `support`)
+2. Calls the AI image generation model with a detailed prompt for that page's OG design
+3. Uploads the resulting base64 PNG to cloud storage bucket `og-images`
+4. Returns the public URL
+
+### 2. Create storage bucket
+Add a `og-images` public storage bucket via database migration.
+
+### 3. Create `OGImageGenerator` admin utility page
+A simple admin-only React component at `/admin/og-images` that:
+- Shows three buttons: "Generate Home OG", "Generate Pricing OG", "Generate Support OG"
+- Calls the edge function for each
+- Displays the generated image for preview
+- On success, shows the public URL to copy
+
+### 4. Update `seo-config.ts` after generation
+Once generated, update `siteConfig.ogImages` to point to the cloud storage public URLs instead of the local `/og-*.png` files.
+
+### 5. Wire up per-page OG images
+Confirm each page already passes the correct `ogImage` prop to `<SEO>`:
+- `Index.tsx` → `siteConfig.ogImages.home` ✓
+- `Pricing.tsx` → needs `ogImage={siteConfig.ogImages.pricing}` confirmed
+- `Support.tsx` → needs `ogImage={siteConfig.ogImages.support}` confirmed
+- `index.html` → update the static fallback tags to use the new URLs
 
 ---
 
 ## Technical Notes
 
-- `src/lib/seo-config.ts` is the single source of truth for the brand name across most pages — updating it fixes Navigation, all page SEO titles/descriptions, OG tags, organization schema, and web app schema automatically.
-- The `logo` field in seo-config currently references `/calendarpal-logo.png` — this path will be left as-is since the file exists and works; the filename is not user-visible.
-- Inline hardcoded mentions in Terms, Support, Privacy, and the email edge function must each be updated individually since they don't use `siteConfig`.
-
+- The AI model used will be `google/gemini-3-pro-image-preview` for highest quality output suitable for OG images
+- The edge function uses `LOVABLE_API_KEY` (pre-configured, no user input needed)
+- Storage bucket is set to **public read** so OG images are accessible to social media crawlers without authentication
+- OG image dimensions: 1200×630 is the universal standard (Twitter min 600×314, Facebook recommended 1200×630)
+- The admin utility is behind `AdminRouteGuard` so only admins can trigger regeneration
+- After generation, the static `/public/og-*.png` fallback files remain as backups
