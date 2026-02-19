@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -18,12 +17,6 @@ interface TimezoneSelectorProps {
 }
 
 const TimezoneSelector = ({ value, onChange, showIcon = true }: TimezoneSelectorProps) => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   // Group timezones by region
   const groupedTimezones = TIMEZONE_OPTIONS.reduce(
     (acc, tz) => {
@@ -37,16 +30,6 @@ const TimezoneSelector = ({ value, onChange, showIcon = true }: TimezoneSelector
   );
 
   const regions = Object.keys(groupedTimezones);
-
-  if (!mounted) {
-    return (
-      <Select disabled>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Loading..." />
-        </SelectTrigger>
-      </Select>
-    );
-  }
 
   return (
     <Select value={value} onValueChange={onChange}>
