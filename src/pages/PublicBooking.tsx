@@ -405,8 +405,8 @@ const PublicBooking = () => {
   };
 
   const dynamicTitle = profile?.full_name 
-    ? `Book with ${profile.full_name} | CalendarPal` 
-    : "Book a Meeting | CalendarPal";
+    ? `Book with ${profile.full_name} | BookMe.Bet` 
+    : "Book a Meeting | BookMe.Bet";
   
   const dynamicDescription = profile?.full_name
     ? `Schedule a meeting with ${profile.full_name}. Choose your preferred time slot and book instantly.`
@@ -485,57 +485,130 @@ const PublicBooking = () => {
     );
   }
 
-  // Event selection step
+  // Event selection step — public profile page
   if (step === "event") {
+    const initials = profile?.full_name
+      ? profile.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+      : "?";
+
     return (
       <>
         <SEO title={dynamicTitle} description={dynamicDescription} />
-        <div className="min-h-screen bg-gradient-subtle py-12 px-6">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="text-2xl font-bold">{profile?.full_name}</h1>
-            <p className="text-muted-foreground">Select a meeting type</p>
-          </div>
+        <div className="min-h-screen bg-gradient-subtle py-12 px-4 sm:px-6">
+          <div className="max-w-xl mx-auto">
 
-          {eventTypes.length === 0 ? (
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground">No event types available</p>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {eventTypes.map((event) => {
-                const location = getLocationDisplay(event.location_type);
-                return (
-                  <Card
-                    key={event.id}
-                    className="p-6 cursor-pointer hover:shadow-md transition-shadow border-l-4"
-                    style={{ borderLeftColor: event.color || "hsl(var(--primary))" }}
-                    onClick={() => handleEventSelect(event)}
-                  >
-                    <h3 className="font-semibold text-lg mb-2">{event.title}</h3>
-                    {event.description && (
-                      <p className="text-muted-foreground text-sm mb-4">{event.description}</p>
-                    )}
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        <span>{event.duration} min</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <location.icon className="w-4 h-4" />
-                        <span>{location.text}</span>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
+            {/* Profile header card */}
+            <div className="rounded-2xl border border-border bg-card shadow-sm p-8 mb-6 text-center">
+              {/* Avatar */}
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={profile.full_name || ""}
+                  className="w-20 h-20 rounded-full object-cover mx-auto mb-4 ring-4 ring-primary/20"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mx-auto mb-4 ring-4 ring-primary/20">
+                  <span className="text-2xl font-bold text-primary">{initials}</span>
+                </div>
+              )}
+
+              {/* Name */}
+              <h1 className="text-2xl font-bold text-foreground mb-1">
+                {profile?.full_name || username}
+              </h1>
+
+              {/* Username handle */}
+              <p className="text-sm text-muted-foreground mb-3">@{profile?.username}</p>
+
+              {/* Divider */}
+              <div className="w-10 h-px bg-border mx-auto mb-3" />
+
+              {/* Prompt */}
+              <p className="text-muted-foreground text-sm">
+                Welcome! Pick a meeting type below to get started.
+              </p>
             </div>
-          )}
+
+            {/* Event type cards */}
+            <div className="mb-4">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3 px-1">
+                Available meeting types
+              </h2>
+
+              {eventTypes.length === 0 ? (
+                <div className="rounded-2xl border border-border bg-card p-10 text-center text-muted-foreground">
+                  No meeting types are currently available.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {eventTypes.map((event) => {
+                    const location = getLocationDisplay(event.location_type);
+                    const LocationIcon = location.icon;
+                    const accentColor = event.color || "hsl(var(--primary))";
+
+                    return (
+                      <button
+                        key={event.id}
+                        onClick={() => handleEventSelect(event)}
+                        className="w-full text-left rounded-xl border border-border bg-card hover:bg-accent/5 hover:border-primary/30 hover:shadow-md transition-all duration-200 group overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <div className="flex items-stretch">
+                          {/* Color accent bar */}
+                          <div
+                            className="w-1.5 shrink-0 rounded-l-xl"
+                            style={{ background: accentColor }}
+                          />
+
+                          <div className="flex-1 p-5">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-foreground text-base leading-snug mb-1 group-hover:text-primary transition-colors">
+                                  {event.title}
+                                </h3>
+                                {event.description && (
+                                  <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2 mb-3">
+                                    {event.description}
+                                  </p>
+                                )}
+                                <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                  <span className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded-full font-medium">
+                                    <Clock className="w-3 h-3" />
+                                    {event.duration} min
+                                  </span>
+                                  <span className="flex items-center gap-1.5">
+                                    <LocationIcon className="w-3.5 h-3.5" />
+                                    {location.text}
+                                  </span>
+                                  {event.allow_recurring && (
+                                    <span className="flex items-center gap-1.5 text-primary">
+                                      <Repeat className="w-3 h-3" />
+                                      Recurring available
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Arrow */}
+                              <ArrowLeft className="w-4 h-4 text-muted-foreground rotate-180 shrink-0 mt-1 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Powered by footer */}
+            <p className="text-center text-xs text-muted-foreground mt-8">
+              Powered by{" "}
+              <a href="/" className="text-primary hover:underline font-medium">
+                BookMe.Bet
+              </a>
+            </p>
+          </div>
         </div>
-      </div>
       </>
     );
   }
