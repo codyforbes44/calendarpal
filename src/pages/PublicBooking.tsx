@@ -11,8 +11,9 @@ import { Switch } from "@/components/ui/switch";
 import CalendarGrid from "@/components/calendar/CalendarGrid";
 import TimeSlotPicker from "@/components/calendar/TimeSlotPicker";
 import { useTimeSlots, convertTo24Hour, calculateEndTime } from "@/hooks/useTimeSlots";
-import { Calendar, Clock, Video, User, Mail, MessageSquare, ArrowLeft, Check, MapPin, Globe, Repeat } from "lucide-react";
+import { Calendar, Clock, Video, User, Mail, MessageSquare, ArrowLeft, Check, MapPin, Globe, Repeat, AlertTriangle } from "lucide-react";
 import { format, addWeeks, addMonths } from "date-fns";
+import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
 import { toast } from "sonner";
 import TimezoneSelector from "@/components/TimezoneSelector";
 import { getLocalTimezone, getTimezoneLabel } from "@/lib/timezones";
@@ -405,6 +406,43 @@ const PublicBooking = () => {
     }
   };
 
+  /**
+   * Convert a display time (e.g. "4:30 PM") from the host's timezone to the guest's timezone.
+   * Returns an object with the converted time string and whether it falls on a different date.
+   */
+  const getGuestLocalTime = (): { timeStr: string; dateDiff: number } | null => {
+    if (!selectedDate || !selectedTime || !profile?.timezone) return null;
+    try {
+      const hostTz = profile.timezone;
+      // Parse the display time (e.g. "4:30 PM") into 24-hour parts
+      const [timePart, period] = selectedTime.split(" ");
+      const [hourStr, minuteStr] = timePart.split(":");
+      let hour = parseInt(hourStr, 10);
+      const minute = parseInt(minuteStr, 10);
+      if (period === "PM" && hour !== 12) hour += 12;
+      if (period === "AM" && hour === 12) hour = 0;
+
+      // Build a Date in the host's timezone
+      const dateStr = format(selectedDate, "yyyy-MM-dd");
+      const hostLocalDt = new Date(
+        `${dateStr}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`
+      );
+      const utcDt = fromZonedTime(hostLocalDt, hostTz);
+
+      const convertedTime = formatInTimeZone(utcDt, guestTimezone, "h:mm a");
+      const convertedDate = formatInTimeZone(utcDt, guestTimezone, "yyyy-MM-dd");
+      const hostDate = format(selectedDate, "yyyy-MM-dd");
+      const dateDiff =
+        new Date(convertedDate).getDate() - new Date(hostDate).getDate();
+
+      return { timeStr: convertedTime, dateDiff };
+    } catch {
+      return null;
+    }
+  };
+
+  const guestLocalTime = getGuestLocalTime();
+
   const dynamicTitle = profile?.full_name 
     ? `Book with ${profile.full_name} | BookMe.Bet` 
     : "Book a Meeting | BookMe.Bet";
@@ -640,7 +678,7 @@ const PublicBooking = () => {
                 You're booking a {selectedEvent?.duration}-minute {selectedEvent?.title}
               </p>
 
-              <div className="flex items-center gap-4 mt-4 p-4 bg-muted rounded-lg">
+              <div className="flex flex-wrap items-center gap-4 mt-4 p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-primary" />
                   <span className="font-medium">
@@ -652,6 +690,36 @@ const PublicBooking = () => {
                   <span className="font-medium">{selectedTime}</span>
                 </div>
               </div>
+              {/* Timezone confirmation banner on details step */}
+              {guestLocalTime && (
+                <div className={`flex items-start gap-2 mt-3 rounded-lg px-3 py-2.5 text-sm ${
+                  guestLocalTime.dateDiff !== 0
+                    ? "bg-destructive/10 border border-destructive/30 text-destructive"
+                    : "bg-primary/8 border border-primary/20 text-foreground"
+                }`}>
+                  {guestLocalTime.dateDiff !== 0 ? (
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-destructive" />
+                  ) : (
+                    <Globe className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
+                  )}
+                  <div>
+                    <p className="font-medium">
+                      {guestLocalTime.dateDiff !== 0
+                        ? "⚠️ Note: This is a different day in your timezone"
+                        : "Your local time"}
+                    </p>
+                    <p className={guestLocalTime.dateDiff !== 0 ? "text-destructive/80" : "text-muted-foreground"}>
+                      {guestLocalTime.timeStr}{" "}
+                      {guestLocalTime.dateDiff > 0
+                        ? "(next day)"
+                        : guestLocalTime.dateDiff < 0
+                        ? "(previous day)"
+                        : ""}{" "}
+                      · {getTimezoneLabel(guestTimezone)}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <form onSubmit={handleBooking} className="space-y-6">
@@ -887,7 +955,37 @@ const PublicBooking = () => {
             )}
 
             {selectedDate && selectedTime && (
-              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border animate-fade-in">
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border animate-fade-in space-y-3">
+                {/* Timezone warning */}
+                {guestLocalTime && (
+                  <div className={`flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm ${
+                    guestLocalTime.dateDiff !== 0
+                      ? "bg-destructive/10 border border-destructive/30 text-destructive"
+                      : "bg-primary/8 border border-primary/20 text-foreground"
+                  }`}>
+                    {guestLocalTime.dateDiff !== 0 ? (
+                      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-destructive" />
+                    ) : (
+                      <Globe className="w-4 h-4 shrink-0 mt-0.5 text-primary" />
+                    )}
+                    <div>
+                      <p className="font-medium">
+                        {guestLocalTime.dateDiff !== 0
+                          ? "⚠️ This time is on a different day in your timezone"
+                          : "This time in your timezone"}
+                      </p>
+                      <p className={guestLocalTime.dateDiff !== 0 ? "text-destructive/80" : "text-muted-foreground"}>
+                        {guestLocalTime.timeStr}{" "}
+                        {guestLocalTime.dateDiff > 0
+                          ? "(next day)"
+                          : guestLocalTime.dateDiff < 0
+                          ? "(previous day)"
+                          : ""}{" "}
+                        · {getTimezoneLabel(guestTimezone)}
+                      </p>
+                    </div>
+                  </div>
+                )}
                 <Button variant="hero" size="lg" className="w-full" onClick={handleConfirm}>
                   Continue
                 </Button>
