@@ -9,6 +9,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -47,6 +48,7 @@ const profileSchema = z.object({
     .optional()
     .or(z.literal("")),
   timezone: z.string().min(1, "Timezone is required"),
+  bio: z.string().max(200, "Bio is too long").optional().or(z.literal("")),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -68,6 +70,7 @@ const ProfileSettings = () => {
       full_name: "",
       username: "",
       timezone: getLocalTimezone(),
+      bio: "",
     },
   });
 
@@ -78,6 +81,7 @@ const ProfileSettings = () => {
         full_name: profile.full_name || "",
         username: profile.username || "",
         timezone: profile.timezone || getLocalTimezone(),
+        bio: profile.bio || "",
       });
     }
   }, [profile, form]);
@@ -108,6 +112,7 @@ const ProfileSettings = () => {
       full_name: data.full_name,
       username: data.username || null,
       timezone: data.timezone,
+      bio: data.bio || null,
     });
   };
 
@@ -236,6 +241,28 @@ const ProfileSettings = () => {
                         </FormControl>
                         <FormDescription className="text-xs sm:text-sm break-all">
                           Your booking URL: {window.location.origin}/book/{field.value || "yourname"}
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="bio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bio</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Tell people a little about yourself..."
+                            className="resize-none"
+                            rows={3}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription className="text-xs sm:text-sm">
+                          Shown on your public booking page. Max 200 characters.
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

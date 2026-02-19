@@ -11,6 +11,7 @@ export interface Profile {
   email: string | null;
   avatar_url: string | null;
   timezone: string | null;
+  bio: string | null;
   subscription_plan: string;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
@@ -23,6 +24,7 @@ export interface ProfileUpdate {
   username?: string | null;
   timezone?: string;
   avatar_url?: string;
+  bio?: string | null;
 }
 
 export const profileKeys = {
