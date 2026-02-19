@@ -5,6 +5,7 @@ import { useEventTypes } from "@/hooks/useEventTypes";
 import { useSubscription } from "@/hooks/useSubscription";
 import Navigation from "@/components/Navigation";
 import BottomNavigation from "@/components/BottomNavigation";
+import { Share2 } from "lucide-react";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import UpcomingMeetings from "@/components/dashboard/UpcomingMeetings";
 import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
@@ -141,6 +142,17 @@ const Dashboard = () => {
           username={profile.username}
           fullName={profile.full_name || ""}
         />
+      )}
+
+      {/* Mobile FAB — share booking link */}
+      {profile?.username && (
+        <button
+          onClick={() => setShowShareModal(true)}
+          className="fixed bottom-20 right-4 z-40 flex sm:hidden items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 active:scale-95 transition-all duration-200"
+          aria-label="Share booking link"
+        >
+          <Share2 className="w-6 h-6" />
+        </button>
       )}
 
       <BottomNavigation />
