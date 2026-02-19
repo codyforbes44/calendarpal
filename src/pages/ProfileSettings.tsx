@@ -258,6 +258,9 @@ const ProfileSettings = () => {
                             placeholder="Tell people a little about yourself..."
                             className="resize-none"
                             rows={3}
+                            data-gramm="false"
+                            data-gramm_editor="false"
+                            data-enable-grammarly="false"
                             {...field}
                           />
                         </FormControl>
