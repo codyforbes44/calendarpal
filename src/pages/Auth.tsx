@@ -201,7 +201,7 @@ const Auth = () => {
           <div className="flex items-center justify-center mb-5 sm:mb-7">
             <img
               src="/bookme-logo.png"
-              alt="BookMe.cool"
+              alt="BookMe.Bet"
               className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl object-cover shadow-md"
             />
           </div>
