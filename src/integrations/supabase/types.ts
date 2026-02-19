@@ -123,6 +123,8 @@ export type Database = {
           recurrence_count: number | null
           recurrence_end_date: string | null
           recurrence_pattern: string | null
+          reminder_sent: boolean
+          reminder_sent_at: string | null
           scheduled_date: string
           start_time: string
           status: string
@@ -149,6 +151,8 @@ export type Database = {
           recurrence_count?: number | null
           recurrence_end_date?: string | null
           recurrence_pattern?: string | null
+          reminder_sent?: boolean
+          reminder_sent_at?: string | null
           scheduled_date: string
           start_time: string
           status?: string
@@ -175,6 +179,8 @@ export type Database = {
           recurrence_count?: number | null
           recurrence_end_date?: string | null
           recurrence_pattern?: string | null
+          reminder_sent?: boolean
+          reminder_sent_at?: string | null
           scheduled_date?: string
           start_time?: string
           status?: string
