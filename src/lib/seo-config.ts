@@ -5,7 +5,7 @@ export const siteConfig = {
   author: "BookMe.cool",
   twitterHandle: "@bookme_cool",
   themeColor: "#4F46E5",
-  logo: "/calendarpal-logo.png",
+  logo: "/bookme-logo.png",
   ogImages: {
     home: "/og-home.png",
     pricing: "/og-pricing.png",
