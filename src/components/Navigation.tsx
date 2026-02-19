@@ -69,8 +69,8 @@ const Navigation = () => {
       <div className="container flex h-14 md:h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-semibold">
-          <img src="/bookme-logo.png" alt="BookMe.cool" className="h-7 w-7 md:h-8 md:w-8 rounded-lg object-cover" />
-          <span className="text-base md:text-lg">BookMe.cool</span>
+          <img src="/bookme-logo.png" alt="BookMe.Bet" className="h-7 w-7 md:h-8 md:w-8 rounded-lg object-cover" />
+          <span className="text-base md:text-lg">BookMe.Bet</span>
           {isPro && (
             <Badge variant="secondary" className="hidden sm:flex text-xs gap-1">
               <Crown className="w-3 h-3" />
@@ -158,8 +158,8 @@ const Navigation = () => {
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between pb-4 border-b">
                   <Link to="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-                    <img src="/bookme-logo.png" alt="BookMe.cool" className="h-6 w-6 rounded-lg object-cover" />
-                    <span className="font-semibold">BookMe.cool</span>
+                    <img src="/bookme-logo.png" alt="BookMe.Bet" className="h-6 w-6 rounded-lg object-cover" />
+                    <span className="font-semibold">BookMe.Bet</span>
                   </Link>
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">

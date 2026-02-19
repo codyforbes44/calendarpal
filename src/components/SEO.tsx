@@ -13,7 +13,7 @@ interface SEOProps {
 }
 
 const SEO = ({
-  title = "BookMe.cool - Scheduling Made Simple",
+  title = "BookMe.Bet - Scheduling Made Simple",
   description = siteConfig.description,
   keywords = "scheduling app, appointment booking, calendar scheduling",
   canonical,
@@ -22,7 +22,7 @@ const SEO = ({
   noindex = false,
   structuredData,
 }: SEOProps) => {
-  const fullTitle = title.includes("BookMe.cool") ? title : `${title} | BookMe.cool`;
+  const fullTitle = title.includes("BookMe.Bet") ? title : `${title} | BookMe.Bet`;
   const canonicalUrl = canonical || (typeof window !== "undefined" ? window.location.href : siteConfig.url);
 
   return (

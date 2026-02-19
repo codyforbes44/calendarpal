@@ -21,4 +21,4 @@ Disallow: /subscription
 Disallow: /booking/*/manage
 
 # Sitemap
-Sitemap: https://bookme.cool/sitemap.xml
+Sitemap: https://bookme.bet/sitemap.xml

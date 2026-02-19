@@ -51,8 +51,8 @@ const Support = () => {
       answer: "Go to the Subscription page in your dashboard and click 'Manage Subscription'. This will open the billing portal where you can cancel, update payment methods, or view invoices."
     },
     {
-      question: "What timezone does BookMe.cool use?",
-      answer: "BookMe.cool automatically detects and displays times in each user's local timezone. When a guest books, they see times in their timezone while you see them in yours. All conversions are handled automatically."
+      question: "What timezone does BookMe.Bet use?",
+      answer: "BookMe.Bet automatically detects and displays times in each user's local timezone. When a guest books, they see times in their timezone while you see them in yours. All conversions are handled automatically."
     },
     {
       question: "Is my data secure?",
