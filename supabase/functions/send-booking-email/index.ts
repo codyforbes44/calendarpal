@@ -699,28 +699,29 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${requestId}] Host email sent: ${result.hostSent}`);
     console.log(`[${requestId}] ===================================`);
 
-    // Update booking record with email status if at least one email was sent
-    if (result.guestSent || result.hostSent) {
-      try {
-        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-        const emailTypeField = getEmailTypeField(type);
-        
-        const { error: updateError } = await supabase
-          .from("bookings")
-          .update({
-            confirmation_email_sent: true,
-            email_sent_at: new Date().toISOString(),
-          })
-          .eq("id", booking.id);
+    // Update booking record with email status
+    try {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      const emailTypeField = getEmailTypeField(type);
+      const emailStatus = (result.guestSent || result.hostSent) ? "sent" : "failed";
 
-        if (updateError) {
-          console.error(`[${requestId}] Failed to update booking email status: ${updateError.message}`);
-        } else {
-          console.log(`[${requestId}] Updated booking ${booking.id} with email_sent_at timestamp (type: ${emailTypeField})`);
-        }
-      } catch (dbError: any) {
-        console.error(`[${requestId}] Database error updating email status: ${dbError.message}`);
+      const { error: updateError } = await supabase
+        .from("bookings")
+        .update({
+          confirmation_email_sent: result.guestSent || result.hostSent,
+          email_sent_at: new Date().toISOString(),
+          email_status: emailStatus,
+          last_email_type: emailTypeField,
+        })
+        .eq("id", booking.id);
+
+      if (updateError) {
+        console.error(`[${requestId}] Failed to update booking email status: ${updateError.message}`);
+      } else {
+        console.log(`[${requestId}] Updated booking ${booking.id} — email_status: ${emailStatus}, type: ${emailTypeField}`);
       }
+    } catch (dbError: any) {
+      console.error(`[${requestId}] Database error updating email status: ${dbError.message}`);
     }
 
     return new Response(
