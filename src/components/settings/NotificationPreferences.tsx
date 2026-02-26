@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bell, CalendarPlus, CalendarX, CalendarClock, Clock } from "lucide-react";
+import { Bell, Mail, CalendarPlus, CalendarX, CalendarClock, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface NotificationPrefs {
@@ -12,6 +12,10 @@ interface NotificationPrefs {
   booking_cancelled: boolean;
   booking_rescheduled: boolean;
   reminder: boolean;
+  email_booking_created: boolean;
+  email_booking_cancelled: boolean;
+  email_booking_rescheduled: boolean;
+  email_reminder: boolean;
 }
 
 const defaultPrefs: NotificationPrefs = {
@@ -19,32 +23,40 @@ const defaultPrefs: NotificationPrefs = {
   booking_cancelled: true,
   booking_rescheduled: true,
   reminder: true,
+  email_booking_created: true,
+  email_booking_cancelled: true,
+  email_booking_rescheduled: true,
+  email_reminder: true,
 };
 
 const prefItems = [
   {
-    key: "booking_created" as const,
+    inAppKey: "booking_created" as const,
+    emailKey: "email_booking_created" as const,
     label: "New Bookings",
     description: "When someone books a meeting with you",
     icon: CalendarPlus,
     color: "text-success",
   },
   {
-    key: "booking_cancelled" as const,
+    inAppKey: "booking_cancelled" as const,
+    emailKey: "email_booking_cancelled" as const,
     label: "Cancellations",
     description: "When a guest cancels their booking",
     icon: CalendarX,
     color: "text-destructive",
   },
   {
-    key: "booking_rescheduled" as const,
+    inAppKey: "booking_rescheduled" as const,
+    emailKey: "email_booking_rescheduled" as const,
     label: "Reschedules",
     description: "When a guest reschedules their booking",
     icon: CalendarClock,
     color: "text-warning",
   },
   {
-    key: "reminder" as const,
+    inAppKey: "reminder" as const,
+    emailKey: "email_reminder" as const,
     label: "Reminders",
     description: "Upcoming meeting reminders",
     icon: Clock,
@@ -84,7 +96,7 @@ const NotificationPreferences = () => {
 
     setSaving(false);
     if (error) {
-      setPrefs(prefs); // revert
+      setPrefs(prefs);
       toast.error("Failed to save preference");
     } else {
       toast.success("Preference updated");
@@ -98,21 +110,33 @@ const NotificationPreferences = () => {
         Notification Preferences
       </h2>
       <p className="text-xs sm:text-sm text-muted-foreground mb-5">
-        Choose which notifications you want to receive
+        Choose which notifications you want to receive and how
       </p>
+
+      {/* Channel headers */}
+      <div className="flex items-center justify-end gap-6 mb-3 pr-1">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <Bell className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">In-App</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <Mail className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Email</span>
+        </div>
+      </div>
 
       <div className="space-y-4">
         {prefItems.map((item) => (
           <div
-            key={item.key}
+            key={item.inAppKey}
             className="flex items-center justify-between gap-4 py-2"
           >
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
               <div className={`mt-0.5 ${item.color}`}>
                 <item.icon className="h-4 w-4" />
               </div>
-              <div>
-                <Label htmlFor={item.key} className="text-sm font-medium cursor-pointer">
+              <div className="min-w-0">
+                <Label className="text-sm font-medium">
                   {item.label}
                 </Label>
                 <p className="text-xs text-muted-foreground mt-0.5">
@@ -120,12 +144,22 @@ const NotificationPreferences = () => {
                 </p>
               </div>
             </div>
-            <Switch
-              id={item.key}
-              checked={prefs[item.key]}
-              onCheckedChange={() => handleToggle(item.key)}
-              disabled={saving}
-            />
+            <div className="flex items-center gap-6">
+              <Switch
+                id={item.inAppKey}
+                checked={prefs[item.inAppKey]}
+                onCheckedChange={() => handleToggle(item.inAppKey)}
+                disabled={saving}
+                aria-label={`${item.label} in-app`}
+              />
+              <Switch
+                id={item.emailKey}
+                checked={prefs[item.emailKey]}
+                onCheckedChange={() => handleToggle(item.emailKey)}
+                disabled={saving}
+                aria-label={`${item.label} email`}
+              />
+            </div>
           </div>
         ))}
       </div>
