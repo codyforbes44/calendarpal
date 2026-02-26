@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Menu, Sun, Moon, X, Shield, Crown, LayoutDashboard, CalendarCheck, Calendar, CreditCard, Settings } from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -125,7 +126,7 @@ const Navigation = () => {
         </nav>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Theme toggle */}
           {mounted && (
             <Button
@@ -142,6 +143,9 @@ const Navigation = () => {
               <span className="sr-only">Toggle theme</span>
             </Button>
           )}
+
+          {/* Notification bell (authenticated only) */}
+          {user && <NotificationBell />}
 
           {/* Desktop auth buttons */}
           {user ? (
