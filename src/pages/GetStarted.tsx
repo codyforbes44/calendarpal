@@ -189,6 +189,36 @@ const GetStarted = () => {
   const canProceedStep2 = onboarding.eventTitle.trim().length >= 3;
   const canProceedStep3 = onboarding.availability.some((d) => d.enabled);
 
+  // --- Keyboard navigation ---
+
+  useEffect(() => {
+    if (showSuccess) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept when user is typing in an input/textarea
+      const tag = (e.target as HTMLElement)?.tagName;
+      const isInput = tag === "INPUT" || tag === "TEXTAREA";
+
+      if (e.key === "Enter" && !isInput) {
+        e.preventDefault();
+        if (step === 1 && canProceedStep1) setStep(2);
+        else if (step === 2 && canProceedStep2) setStep(3);
+        else if (step === 3 && canProceedStep3) setStep(4);
+        // Step 4 uses form submit, handled natively
+      }
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (step === 2) setStep(1);
+        else if (step === 3) setStep(2);
+        else if (step === 4) setStep(3);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [step, showSuccess, canProceedStep1, canProceedStep2, canProceedStep3]);
+
   // --- Render ---
 
   return (
