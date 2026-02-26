@@ -1,64 +1,55 @@
 
 
-# Refactor GetStarted Onboarding Flow
+# Review: Get Started Onboarding Flow -- UX Improvements
 
-## Overview
-The `/get-started` page works end-to-end but has grown to 558 lines with several code quality issues. This refactor improves maintainability, fixes potential bugs, and removes dead code -- without changing any user-facing behavior.
+## Current State
+The flow already follows the correct "data-first" pattern: Steps 1-3 collect profile, event, and availability data, then Step 4 asks for account credentials. This is solid. However, several UX gaps prevent it from being best-in-class.
 
 ## Issues Found
 
-1. **Unused import**: `useRef` is imported but never used
-2. **Missing useEffect cleanup**: The `setTimeout` for dashboard redirect and `requestAnimationFrame` for confetti are never cleaned up -- can cause state updates on unmounted components
-3. **Unsafe useEffect dependencies**: The OAuth `useEffect` references `persistAndRedirect` and `registeredViaForm` but only lists `[user]` in deps -- risks stale closures
-4. **Duplicated logic**: `Onboarding.tsx` (legacy route) duplicates the same availability defaults, username check, and persist-to-DB logic found in `GetStarted.tsx`
-5. **Monolithic component**: All 4 steps, success screen, confetti, and DB persistence live in one 558-line file
+### 1. No summary/review before committing
+Users fill out 3 steps of data but never see a confirmation of what they entered before creating their account. Best-in-class onboarding shows a compact summary so users feel confident before signing up.
+
+### 2. Missing step labels in progress indicator
+The progress dots show position but not purpose. Users can't tell what's coming next or what they've completed. Adding labels like "Profile", "Event", "Hours", "Account" gives orientation.
+
+### 3. Google OAuth uses wrong API
+`SocialLoginButton.tsx` calls `supabase.auth.signInWithOAuth()` directly. Since this project uses Lovable Cloud, it must use `lovable.auth.signInWithOAuth()` for managed Google auth to work reliably.
+
+### 4. Step 4 layout is dense
+The account step crams Google OAuth, a divider, email/password fields, password strength meter, terms checkbox, submit button, back button, and sign-in link into one view. Restructuring with a review summary at top and cleaner spacing improves scannability.
 
 ## Planned Changes
 
-### 1. Clean up imports and fix lint issues
-- Remove unused `useRef` import from `GetStarted.tsx`
+### 1. Add a compact review summary to Step 4
+Above the registration form, show a read-only summary card displaying:
+- Name and booking URL (from Step 1)
+- Event name and duration (from Step 2)  
+- Available days and hours (from Step 3)
 
-### 2. Fix effect cleanup and stale closure bugs
-- Store the `setTimeout` ID for the redirect in a ref and clear it on unmount
-- Cancel the confetti `requestAnimationFrame` loop on unmount
-- Wrap `persistAndRedirect` in `useCallback` with proper dependencies so the OAuth `useEffect` is safe
+Each section gets a small "Edit" link that jumps back to the relevant step. This gives users confidence and an easy way to fix mistakes.
 
-### 3. Extract confetti logic into a reusable utility
-- Create `src/lib/confetti.ts` with a `fireConfetti()` function
-- Use it from `GetStarted.tsx` (and available for future celebration moments)
+### 2. Add step labels to the progress indicator
+Replace the plain dots with labeled steps: "Profile", "Event", "Hours", "Account". Keep the current dot animation but add small text labels below each dot.
 
-### 4. Extract step UI into sub-components
-- Create `src/components/get-started/StepProfile.tsx` (Step 1)
-- Create `src/components/get-started/StepEvent.tsx` (Step 2)
-- Create `src/components/get-started/StepAvailability.tsx` (Step 3)
-- Create `src/components/get-started/StepAccount.tsx` (Step 4)
-- Create `src/components/get-started/SuccessScreen.tsx` (success view)
-- The parent `GetStarted.tsx` shrinks to ~120 lines orchestrating steps, state, and DB calls
+### 3. Fix Google OAuth to use Lovable Cloud managed auth
+Update `SocialLoginButton.tsx` to import from `@/integrations/lovable` and call `lovable.auth.signInWithOAuth("google", ...)` instead of the direct Supabase call.
 
-### 5. Extract shared persistence logic
-- Create `src/lib/onboarding-persist.ts` with a `persistOnboardingData(userId, data)` function
-- Reuse from both `GetStarted.tsx` and `Onboarding.tsx`, eliminating ~40 lines of duplication
-
-### 6. Deduplicate availability defaults
-- `OnboardingContext.tsx` and `Onboarding.tsx` both define `DEFAULT_AVAILABILITY` independently
-- Export it from `OnboardingContext.tsx` and import it in `Onboarding.tsx`
+### 4. Minor UX polish
+- Add a subtle border/background to the review summary to visually separate it from the form
+- Ensure the "Create Account" button label changes to show what happens next ("Create Account and Go to Dashboard")
 
 ## Files Changed
+
 | File | Action |
 |------|--------|
-| `src/lib/confetti.ts` | New -- reusable confetti helper |
-| `src/lib/onboarding-persist.ts` | New -- shared DB persistence |
-| `src/components/get-started/StepProfile.tsx` | New -- Step 1 UI |
-| `src/components/get-started/StepEvent.tsx` | New -- Step 2 UI |
-| `src/components/get-started/StepAvailability.tsx` | New -- Step 3 UI |
-| `src/components/get-started/StepAccount.tsx` | New -- Step 4 UI |
-| `src/components/get-started/SuccessScreen.tsx` | New -- success view |
-| `src/pages/GetStarted.tsx` | Refactored -- orchestrator only |
-| `src/pages/Onboarding.tsx` | Updated -- use shared persist + defaults |
-| `src/contexts/OnboardingContext.tsx` | Updated -- export `DEFAULT_AVAILABILITY` |
+| `src/components/get-started/StepAccount.tsx` | Add review summary section above the registration form |
+| `src/pages/GetStarted.tsx` | Pass onboarding data to StepAccount for the summary; add step labels |
+| `src/components/auth/SocialLoginButton.tsx` | Switch to `lovable.auth.signInWithOAuth()` |
 
 ## What Does NOT Change
-- All user-facing behavior, animations, and flow remain identical
-- No database or auth changes
-- No new dependencies
+- Steps 1-3 remain identical
+- Database persistence logic unchanged
+- Confetti and success screen unchanged
+- Keyboard navigation unchanged
 
