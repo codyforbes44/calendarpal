@@ -6,11 +6,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { OnboardingProvider } from "@/contexts/OnboardingContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRouteGuard from "@/components/admin/AdminRouteGuard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import GeoAccessGuard from "@/components/GeoAccessGuard";
 import Index from "./pages/Index";
+import GetStarted from "./pages/GetStarted";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
@@ -64,11 +66,13 @@ const App = () => (
           <GeoAccessGuard>
             <TooltipProvider>
               <AuthProvider>
+                <OnboardingProvider>
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
                   <Routes>
                     <Route path="/" element={<Index />} />
+                    <Route path="/get-started" element={<GetStarted />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/auth/reset-password" element={<ResetPassword />} />
@@ -180,6 +184,7 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
+                </OnboardingProvider>
               </AuthProvider>
             </TooltipProvider>
           </GeoAccessGuard>
