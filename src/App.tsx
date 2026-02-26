@@ -31,6 +31,7 @@ import Support from "./pages/Support";
 import AppealVerify from "./pages/AppealVerify";
 import About from "./pages/About";
 import Events from "./pages/Events";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -138,6 +139,14 @@ const App = () => (
                       element={
                         <ProtectedRoute>
                           <Events />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/notifications"
+                      element={
+                        <ProtectedRoute>
+                          <Notifications />
                         </ProtectedRoute>
                       }
                     />

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Bell, CalendarPlus, CalendarX, CalendarClock, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -120,6 +121,17 @@ const NotificationBell = () => {
             </div>
           )}
         </ScrollArea>
+        {notifications.length > 0 && (
+          <div className="border-t border-border px-4 py-2.5">
+            <Link
+              to="/notifications"
+              onClick={() => setOpen(false)}
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              View all notifications
+            </Link>
+          </div>
+        )}
       </PopoverContent>
     </Popover>
   );
