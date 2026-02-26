@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Zap, Users, Play, Shield, ArrowRight, Star } from "lucide-react";
+import AnimatedSection from "@/components/ui/animated-section";
 import heroImage from "@/assets/hero-image.jpg";
 
 const Hero = () => {
@@ -21,7 +22,7 @@ const Hero = () => {
               <span>Better than Calendly</span>
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight">
               Scheduling
               <br />
               <span className="bg-gradient-primary bg-clip-text text-transparent">
@@ -41,7 +42,10 @@ const Hero = () => {
                 </a>
               </Button>
               <Button variant="outline" size="lg" className="text-sm sm:text-base group w-full sm:w-auto" asChild>
-                <a href="#preview">
+                <a href="#preview" onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById("preview")?.scrollIntoView({ behavior: "smooth" });
+                }}>
                   <Play className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
                   See How It Works
                 </a>
@@ -49,7 +53,7 @@ const Hero = () => {
             </div>
 
             {/* Trust indicators */}
-            <div className="flex flex-wrap items-center gap-3 sm:gap-5 pt-1 sm:pt-2 justify-center lg:justify-start">
+            <AnimatedSection delay={400} animation="fade-up" className="flex flex-wrap items-center gap-3 sm:gap-5 pt-1 sm:pt-2 justify-center lg:justify-start">
               <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
                 <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
                 <span>No credit card required</span>
@@ -62,10 +66,10 @@ const Hero = () => {
                 <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
                 <span>1,000+ professionals</span>
               </div>
-            </div>
+            </AnimatedSection>
 
             {/* Logo cloud */}
-            <div className="pt-3 sm:pt-5">
+            <AnimatedSection delay={600} animation="fade-in" className="pt-3 sm:pt-5">
               <p className="text-xs text-muted-foreground mb-2 sm:mb-3 uppercase tracking-wider">Integrates with</p>
               <div className="flex flex-wrap gap-4 sm:gap-6 items-center opacity-60 justify-center lg:justify-start">
                 <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium">
@@ -81,10 +85,10 @@ const Hero = () => {
                   <span>Teams</span>
                 </div>
               </div>
-            </div>
+            </AnimatedSection>
           </div>
 
-          {/* Right content - visible on all screens, simplified on mobile */}
+          {/* Right content */}
           <div className="relative animate-fade-in" style={{ animationDelay: "0.2s" }}>
             {/* Mobile: Compact floating cards */}
             <div className="lg:hidden flex flex-col gap-3 max-w-sm mx-auto">
@@ -119,15 +123,17 @@ const Hero = () => {
               </div>
             </div>
 
-            {/* Desktop: Full image with floating cards */}
-            <div className="hidden lg:block relative rounded-2xl overflow-hidden shadow-lg">
-              <img 
-                src={heroImage} 
-                alt="Modern scheduling interface preview" 
-                className="w-full h-auto"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+            {/* Desktop: Full image with glow border + floating cards */}
+            <div className="hidden lg:block relative">
+              <div className="rounded-2xl overflow-hidden shadow-lg ring-1 ring-primary/10 hover:ring-primary/20 transition-all duration-500">
+                <img 
+                  src={heroImage} 
+                  alt="Modern scheduling interface preview" 
+                  className="w-full h-auto"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+              </div>
               
               {/* Floating cards */}
               <div className="absolute top-8 right-8 bg-card/90 backdrop-blur-sm rounded-xl p-4 shadow-lg animate-float">

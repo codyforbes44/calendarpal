@@ -460,15 +460,82 @@ const PublicBooking = () => {
     return (
       <>
         <SEO title={dynamicTitle} description={dynamicDescription} />
-        <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
-          <div className="text-center space-y-4">
-            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-muted-foreground">Loading booking page...</p>
+        <div className="min-h-screen bg-gradient-subtle py-12 px-4 sm:px-6">
+          <div className="max-w-xl mx-auto">
+            {/* Skeleton profile header */}
+            <div className="rounded-2xl border border-border bg-card shadow-sm p-8 mb-6">
+              <div className="flex flex-col items-center">
+                <div className="w-20 h-20 rounded-full bg-muted animate-pulse mb-4" />
+                <div className="h-7 w-40 bg-muted animate-pulse rounded mb-2" />
+                <div className="h-4 w-24 bg-muted animate-pulse rounded mb-4" />
+                <div className="h-4 w-56 bg-muted animate-pulse rounded" />
+              </div>
+            </div>
+            {/* Skeleton event cards */}
+            <div className="space-y-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="rounded-xl border border-border bg-card p-5">
+                  <div className="h-5 w-32 bg-muted animate-pulse rounded mb-2" />
+                  <div className="h-4 w-48 bg-muted animate-pulse rounded mb-3" />
+                  <div className="flex gap-2">
+                    <div className="h-6 w-16 bg-muted animate-pulse rounded-full" />
+                    <div className="h-6 w-20 bg-muted animate-pulse rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </>
     );
   }
+
+  // Generate .ics calendar file content
+  const generateIcsContent = () => {
+    if (!selectedDate || !selectedTime || !selectedEvent || !profile) return null;
+    const startTime24 = convertTo24Hour(selectedTime);
+    const endTime24 = calculateEndTime(startTime24, selectedEvent.duration);
+    const dateStr = format(selectedDate, "yyyyMMdd");
+    const start = `${dateStr}T${startTime24.replace(":", "")}00`;
+    const end = `${dateStr}T${endTime24.replace(":", "")}00`;
+    
+    return [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//BookMe.Bet//EN",
+      "BEGIN:VEVENT",
+      `DTSTART;TZID=${profile.timezone || "UTC"}:${start}`,
+      `DTEND;TZID=${profile.timezone || "UTC"}:${end}`,
+      `SUMMARY:${selectedEvent.title} with ${profile.full_name || "Host"}`,
+      `DESCRIPTION:Booked via BookMe.Bet`,
+      "STATUS:CONFIRMED",
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+  };
+
+  const downloadIcs = () => {
+    const content = generateIcsContent();
+    if (!content) return;
+    const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `booking-${selectedEvent?.title?.replace(/\s+/g, "-").toLowerCase()}.ics`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const getGoogleCalendarUrl = () => {
+    if (!selectedDate || !selectedTime || !selectedEvent || !profile) return "#";
+    const startTime24 = convertTo24Hour(selectedTime);
+    const endTime24 = calculateEndTime(startTime24, selectedEvent.duration);
+    const dateStr = format(selectedDate, "yyyyMMdd");
+    const start = `${dateStr}T${startTime24.replace(":", "")}00`;
+    const end = `${dateStr}T${endTime24.replace(":", "")}00`;
+    const title = encodeURIComponent(`${selectedEvent.title} with ${profile.full_name || "Host"}`);
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${encodeURIComponent("Booked via BookMe.Bet")}`;
+  };
 
   // Confirmed step
   if (step === "confirmed") {
@@ -480,11 +547,11 @@ const PublicBooking = () => {
       <>
         <SEO title={dynamicTitle} description={dynamicDescription} />
         <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-6">
-          <Card className="max-w-lg w-full p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-8 h-8 text-green-600" />
+          <Card className="max-w-lg w-full p-8 text-center animate-scale-in">
+          <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check className="w-8 h-8 text-success" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Booking Confirmed!</h1>
+          <h1 className="font-display text-2xl font-bold mb-2">Booking Confirmed!</h1>
           <p className="text-muted-foreground mb-6">
             Your meeting with {profile?.full_name} has been scheduled.
           </p>
@@ -506,6 +573,21 @@ const PublicBooking = () => {
               <span className="text-sm">{getTimezoneLabel(guestTimezone)}</span>
             </div>
           </div>
+
+          {/* Add to calendar buttons */}
+          <div className="flex gap-2 mb-4">
+            <Button variant="outline" size="sm" className="flex-1" onClick={downloadIcs}>
+              <Calendar className="w-4 h-4 mr-1.5" />
+              Download .ics
+            </Button>
+            <Button variant="outline" size="sm" className="flex-1" asChild>
+              <a href={getGoogleCalendarUrl()} target="_blank" rel="noopener noreferrer">
+                <Calendar className="w-4 h-4 mr-1.5" />
+                Google Calendar
+              </a>
+            </Button>
+          </div>
+
           <p className="text-sm text-muted-foreground mb-4">
             A confirmation email has been sent to {formData.email}
           </p>

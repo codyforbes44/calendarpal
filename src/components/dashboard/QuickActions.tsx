@@ -1,15 +1,17 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link2, Plus, Calendar, Share2 } from "lucide-react";
+import { Link2, Plus, Calendar, Share2, Lightbulb } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 interface QuickActionsProps {
   username?: string | null;
   onShare: () => void;
+  hasEventTypes?: boolean;
+  hasAvailability?: boolean;
 }
 
-const QuickActions = ({ username, onShare }: QuickActionsProps) => {
+const QuickActions = ({ username, onShare, hasEventTypes = true, hasAvailability = true }: QuickActionsProps) => {
   const navigate = useNavigate();
 
   const copyBookingLink = () => {
@@ -21,6 +23,15 @@ const QuickActions = ({ username, onShare }: QuickActionsProps) => {
     navigator.clipboard.writeText(link);
     toast.success("Booking link copied to clipboard!");
   };
+
+  // Smart suggestion based on user state
+  const suggestion = !username
+    ? { text: "Complete your profile to get a booking link", action: () => navigate("/settings"), label: "Set Up Profile" }
+    : !hasEventTypes
+    ? { text: "Create your first event type to start accepting bookings", action: () => navigate("/events/new"), label: "Create Event" }
+    : !hasAvailability
+    ? { text: "Set your availability so guests can book with you", action: () => navigate("/availability"), label: "Set Availability" }
+    : null;
 
   const actions = [
     {
@@ -55,6 +66,15 @@ const QuickActions = ({ username, onShare }: QuickActionsProps) => {
 
   return (
     <Card className="p-4 sm:p-6">
+      {suggestion && (
+        <div className="flex items-center gap-3 mb-4 p-3 rounded-lg bg-primary/5 border border-primary/10">
+          <Lightbulb className="w-5 h-5 text-primary shrink-0" />
+          <p className="text-sm text-muted-foreground flex-1">{suggestion.text}</p>
+          <Button size="sm" variant="outline" onClick={suggestion.action} className="shrink-0">
+            {suggestion.label}
+          </Button>
+        </div>
+      )}
       <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Quick Actions</h2>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         {actions.map((action, index) => (

@@ -44,7 +44,7 @@ const Support = () => {
     },
     {
       question: "How does the Pro subscription work?",
-      answer: "Pro unlocks unlimited bookings, recurring meetings, buffer times, and priority support. You can subscribe monthly ($12/month) or annually ($114/year for ~21% savings). Manage your subscription anytime from the Subscription page."
+      answer: "Pro unlocks unlimited bookings, recurring meetings, buffer times, and priority support. You can subscribe monthly ($8/month) or annually ($84/year for ~13% savings). Manage your subscription anytime from the Subscription page."
     },
     {
       question: "How do I cancel my subscription?",
@@ -104,7 +104,7 @@ const Support = () => {
             </CardHeader>
             <CardContent className="flex-1">
               <p className="text-sm text-muted-foreground">
-                Learn how to get the most out of BookMe.cool with step-by-step guides.
+                Learn how to get the most out of BookMe.Bet with step-by-step guides.
               </p>
             </CardContent>
           </Card>
@@ -134,7 +134,7 @@ const Support = () => {
             </CardHeader>
             <CardContent className="flex-1">
               <p className="text-sm text-muted-foreground">
-                Have a suggestion? We'd love to hear how we can improve BookMe.cool.
+                Have a suggestion? We'd love to hear how we can improve BookMe.Bet.
               </p>
             </CardContent>
           </Card>
