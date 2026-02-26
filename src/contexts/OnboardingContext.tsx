@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 interface DayAvailability {
   day: string;
@@ -39,19 +39,43 @@ export const DEFAULT_AVAILABILITY: DayAvailability[] = [
   { day: "Saturday", dayOfWeek: 6, enabled: false },
 ];
 
+const STORAGE_KEY = "bookme_onboarding";
+
+function loadSaved(): Partial<OnboardingData> | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
-  const [fullName, setFullName] = useState("");
-  const [username, setUsername] = useState("");
-  const [eventTitle, setEventTitle] = useState("30 Minute Meeting");
-  const [eventDescription, setEventDescription] = useState("");
-  const [eventDuration, setEventDuration] = useState(30);
-  const [availability, setAvailability] = useState<DayAvailability[]>(DEFAULT_AVAILABILITY);
-  const [startTime, setStartTime] = useState("09:00");
-  const [endTime, setEndTime] = useState("17:00");
+  const saved = loadSaved();
 
-  const clearOnboardingData = () => {
+  const [fullName, setFullName] = useState(saved?.fullName ?? "");
+  const [username, setUsername] = useState(saved?.username ?? "");
+  const [eventTitle, setEventTitle] = useState(saved?.eventTitle ?? "30 Minute Meeting");
+  const [eventDescription, setEventDescription] = useState(saved?.eventDescription ?? "");
+  const [eventDuration, setEventDuration] = useState(saved?.eventDuration ?? 30);
+  const [availability, setAvailability] = useState<DayAvailability[]>(saved?.availability ?? DEFAULT_AVAILABILITY);
+  const [startTime, setStartTime] = useState(saved?.startTime ?? "09:00");
+  const [endTime, setEndTime] = useState(saved?.endTime ?? "17:00");
+
+  // Persist to localStorage on every change
+  useEffect(() => {
+    const data: OnboardingData = {
+      fullName, username, eventTitle, eventDescription,
+      eventDuration, availability, startTime, endTime,
+    };
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch { /* quota exceeded — ignore */ }
+  }, [fullName, username, eventTitle, eventDescription, eventDuration, availability, startTime, endTime]);
+
+  const clearOnboardingData = useCallback(() => {
     setFullName("");
     setUsername("");
     setEventTitle("30 Minute Meeting");
@@ -60,7 +84,8 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     setAvailability(DEFAULT_AVAILABILITY);
     setStartTime("09:00");
     setEndTime("17:00");
-  };
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
 
   return (
     <OnboardingContext.Provider
