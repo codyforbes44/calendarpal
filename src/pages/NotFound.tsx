@@ -32,7 +32,7 @@ const NotFound = () => {
           <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
             <Calendar className="w-6 h-6 text-primary-foreground" />
           </div>
-          <span className="font-bold text-2xl">BookMe.Bet</span>
+          <span className="font-bold text-2xl">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</span>
         </div>
 
         {/* 404 Display */}

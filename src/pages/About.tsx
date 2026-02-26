@@ -51,8 +51,8 @@ const About = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="About | BookMe.Bet"
-        description="Learn how BookMe.Bet works. Simple, modern scheduling for professionals — set availability, share your link, get booked."
+        title="About | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ"
+        description="Learn how Bᴏᴏᴋᴍᴇ.ʙᴇᴛ works. Simple, modern scheduling for professionals — set availability, share your link, get booked."
         keywords="how it works, about bookme, scheduling platform, appointment booking"
       />
       <Navigation />
@@ -64,7 +64,7 @@ const About = () => {
             Scheduling, <span className="text-primary">simplified</span>.
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
-            BookMe.Bet removes the back-and-forth from meeting coordination. 
+            Bᴏᴏᴋᴍᴇ.ʙᴇᴛ removes the back-and-forth from meeting coordination. 
             Set your availability once, share a link, and let others book time with you effortlessly.
           </p>
         </section>
@@ -114,7 +114,7 @@ const About = () => {
             Ready to simplify your schedule?
           </h2>
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Join thousands of professionals who trust BookMe.Bet to handle their bookings.
+            Join thousands of professionals who trust Bᴏᴏᴋᴍᴇ.ʙᴇᴛ to handle their bookings.
           </p>
           <Link to="/auth">
             <Button size="lg" className="font-semibold">

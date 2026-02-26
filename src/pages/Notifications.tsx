@@ -106,7 +106,7 @@ const Notifications = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <SEO title="Notifications | BookMe.Bet" description="View your booking notifications" noindex />
+      <SEO title="Notifications | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ" description="View your booking notifications" noindex />
       <Navigation />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav">

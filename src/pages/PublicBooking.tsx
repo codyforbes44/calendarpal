@@ -449,8 +449,8 @@ const PublicBooking = () => {
   const guestLocalTime = getGuestLocalTime();
 
   const dynamicTitle = profile?.full_name 
-    ? `Book with ${profile.full_name} | BookMe.Bet` 
-    : "Book a Meeting | BookMe.Bet";
+    ? `Book with ${profile.full_name} | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ` 
+    : "Book a Meeting | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ";
   
   const dynamicDescription = profile?.full_name
     ? `Schedule a meeting with ${profile.full_name}. Choose your preferred time slot and book instantly.`
@@ -507,7 +507,7 @@ const PublicBooking = () => {
       `DTSTART;TZID=${profile.timezone || "UTC"}:${start}`,
       `DTEND;TZID=${profile.timezone || "UTC"}:${end}`,
       `SUMMARY:${selectedEvent.title} with ${profile.full_name || "Host"}`,
-      `DESCRIPTION:Booked via BookMe.Bet`,
+      `DESCRIPTION:Booked via Bᴏᴏᴋᴍᴇ.ʙᴇᴛ`,
       "STATUS:CONFIRMED",
       "END:VEVENT",
       "END:VCALENDAR",
@@ -534,7 +534,7 @@ const PublicBooking = () => {
     const start = `${dateStr}T${startTime24.replace(":", "")}00`;
     const end = `${dateStr}T${endTime24.replace(":", "")}00`;
     const title = encodeURIComponent(`${selectedEvent.title} with ${profile.full_name || "Host"}`);
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${encodeURIComponent("Booked via BookMe.Bet")}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${encodeURIComponent("Booked via Bᴏᴏᴋᴍᴇ.ʙᴇᴛ")}`;
   };
 
   // Confirmed step
@@ -737,7 +737,7 @@ const PublicBooking = () => {
             <p className="text-center text-xs text-muted-foreground mt-8">
               Powered by{" "}
               <a href="/" className="text-primary hover:underline font-medium">
-                BookMe.Bet
+                Bᴏᴏᴋᴍᴇ.ʙᴇᴛ
               </a>
             </p>
           </div>

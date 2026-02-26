@@ -158,7 +158,7 @@ const Onboarding = () => {
         if (availError) throw availError;
       }
 
-      toast.success("You're all set! Welcome to BookMe.Bet 🎉");
+      toast.success("You're all set! Welcome to Bᴏᴏᴋᴍᴇ.ʙᴇᴛ 🎉");
       navigate("/dashboard");
     } catch (error: any) {
       toast.error(error.message || "Failed to complete setup");
@@ -178,8 +178,8 @@ const Onboarding = () => {
   return (
     <>
       <SEO
-        title={pageSEO.onboarding?.title || "Get Started | BookMe.Bet"}
-        description={pageSEO.onboarding?.description || "Set up your BookMe.Bet account in minutes"}
+        title={pageSEO.onboarding?.title || "Get Started | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ"}
+        description={pageSEO.onboarding?.description || "Set up your Bᴏᴏᴋᴍᴇ.ʙᴇᴛ account in minutes"}
         canonical={`${siteConfig.url}/onboarding`}
       />
       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-6">
