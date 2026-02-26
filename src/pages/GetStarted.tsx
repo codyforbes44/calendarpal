@@ -36,9 +36,13 @@ const GetStarted = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
+  // Track whether registration was initiated via the form (to avoid double-persist)
+  const [registeredViaForm, setRegisteredViaForm] = useState(false);
+
   // If user is already authenticated (e.g. OAuth callback), persist data and redirect
+  // Skip if registeredViaForm is true — handleRegister already calls persistAndRedirect
   useEffect(() => {
-    if (user && step === 4) {
+    if (user && step === 4 && !registeredViaForm) {
       persistAndRedirect(user.id);
     }
   }, [user]);
@@ -163,6 +167,7 @@ const GetStarted = () => {
       }
 
       if (data.user) {
+        setRegisteredViaForm(true);
         await persistAndRedirect(data.user.id);
       }
     } catch (error) {
