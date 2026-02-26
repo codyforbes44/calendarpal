@@ -28,6 +28,7 @@ const GetStarted = () => {
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
@@ -149,8 +150,9 @@ const GetStarted = () => {
       };
       frame();
 
-      toast.success("You're all set! Welcome to CalendarPal 🎉");
-      setTimeout(() => navigate("/dashboard", { replace: true }), 2200);
+      // Show success screen, then redirect
+      setShowSuccess(true);
+      setTimeout(() => navigate("/dashboard", { replace: true }), 2800);
     } catch (error: any) {
       toast.error(error.message || "Failed to complete setup");
     } finally {
@@ -219,6 +221,17 @@ const GetStarted = () => {
         canonical={`${siteConfig.url}/get-started`}
       />
       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4 sm:p-6">
+        {showSuccess ? (
+          <div className="text-center space-y-6 animate-scale-in">
+            <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
+              <Check className="w-10 h-10 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-3xl sm:text-4xl font-bold font-display">You're all set!</h1>
+              <p className="text-muted-foreground text-base sm:text-lg">Taking you to your dashboard…</p>
+            </div>
+          </div>
+        ) : (
         <Card className="w-full max-w-lg p-6 sm:p-8 animate-scale-in">
           {/* Back link */}
           <div className="mb-4">
@@ -533,6 +546,7 @@ const GetStarted = () => {
             </div>
           )}
         </Card>
+        )}
       </div>
     </>
   );
