@@ -35,6 +35,7 @@ import TimezoneSelector from "@/components/TimezoneSelector";
 import { getLocalTimezone } from "@/lib/timezones";
 import AvatarUpload from "@/components/profile/AvatarUpload";
 import ShareModal from "@/components/ShareModal";
+import NotificationPreferences from "@/components/settings/NotificationPreferences";
 import { SkeletonProfile } from "@/components/ui/skeleton-card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -387,6 +388,11 @@ const ProfileSettings = () => {
               </p>
             </Card>
           )}
+
+          {/* Notification Preferences */}
+          <div className="mt-4 sm:mt-6">
+            <NotificationPreferences />
+          </div>
 
           {/* Danger Zone - Account Deletion */}
           <Card className="p-4 sm:p-6 mt-4 sm:mt-6 border-destructive/50">
