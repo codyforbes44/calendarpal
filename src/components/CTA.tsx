@@ -3,9 +3,9 @@ import { ArrowRight, CheckCircle } from "lucide-react";
 import AnimatedSection from "@/components/ui/animated-section";
 
 const benefits = [
-  "Free forever for basic features",
+  "Free forever plan",
   "No credit card required",
-  "Set up in under 5 minutes",
+  "Live in 2 minutes",
   "Cancel anytime"
 ];
 
@@ -18,24 +18,21 @@ const CTA = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <AnimatedSection className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
           <h2 className="font-display text-3xl sm:text-4xl lg:text-6xl font-bold">
-            Ready to simplify
+            Stop Scheduling.
             <br />
-            your scheduling?
+            <span className="bg-gradient-primary bg-clip-text text-transparent">Start Automating.</span>
           </h2>
           
           <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Join thousands of professionals who've already made the switch to smarter scheduling.
+            Join 5,000+ professionals who've eliminated scheduling busywork forever.
           </p>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">
-            <Button variant="hero" size="lg" className="text-base px-8 w-full sm:w-auto" asChild>
+          <div className="flex justify-center pt-2 sm:pt-4">
+            <Button variant="hero" size="lg" className="text-base px-8 w-full sm:w-auto group" asChild>
               <a href="/get-started">
-                Get Started Free
-                <ArrowRight className="w-5 h-5 ml-2" />
+                Start Automating Free
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </a>
-            </Button>
-            <Button variant="outline" size="lg" className="text-base w-full sm:w-auto" asChild>
-              <a href="/pricing">See Pricing</a>
             </Button>
           </div>
 
