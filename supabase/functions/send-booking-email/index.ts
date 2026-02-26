@@ -704,6 +704,44 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${requestId}] Guest: ${booking.guestName} (${maskEmail(booking.guestEmail)})`);
     console.log(`[${requestId}] Host: ${booking.hostName} (${booking.hostEmail ? maskEmail(booking.hostEmail) : "NO EMAIL PROVIDED"})`);
 
+    // Check host's email notification preferences
+    let hostEmailEnabled = true;
+    try {
+      const supabaseForPrefs = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      // Look up the host's profile via the booking record
+      const { data: bookingData } = await supabaseForPrefs
+        .from("bookings")
+        .select("host_user_id")
+        .eq("id", booking.id)
+        .single();
+
+      if (bookingData?.host_user_id) {
+        const { data: profileData } = await supabaseForPrefs
+          .from("profiles")
+          .select("notification_preferences")
+          .eq("user_id", bookingData.host_user_id)
+          .single();
+
+        if (profileData?.notification_preferences) {
+          const prefs = profileData.notification_preferences as Record<string, boolean>;
+          const prefKey = type === "booking_confirmed" ? "email_booking_created"
+            : type === "booking_cancelled" ? "email_booking_cancelled"
+            : "email_booking_rescheduled";
+          hostEmailEnabled = prefs[prefKey] !== false; // default true if not set
+          console.log(`[${requestId}] Host email pref (${prefKey}): ${hostEmailEnabled}`);
+        }
+      }
+    } catch (prefErr: any) {
+      console.warn(`[${requestId}] Could not check email prefs, defaulting to enabled: ${prefErr.message}`);
+    }
+
+    // If host email is disabled by preference, temporarily remove it so email functions skip host
+    const originalHostEmail = booking.hostEmail;
+    if (!hostEmailEnabled) {
+      booking.hostEmail = undefined;
+      console.log(`[${requestId}] Skipping host email per notification preferences`);
+    }
+
     let result: { guestSent: boolean; hostSent: boolean };
 
     switch (type) {
@@ -722,6 +760,9 @@ const handler = async (req: Request): Promise<Response> => {
       default:
         throw new Error(`Unknown email type: ${type}`);
     }
+
+    // Restore for logging
+    booking.hostEmail = originalHostEmail;
 
     console.log(`[${requestId}] ========== EMAIL RESULT ==========`);
     console.log(`[${requestId}] Guest email sent: ${result.guestSent}`);

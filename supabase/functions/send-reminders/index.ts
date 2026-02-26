@@ -381,6 +381,24 @@ serve(async (req) => {
         const duration: number   = (booking.event_types as any)?.duration ?? 30;
         const hostName: string   = (booking.profiles as any)?.full_name ?? "Host";
         const hostEmail: string  = (booking.profiles as any)?.email ?? "";
+
+        // Check host's email reminder preference
+        let hostReminderEnabled = true;
+        try {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("notification_preferences")
+            .eq("user_id", booking.host_user_id)
+            .single();
+
+          if (profileData?.notification_preferences) {
+            const prefs = profileData.notification_preferences as Record<string, boolean>;
+            hostReminderEnabled = prefs.email_reminder !== false;
+            console.log(`[Reminders] Host email_reminder pref: ${hostReminderEnabled}`);
+          }
+        } catch (prefErr: any) {
+          console.warn(`[Reminders] Could not check email prefs: ${prefErr.message}`);
+        }
         const formattedDate      = formatDate(scheduledDate);
         const meetingLink: string | undefined = booking.meeting_link ?? undefined;
         const manageUrl = booking.cancellation_token
@@ -438,7 +456,7 @@ serve(async (req) => {
         }
 
         // ── Host email: primary = host local time, secondary = guest time ──
-        if (hostEmail) {
+        if (hostEmail && hostReminderEnabled) {
           try {
             await sendEmailWithRetry({
               from: RESEND_FROM_EMAIL,
