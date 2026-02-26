@@ -29,7 +29,7 @@ const CTA = () => {
 
           <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-2 sm:pt-4">
             <Button variant="hero" size="lg" className="text-base px-8 w-full sm:w-auto" asChild>
-              <a href="/auth">
+              <a href="/get-started">
                 Get Started Free
                 <ArrowRight className="w-5 h-5 ml-2" />
               </a>

@@ -396,7 +396,7 @@ const Auth = () => {
               </Button>
             </form>
 
-            <div className="mt-5 sm:mt-6 text-center">
+            <div className="mt-5 sm:mt-6 text-center space-y-3">
               <button
                 onClick={toggleMode}
                 className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
@@ -406,6 +406,17 @@ const Auth = () => {
                   {isLogin ? "Sign up" : "Sign in"}
                 </span>
               </button>
+
+              {isLogin && (
+                <div className="pt-2 border-t border-border">
+                  <a
+                    href="/get-started"
+                    className="text-sm text-primary font-medium hover:underline"
+                  >
+                    New here? Set up your account in minutes →
+                  </a>
+                </div>
+              )}
             </div>
           </Card>
         </div>

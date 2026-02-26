@@ -36,7 +36,7 @@ const Hero = () => {
 
             <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
               <Button variant="hero" size="lg" className="text-sm sm:text-base px-6 sm:px-8 group w-full sm:w-auto" asChild>
-                <a href="/auth">
+                <a href="/get-started">
                   Start Free Trial
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </a>

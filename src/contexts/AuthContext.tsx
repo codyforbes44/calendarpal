@@ -48,7 +48,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const currentPath = window.location.pathname;
             
             // Only redirect if we're on the auth page or root (not already navigating)
-            if (currentPath === "/auth" || currentPath === "/") {
+            // Skip redirect if on /get-started — that page handles its own persistence
+            if (currentPath === "/get-started") {
+              // Do nothing — GetStarted page handles post-auth persistence
+            } else if (currentPath === "/auth" || currentPath === "/") {
               if (hasCompletedOnboarding) {
                 window.location.replace("/dashboard");
               } else {
