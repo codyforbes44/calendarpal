@@ -7,23 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Calendar, Check, User, Clock, Sparkles, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
 import { pageSEO, siteConfig } from "@/lib/seo-config";
-
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-const DEFAULT_AVAILABILITY = [
-  { day: "Sunday", dayOfWeek: 0, enabled: false },
-  { day: "Monday", dayOfWeek: 1, enabled: true },
-  { day: "Tuesday", dayOfWeek: 2, enabled: true },
-  { day: "Wednesday", dayOfWeek: 3, enabled: true },
-  { day: "Thursday", dayOfWeek: 4, enabled: true },
-  { day: "Friday", dayOfWeek: 5, enabled: true },
-  { day: "Saturday", dayOfWeek: 6, enabled: false },
-];
+import { DEFAULT_AVAILABILITY } from "@/contexts/OnboardingContext";
+import { persistOnboardingData } from "@/lib/onboarding-persist";
 
 const Onboarding = () => {
   const { user } = useAuth();
@@ -52,11 +41,9 @@ const Onboarding = () => {
       navigate("/auth");
       return;
     }
-    // Pre-fill data from user metadata (works for both email signup and Google OAuth)
     const name = user.user_metadata?.full_name || user.user_metadata?.name || "";
     setFullName(name);
     
-    // For Google OAuth users, suggest username from email
     if (!username && user.email) {
       const emailUsername = user.email.split("@")[0].toLowerCase().replace(/[^a-z0-9-]/g, "");
       if (emailUsername.length >= 3) {
@@ -94,7 +81,6 @@ const Onboarding = () => {
     const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
     setUsername(sanitized);
     
-    // Debounce the availability check
     const timer = setTimeout(() => {
       checkUsernameAvailability(sanitized);
     }, 500);
@@ -115,48 +101,16 @@ const Onboarding = () => {
     setLoading(true);
 
     try {
-      // Update profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          full_name: fullName.trim(),
-          username: username.trim(),
-        })
-        .eq("user_id", user.id);
-
-      if (profileError) throw profileError;
-
-      // Create event type
-      const { error: eventError } = await supabase.from("event_types").insert({
-        user_id: user.id,
-        title: eventTitle.trim(),
-        description: eventDescription.trim() || null,
-        duration: eventDuration,
-        is_active: true,
+      await persistOnboardingData(user.id, {
+        fullName,
+        username,
+        eventTitle,
+        eventDescription,
+        eventDuration,
+        availability,
+        startTime,
+        endTime,
       });
-
-      if (eventError) throw eventError;
-
-      // Save availability
-      const enabledDays = availability.filter((d) => d.enabled);
-      if (enabledDays.length > 0) {
-        // Delete existing availability
-        await supabase.from("availability").delete().eq("user_id", user.id);
-
-        // Insert new availability
-        const availabilityRecords = enabledDays.map((day) => ({
-          user_id: user.id,
-          day_of_week: day.dayOfWeek,
-          start_time: startTime,
-          end_time: endTime,
-        }));
-
-        const { error: availError } = await supabase
-          .from("availability")
-          .insert(availabilityRecords);
-
-        if (availError) throw availError;
-      }
 
       toast.success("You're all set! Welcome to Bᴏᴏᴋᴍᴇ.ʙᴇᴛ 🎉");
       navigate("/dashboard");
@@ -351,7 +305,6 @@ const Onboarding = () => {
               </div>
 
               <div className="space-y-4">
-                {/* Working hours */}
                 <div className="flex gap-4">
                   <div className="flex-1 space-y-2">
                     <Label>Start Time</Label>
@@ -373,7 +326,6 @@ const Onboarding = () => {
                   </div>
                 </div>
 
-                {/* Days */}
                 <div className="space-y-2">
                   <Label>Available Days</Label>
                   <div className="grid grid-cols-7 gap-1">
