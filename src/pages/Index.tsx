@@ -1,6 +1,9 @@
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
+import LogoCloud from "@/components/LogoCloud";
+import HowItWorks from "@/components/HowItWorks";
 import Features from "@/components/Features";
+import Stats from "@/components/Stats";
 import Testimonials from "@/components/Testimonials";
 import BookingPreview from "@/components/BookingPreview";
 import CTA from "@/components/CTA";
@@ -32,7 +35,10 @@ const Index = () => {
       />
       <Navigation />
       <Hero />
+      <LogoCloud />
+      <HowItWorks />
       <Features />
+      <Stats />
       <Testimonials />
       <BookingPreview />
       <CTA />

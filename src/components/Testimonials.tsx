@@ -4,7 +4,7 @@ import AnimatedSection from "@/components/ui/animated-section";
 const testimonials = [
   {
     quote:
-      "BookMe.Bet completely transformed how I manage client meetings. The timezone handling is flawless — I've never had a missed appointment since switching.",
+      "BookMe.Bet automated everything — confirmations, reminders, timezone conversion. I haven't touched a scheduling email in months.",
     name: "Sarah Kim",
     role: "Marketing Consultant",
     initials: "SK",
@@ -16,7 +16,7 @@ const testimonials = [
   },
   {
     quote:
-      "As a freelancer, time is money. The custom booking page makes me look incredibly professional and the setup took under 5 minutes. Worth every penny.",
+      "Setup took 2 minutes. Within the first week, I saved 5 hours of back-and-forth emails. The ROI is insane for a free tool.",
     name: "Marcus Rodriguez",
     role: "Freelance Designer",
     initials: "MR",
@@ -28,7 +28,7 @@ const testimonials = [
   },
   {
     quote:
-      "We onboarded our entire sales team in a single afternoon. Booking rates went up 40% in the first month. The analytics dashboard is genuinely useful.",
+      "Our no-show rate dropped from 25% to under 3% with smart reminders. We onboarded the entire sales team in one afternoon.",
     name: "Jennifer Chen",
     role: "Sales Director, TechCorp",
     initials: "JC",
@@ -40,7 +40,7 @@ const testimonials = [
   },
   {
     quote:
-      "The recurring meeting feature alone saved me hours every week. No more back-and-forth emails — clients just pick a slot and it's done.",
+      "Recurring meetings run themselves now. Clients just book, the system handles the rest — I show up and focus on coaching.",
     name: "David Park",
     role: "Executive Coach",
     initials: "DP",
@@ -70,7 +70,7 @@ const Testimonials = () => {
             What our users are saying
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto">
-            Join thousands of professionals who've simplified their scheduling.
+            Join thousands who've automated their scheduling and reclaimed their time.
           </p>
         </AnimatedSection>
 
@@ -148,7 +148,7 @@ const Testimonials = () => {
                 </div>
               ))}
             </div>
-            <span>1,000+ professionals</span>
+            <span>5,000+ professionals</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="flex gap-0.5">

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar, Clock, Video, Check } from "lucide-react";
 import AnimatedSection from "@/components/ui/animated-section";
+import { addDays, nextMonday, format } from "date-fns";
 
 const timeSlots = [
   "9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM"
@@ -11,14 +12,19 @@ const timeSlots = [
 const BookingPreview = () => {
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
+  const nextMon = useMemo(() => {
+    const today = new Date();
+    const mon = nextMonday(today);
+    return format(mon, "EEEE, MMM d");
+  }, []);
+
   return (
     <section id="preview" className="py-16 sm:py-24 bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <AnimatedSection className="text-center max-w-3xl mx-auto mb-10 sm:mb-16 space-y-3 sm:space-y-4">
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold">
-            Book in <span className="text-accent">seconds</span>,
-            <br />
-            not minutes
+            Your guests book in{" "}
+            <span className="text-accent">seconds</span>
           </h2>
           <p className="text-base sm:text-lg text-muted-foreground">
             See how simple and beautiful the booking experience is for your clients.
@@ -63,7 +69,7 @@ const BookingPreview = () => {
                       <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                     </div>
                     <div>
-                      <div className="font-medium">Monday, Dec 18</div>
+                      <div className="font-medium">{nextMon}</div>
                       <div className="text-muted-foreground text-xs">Selected Date</div>
                     </div>
                   </div>
@@ -71,7 +77,7 @@ const BookingPreview = () => {
 
                 <div className={`pt-4 sm:pt-6 border-t border-border transition-all duration-500 ${selectedTime ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
                   <Button variant="hero" size="lg" className="w-full" asChild>
-                    <a href="/auth">Get Started Free</a>
+                    <a href="/get-started">Start Automating Free</a>
                   </Button>
                 </div>
               </div>

@@ -26,9 +26,9 @@ export const defaultSEO = {
 
 export const pageSEO = {
   home: {
-    title: "BookMe.Bet - Scheduling Made Simple",
-    description: "Best scheduling software for professionals. Book meetings effortlessly with automated timezone handling, calendar sync, and beautiful booking pages.",
-    keywords: "scheduling app, appointment booking, calendar scheduling, meeting scheduler, online booking software",
+    title: "BookMe.Bet — Booking Automation for Professionals",
+    description: "The intelligent booking platform that automates scheduling, reminders, and follow-ups. Free to start, live in 2 minutes.",
+    keywords: "booking automation, automated scheduling, smart booking platform, appointment booking, calendar scheduling, meeting scheduler, online booking software",
   },
   pricing: {
     title: "Pricing Plans | BookMe.Bet",
