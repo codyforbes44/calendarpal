@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -6,19 +7,22 @@ import { toast } from "sonner";
 interface SocialLoginButtonProps {
   provider: "google";
   disabled?: boolean;
+  /** Override the OAuth redirect URL (defaults to current page) */
+  redirectTo?: string;
 }
 
-const SocialLoginButton = ({ provider, disabled }: SocialLoginButtonProps) => {
+const SocialLoginButton = ({ provider, disabled, redirectTo }: SocialLoginButtonProps) => {
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
 
   const handleSocialLogin = async () => {
     setLoading(true);
     try {
-      // Redirect to auth page - AuthContext will handle routing based on onboarding status
+      const redirect = redirectTo || `${window.location.origin}${location.pathname}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: redirect,
         },
       });
 
