@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Menu, Sun, Moon, X, Shield, Crown } from "lucide-react";
+import { Menu, Sun, Moon, X, Shield, Crown, LayoutDashboard, CalendarCheck, Calendar, CreditCard, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -56,11 +56,11 @@ const Navigation = () => {
   };
 
   const baseUserLinks: NavLink[] = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/bookings", label: "Bookings" },
-    { href: "/availability", label: "Availability" },
-    { href: "/subscription", label: "Subscription" },
-    { href: "/settings", label: "Settings" },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/bookings", label: "Bookings", icon: CalendarCheck },
+    { href: "/availability", label: "Availability", icon: Calendar },
+    { href: "/subscription", label: "Plan", icon: CreditCard },
+    { href: "/settings", label: "Settings", icon: Settings },
   ];
 
   const navLinks: NavLink[] = user
@@ -70,6 +70,7 @@ const Navigation = () => {
     : [
         { href: "/#features", label: "Features" },
         { href: "/pricing", label: "Pricing" },
+        { href: "/about", label: "About" },
         { href: "/support", label: "Support" },
       ];
 
@@ -108,12 +109,13 @@ const Navigation = () => {
               key={link.href}
               to={link.href}
               className={cn(
-                "relative px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                "relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors",
                 isActiveLink(link.href)
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
               )}
             >
+              {link.icon && <link.icon className="h-4 w-4" />}
               {link.label}
               {isActiveLink(link.href) && (
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 h-0.5 bg-primary rounded-full" />

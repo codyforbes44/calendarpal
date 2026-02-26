@@ -29,6 +29,8 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Support from "./pages/Support";
 import AppealVerify from "./pages/AppealVerify";
+import About from "./pages/About";
+import Events from "./pages/Events";
 import NotFound from "./pages/NotFound";
 
 // Admin pages
@@ -131,9 +133,18 @@ const App = () => (
                         </ProtectedRoute>
                       }
                     />
+                    <Route
+                      path="/events"
+                      element={
+                        <ProtectedRoute>
+                          <Events />
+                        </ProtectedRoute>
+                      }
+                    />
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/support" element={<Support />} />
+                    <Route path="/about" element={<About />} />
                     <Route path="/appeal/verify" element={<AppealVerify />} />
                     
                     {/* Admin routes with nested layout - protected by AdminRouteGuard */}
