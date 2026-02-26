@@ -7,7 +7,7 @@ const BottomNavigation = () => {
   const location = useLocation();
   const { data: isAdmin } = useAdminRole();
 
-  const baseNavItems = [
+const baseNavItems = [
     { href: "/dashboard", label: "Home", icon: Home },
     { href: "/bookings", label: "Bookings", icon: CalendarCheck },
     { href: "/availability", label: "Availability", icon: Calendar },
@@ -16,7 +16,7 @@ const BottomNavigation = () => {
   ];
 
   const navItems = isAdmin 
-    ? [...baseNavItems.slice(0, 4), { href: "/admin", label: "Admin", icon: Shield }]
+    ? [...baseNavItems, { href: "/admin", label: "Admin", icon: Shield }]
     : baseNavItems;
 
   const isActive = (href: string) => {
