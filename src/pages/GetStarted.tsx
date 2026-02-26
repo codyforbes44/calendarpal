@@ -216,8 +216,8 @@ const GetStarted = () => {
   return (
     <>
       <SEO
-        title="Get Started | CalendarPal"
-        description="Set up your CalendarPal account in minutes — no signup required to start."
+        title="Get Started | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ"
+        description="Set up your Bᴏᴏᴋᴍᴇ.ʙᴇᴛ account in minutes — no signup required to start."
         canonical={`${siteConfig.url}/get-started`}
       />
       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle p-4 sm:p-6">

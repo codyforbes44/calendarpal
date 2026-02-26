@@ -185,8 +185,8 @@ const Auth = () => {
           
           <div className="relative z-10 max-w-md space-y-8">
             <a href="/" className="inline-flex items-center gap-3">
-              <img src="/bookme-logo.png" alt="BookMe.Bet" className="h-12 w-12 rounded-2xl object-cover shadow-md" />
-              <span className="font-display text-2xl font-bold">BookMe.Bet</span>
+              <img src="/bookme-logo.png" alt="Bᴏᴏᴋᴍᴇ.ʙᴇᴛ" className="h-12 w-12 rounded-2xl object-cover shadow-md" />
+              <span className="font-display text-2xl font-bold">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</span>
             </a>
             
             <div>
@@ -228,7 +228,7 @@ const Auth = () => {
             <div className="flex items-center justify-center mb-5 sm:mb-7 lg:hidden">
               <img
                 src="/bookme-logo.png"
-                alt="BookMe.Bet"
+                alt="Bᴏᴏᴋᴍᴇ.ʙᴇᴛ"
                 className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl object-cover shadow-md"
               />
             </div>

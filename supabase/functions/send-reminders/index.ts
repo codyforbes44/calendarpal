@@ -5,7 +5,7 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const RESEND_FROM_EMAIL =
-  Deno.env.get("RESEND_FROM_EMAIL") || "BookMe.Bet <noreply@notifications.3bi.io>";
+  Deno.env.get("RESEND_FROM_EMAIL") || "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ <noreply@notifications.3bi.io>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -167,7 +167,7 @@ DTSTAMP:${stamp}
 DTSTART:${start}
 DTEND:${end}
 SUMMARY:${booking.eventTitle} with ${booking.guestName}
-DESCRIPTION:24-hour reminder for your upcoming meeting via BookMe.Bet.${booking.meetingLink ? `\\n\\nMeeting Link: ${booking.meetingLink}` : ""}
+DESCRIPTION:24-hour reminder for your upcoming meeting via Bᴏᴏᴋᴍᴇ.ʙᴇᴛ.${booking.meetingLink ? `\\n\\nMeeting Link: ${booking.meetingLink}` : ""}
 ORGANIZER;CN=${booking.hostName}:mailto:${booking.hostEmail}
 ATTENDEE;CN=${booking.guestName};RSVP=TRUE:mailto:${booking.guestEmail}
 STATUS:CONFIRMED
@@ -262,7 +262,7 @@ function buildReminderHtml(params: {
 
   <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
   <p style="font-size:12px;color:#9ca3af;text-align:center;">
-    Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">BookMe.Bet</a> — Scheduling Made Simple
+    Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple
   </p>
 </div>`;
 }

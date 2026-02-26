@@ -51,8 +51,8 @@ const Support = () => {
       answer: "Go to the Subscription page in your dashboard and click 'Manage Subscription'. This will open the billing portal where you can cancel, update payment methods, or view invoices."
     },
     {
-      question: "What timezone does BookMe.Bet use?",
-      answer: "BookMe.Bet automatically detects and displays times in each user's local timezone. When a guest books, they see times in their timezone while you see them in yours. All conversions are handled automatically."
+      question: "What timezone does Bᴏᴏᴋᴍᴇ.ʙᴇᴛ use?",
+      answer: "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ automatically detects and displays times in each user's local timezone. When a guest books, they see times in their timezone while you see them in yours. All conversions are handled automatically."
     },
     {
       question: "Is my data secure?",
@@ -104,7 +104,7 @@ const Support = () => {
             </CardHeader>
             <CardContent className="flex-1">
               <p className="text-sm text-muted-foreground">
-                Learn how to get the most out of BookMe.Bet with step-by-step guides.
+                Learn how to get the most out of Bᴏᴏᴋᴍᴇ.ʙᴇᴛ with step-by-step guides.
               </p>
             </CardContent>
           </Card>
@@ -134,7 +134,7 @@ const Support = () => {
             </CardHeader>
             <CardContent className="flex-1">
               <p className="text-sm text-muted-foreground">
-                Have a suggestion? We'd love to hear how we can improve BookMe.Bet.
+                Have a suggestion? We'd love to hear how we can improve Bᴏᴏᴋᴍᴇ.ʙᴇᴛ.
               </p>
             </CardContent>
           </Card>

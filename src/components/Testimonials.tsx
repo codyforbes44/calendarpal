@@ -4,7 +4,7 @@ import AnimatedSection from "@/components/ui/animated-section";
 const testimonials = [
   {
     quote:
-      "BookMe.Bet automated everything — confirmations, reminders, timezone conversion. I haven't touched a scheduling email in months.",
+      "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ automated everything — confirmations, reminders, timezone conversion. I haven't touched a scheduling email in months.",
     name: "Sarah Kim",
     role: "Marketing Consultant",
     initials: "SK",

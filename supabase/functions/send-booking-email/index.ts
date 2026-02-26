@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "BookMe.cool <contact@notifications.3bi.io>";
+const RESEND_FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ <contact@notifications.3bi.io>";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -358,7 +358,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
           ` : ""}
           <p style="font-size:14px;color:#6b7280;margin-top:20px;">Add this event to your calendar using the attached .ics file.</p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
-          <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">BookMe.Bet</a> — Scheduling Made Simple</p>
+          <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple</p>
         </div>
       `,
       attachments: [{ filename: "meeting.ics", content: icsBase64, content_type: "text/calendar" }],
@@ -401,7 +401,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
             </div>
             <p style="font-size:14px;color:#6b7280;margin-top:20px;">Add this event to your calendar using the attached .ics file.</p>
             <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
-            <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">BookMe.Bet</a> — Scheduling Made Simple</p>
+            <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple</p>
           </div>
         `,
         attachments: [{ filename: "meeting.ics", content: icsBase64, content_type: "text/calendar" }],
@@ -468,7 +468,7 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
           
           <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              Powered by BookMe.cool - Scheduling Made Simple
+              Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple
           </p>
         </div>
       `,
@@ -520,7 +520,7 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             
             <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              Powered by BookMe.cool - Scheduling Made Simple
+              Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple
             </p>
           </div>
         `,
@@ -604,7 +604,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
           ` : ""}
           <p style="font-size:14px;color:#6b7280;margin-top:20px;">The attached .ics file will update this event in your calendar.</p>
           <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
-          <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">BookMe.Bet</a> — Scheduling Made Simple</p>
+          <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple</p>
         </div>
       `,
       attachments: [{ filename: "meeting-updated.ics", content: icsBase64, content_type: "text/calendar" }],
@@ -651,7 +651,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
             </div>
             <p style="font-size:14px;color:#6b7280;margin-top:20px;">The attached .ics file will update this event in your calendar.</p>
             <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
-            <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">BookMe.Bet</a> — Scheduling Made Simple</p>
+            <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple</p>
           </div>
         `,
         attachments: [{ filename: "meeting-updated.ics", content: icsBase64, content_type: "text/calendar" }],
