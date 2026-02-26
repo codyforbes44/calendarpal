@@ -84,7 +84,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Send verification email
       if (RESEND_API_KEY) {
         try {
-          const verifyUrl = `${req.headers.get("origin") || "https://calendarpal.lovable.app"}/appeal/verify?token=${appeal.verification_token}`;
+          const verifyUrl = `${req.headers.get("origin") || "https://bookme.bet"}/appeal/verify?token=${appeal.verification_token}`;
 
           const emailRes = await fetch("https://api.resend.com/emails", {
             method: "POST",
@@ -93,9 +93,9 @@ const handler = async (req: Request): Promise<Response> => {
               "Authorization": `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-              from: `CalendarPal <${fromEmail}>`,
+              from: `Bookme.bet <${fromEmail}>`,
               to: [email],
-              subject: "Verify Your Access Appeal - CalendarPal",
+              subject: "Verify Your Access Appeal - Bookme.bet",
               html: `
                 <!DOCTYPE html>
                 <html>
@@ -110,7 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
                       Hi ${fullName},
                     </p>
                     <p style="color: #4a4a4a; font-size: 16px; line-height: 1.6;">
-                      We received your appeal requesting access to CalendarPal. To proceed with your request, please verify your email address by clicking the button below.
+                      We received your appeal requesting access to Bookme.bet. To proceed with your request, please verify your email address by clicking the button below.
                     </p>
                     <div style="text-align: center; margin: 32px 0;">
                       <a href="${verifyUrl}" style="display: inline-block; background-color: #6366f1; color: white; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">
@@ -130,7 +130,7 @@ const handler = async (req: Request): Promise<Response> => {
                     </p>
                     <p style="color: #4a4a4a; font-size: 14px; margin-top: 24px;">
                       Best regards,<br>
-                      The CalendarPal Team
+                      The Bookme.bet Team
                     </p>
                   </div>
                 </body>

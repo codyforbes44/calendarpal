@@ -45,7 +45,7 @@ serve(async (req: Request) => {
 
     logStep("Sending password reset email", { email });
 
-    const origin = req.headers.get("origin") || "https://calendarpal.lovable.app";
+    const origin = req.headers.get("origin") || "https://bookme.bet";
     const resetRedirectTo = redirectTo || `${origin}/auth/update-password`;
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {

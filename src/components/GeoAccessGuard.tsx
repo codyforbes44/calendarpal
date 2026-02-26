@@ -14,7 +14,7 @@ interface GeoCheckResult {
   reason: string | null;
 }
 
-const GEO_CHECK_STORAGE_KEY = 'calendarpal_geo_check';
+const GEO_CHECK_STORAGE_KEY = 'bookme_geo_check';
 const GEO_CHECK_EXPIRY_MS = 1000 * 60 * 60; // 1 hour
 
 const GeoAccessGuard = ({ children }: GeoAccessGuardProps) => {
