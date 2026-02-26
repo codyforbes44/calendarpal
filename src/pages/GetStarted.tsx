@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOnboarding } from "@/contexts/OnboardingContext";
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
+import confetti from "canvas-confetti";
 import SEO from "@/components/SEO";
 import { siteConfig } from "@/lib/seo-config";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
@@ -123,8 +124,33 @@ const GetStarted = () => {
       }
 
       onboarding.clearOnboardingData();
+
+      // Fire confetti celebration
+      const duration = 2000;
+      const end = Date.now() + duration;
+      const colors = ["hsl(245, 82%, 67%)", "hsl(200, 90%, 60%)", "hsl(340, 80%, 60%)", "hsl(50, 95%, 60%)"];
+
+      const frame = () => {
+        confetti({
+          particleCount: 3,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.7 },
+          colors,
+        });
+        confetti({
+          particleCount: 3,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.7 },
+          colors,
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+
       toast.success("You're all set! Welcome to CalendarPal 🎉");
-      navigate("/dashboard", { replace: true });
+      setTimeout(() => navigate("/dashboard", { replace: true }), 2200);
     } catch (error: any) {
       toast.error(error.message || "Failed to complete setup");
     } finally {
