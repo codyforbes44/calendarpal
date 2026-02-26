@@ -1,91 +1,76 @@
 
 
-# Navigation Menu Review and Recommendations
+# Onboarding-First Registration Flow
 
-## Current State
+## Overview
+Restructure the user experience so new visitors complete the full onboarding wizard (profile setup, event type creation, availability configuration) **before** being asked to register. Their collected data is stored temporarily and persisted to the database only after successful account creation.
 
-### Public Navigation (logged out)
-- Features (anchor link), Pricing, Support
+## Current Flow
+```text
+Landing Page -> Auth (register) -> Onboarding (3 steps) -> Dashboard
+```
 
-### Authenticated Navigation (top bar, desktop)
-- Dashboard, Bookings, Availability, Subscription, Settings
-- Admin link (conditional, admin only)
+## New Flow
+```text
+Landing Page -> /get-started (4 steps) -> Dashboard
+  Step 1: Profile (name, username)
+  Step 2: Event Type (title, duration)
+  Step 3: Availability (days, times)
+  Step 4: Create Account (email, password, Google OAuth)
+```
 
-### Mobile Bottom Navigation
-- Home (Dashboard), Bookings, Availability, Plan (Subscription), Settings
-- Admin replaces Settings for admin users (Settings becomes inaccessible on mobile for admins)
+## Implementation Plan
 
-### Footer Links
-- Privacy, Terms, Support, Pricing
+### 1. Create Onboarding Data Context
+**New file: `src/contexts/OnboardingContext.tsx`**
 
----
+A React context to hold onboarding data in memory across the wizard steps:
+- `fullName`, `username`, `eventTitle`, `eventDescription`, `eventDuration`, `availability`, `startTime`, `endTime`
+- Setter functions for each field
+- A `clearOnboardingData()` method called after successful persistence
 
-## Issues Found
+### 2. Create New Get Started Page
+**New file: `src/pages/GetStarted.tsx`**
 
-### 1. Admin users lose Settings on mobile
-When `isAdmin` is true, the bottom nav replaces the last item (Settings) with Admin. This means admin users on mobile have **no way to reach /settings** from the bottom nav. This is a real usability bug.
+A 4-step wizard page at `/get-started`:
+- **Steps 1-3**: Reuse the existing onboarding UI (profile, event type, availability) but store data in the OnboardingContext instead of hitting the database
+- **Step 4**: Inline registration form (email + password + Google OAuth + terms checkbox) that:
+  1. Calls `supabase.auth.signUp()` with collected metadata
+  2. On success, persists profile, event type, and availability to the database
+  3. Redirects to `/dashboard`
+- Username availability check still queries the database in real-time (public RLS policy allows this)
+- Progress indicator shows 4 steps instead of 3
 
-**Fix**: Keep all 5 base items and add Admin as a 6th item, or use a "More" menu pattern to house both Settings and Admin.
+### 3. Update Routing
+**Edit: `src/App.tsx`**
+- Add `/get-started` as a public route (no `ProtectedRoute` wrapper)
+- Keep `/onboarding` route for backward compatibility (existing users who haven't completed setup)
 
-### 2. No "Event Types" / "My Events" page in navigation
-Users can create event types (`/events/new`, `/events/:id`), and the dashboard lists them, but there is no dedicated nav link to manage event types. Users must go through the dashboard to find them. A dedicated "Event Types" or "Events" nav item would reduce friction.
+### 4. Update Landing Page CTA
+**Edit: `src/pages/Index.tsx` (and related CTA components)**
+- Change primary "Get Started" / "Sign Up" buttons to link to `/get-started` instead of `/auth`
 
-### 3. Public nav missing a "How It Works" or "About" page
-The public nav has Features (anchor), Pricing, and Support. There is no standalone About or How It Works page. For a SaaS product, an About page builds trust, explains the team/mission, and helps with SEO.
+### 5. Update Auth Context Redirect
+**Edit: `src/contexts/AuthContext.tsx`**
+- When a user signs in from `/get-started`, skip the automatic redirect to `/onboarding` since data persistence is handled inline on that page
+- Add `/get-started` to the path check so the context doesn't interfere
 
-### 4. Footer is minimal
-The footer only has Privacy, Terms, Support, and Pricing. Missing: a link back to Features, an About page, and social media links. Most SaaS footers include a richer sitemap.
-
-### 5. No Notifications or Inbox link
-There is no notification center or bell icon in the navigation. For a scheduling app, incoming booking notifications, reminders, and status changes are critical. This is a significant missing feature.
-
-### 6. Subscription label mismatch
-The top nav says "Subscription" while the bottom nav says "Plan" for the same route (`/subscription`). This inconsistency may confuse users.
-
----
-
-## Recommended Changes
-
-### Phase 1: Quick Fixes (nav consistency and bug fixes)
-
-1. **Fix admin mobile nav** -- Keep all 5 base items; if admin, show a 6th Admin icon (allow horizontal scroll or shrink spacing slightly), or replace "Plan" with "Admin" instead of "Settings" since subscription is less frequently accessed.
-
-2. **Rename "Subscription" to "Plan"** in the desktop top nav to match the mobile bottom nav label (or vice versa -- pick one and be consistent).
-
-3. **Add icons to desktop nav links** for authenticated users to improve scannability (Dashboard, Bookings, Availability, Plan, Settings already have icons in the bottom nav -- mirror them in the top nav).
-
-### Phase 2: New Pages / Nav Items
-
-4. **Add an "Event Types" nav link** -- either as a standalone page (`/events`) listing all event types with create/edit/delete, or as a sub-item under Dashboard. This page already partially exists inside the Dashboard (`EventTypesList` component) but deserves its own route.
-
-5. **Add a Notifications dropdown** -- a bell icon in the top nav header showing recent booking confirmations, cancellations, and reminders. This would require a new `notifications` table and real-time subscriptions.
-
-6. **Add an "About" or "How It Works" public page** (`/about`) -- brief team/mission content, trust signals, and SEO value. Link it in both the public nav and the footer.
-
-### Phase 3: Footer Enhancement
-
-7. **Expand the footer** into a multi-column layout:
-   - Column 1: Product (Features, Pricing, How It Works)
-   - Column 2: Resources (Support, Blog -- future)
-   - Column 3: Legal (Privacy, Terms)
-   - Column 4: Social links (Twitter/X, LinkedIn -- placeholder)
-
----
+### 6. Update Auth Page
+**Edit: `src/pages/Auth.tsx`**
+- Add a prominent link/banner: "New here? Set up your account in minutes" pointing to `/get-started`
+- Keep the existing login/signup form for returning users
 
 ## Technical Details
 
-### Files to modify
-- `src/components/BottomNavigation.tsx` -- Fix admin nav item replacing Settings; use consistent labeling
-- `src/components/Navigation.tsx` -- Rename "Subscription" to "Plan"; optionally add icons to desktop links; add notification bell placeholder
-- `src/components/Footer.tsx` -- Expand to multi-column layout with additional links
+- **Data persistence order** (Step 4, after successful signup):
+  1. `profiles.update()` with `full_name` and `username`
+  2. `event_types.insert()` with title, description, duration
+  3. `availability.insert()` with enabled days and time range
+  4. Show success toast and navigate to `/dashboard`
 
-### New files
-- `src/pages/About.tsx` -- Simple About/How It Works page
-- `src/pages/Events.tsx` -- Dedicated event types management page (extracting `EventTypesList` from Dashboard)
+- **Google OAuth handling**: After OAuth callback returns to `/get-started`, detect the authenticated user, persist the buffered onboarding data, then redirect to dashboard
 
-### Route additions in `src/App.tsx`
-- `/about` -- public route
-- `/events` -- protected route for event type management
+- **Error handling**: If registration fails, stay on Step 4 with error message; collected data in Steps 1-3 remains intact in context
 
-### No database changes required for Phase 1-2
-Phase 2's notifications feature would require a new `notifications` table, but that can be scoped separately.
+- **Username validation**: The existing public RLS policy on `profiles` (`username IS NOT NULL`) allows querying username availability without authentication
+
