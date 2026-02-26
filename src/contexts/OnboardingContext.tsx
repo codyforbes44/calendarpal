@@ -29,7 +29,7 @@ interface OnboardingContextType extends OnboardingData {
   clearOnboardingData: () => void;
 }
 
-const DEFAULT_AVAILABILITY: DayAvailability[] = [
+export const DEFAULT_AVAILABILITY: DayAvailability[] = [
   { day: "Sunday", dayOfWeek: 0, enabled: false },
   { day: "Monday", dayOfWeek: 1, enabled: true },
   { day: "Tuesday", dayOfWeek: 2, enabled: true },
