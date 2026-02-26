@@ -26,6 +26,7 @@ const Navigation = () => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const userInitials = profile?.full_name
     ? profile.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
@@ -34,6 +35,20 @@ const Navigation = () => {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Scroll-based transparency for public pages
+  const isPublicPage = !user && (location.pathname === "/" || location.pathname === "/pricing" || location.pathname === "/support");
+
+  useEffect(() => {
+    if (!isPublicPage) {
+      setScrolled(true);
+      return;
+    }
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isPublicPage]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -48,7 +63,6 @@ const Navigation = () => {
     { href: "/settings", label: "Settings" },
   ];
 
-  // Add admin link if user is admin
   const navLinks: NavLink[] = user
     ? isAdmin
       ? [...baseUserLinks, { href: "/admin", label: "Admin", icon: Shield }]
@@ -65,7 +79,12 @@ const Navigation = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className={cn(
+      "sticky top-0 z-50 w-full border-b transition-all duration-300",
+      scrolled
+        ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-border"
+        : "bg-transparent border-transparent"
+    )}>
       <div className="container flex h-14 md:h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-semibold">
@@ -79,7 +98,7 @@ const Navigation = () => {
           )}
         </Link>
 
-        {/* Desktop Navigation - Hidden on mobile when logged in (use bottom nav) */}
+        {/* Desktop Navigation */}
         <nav className={cn(
           "hidden items-center gap-1",
           user ? "lg:flex" : "md:flex"
@@ -89,13 +108,16 @@ const Navigation = () => {
               key={link.href}
               to={link.href}
               className={cn(
-                "px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                "relative px-3 py-2 text-sm font-medium rounded-md transition-colors",
                 isActiveLink(link.href)
-                  ? "bg-accent text-accent-foreground"
+                  ? "text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
               )}
             >
               {link.label}
+              {isActiveLink(link.href) && (
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 h-0.5 bg-primary rounded-full" />
+              )}
             </Link>
           ))}
         </nav>
@@ -144,7 +166,7 @@ const Navigation = () => {
             </div>
           )}
 
-          {/* Mobile menu - Always show hamburger on mobile */}
+          {/* Mobile menu */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden h-9 w-9">
@@ -177,7 +199,7 @@ const Navigation = () => {
                       className={cn(
                         "flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-colors touch-target",
                         isActiveLink(link.href)
-                          ? "bg-accent text-accent-foreground"
+                          ? "bg-primary/10 text-primary"
                           : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                       )}
                     >
@@ -186,6 +208,19 @@ const Navigation = () => {
                     </Link>
                   ))}
                 </nav>
+
+                {/* Mobile theme toggle */}
+                <div className="py-3 border-t">
+                  {mounted && (
+                    <button
+                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                      className="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg transition-colors touch-target"
+                    >
+                      {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                      {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                    </button>
+                  )}
+                </div>
 
                 <div className="pt-4 border-t space-y-3">
                   {user ? (

@@ -15,7 +15,6 @@ const BottomNavigation = () => {
     { href: "/settings", label: "Settings", icon: Settings },
   ];
 
-  // For admins, replace one item with admin link or add it
   const navItems = isAdmin 
     ? [...baseNavItems.slice(0, 4), { href: "/admin", label: "Admin", icon: Shield }]
     : baseNavItems;
@@ -34,19 +33,27 @@ const BottomNavigation = () => {
               key={item.href}
               to={item.href}
               className={cn(
-                "flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors touch-target",
+                "flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-all touch-target",
                 active
                   ? "text-primary"
-                  : "text-muted-foreground active:text-foreground"
+                  : "text-muted-foreground active:text-foreground active:scale-95"
               )}
             >
-              <item.icon className={cn("w-5 h-5", active && "text-primary")} />
+              <div className={cn(
+                "transition-transform duration-200",
+                active && "scale-110"
+              )}>
+                <item.icon className={cn("w-5 h-5", active && "text-primary")} />
+              </div>
               <span className={cn(
                 "text-[10px] font-medium leading-tight",
                 active && "text-primary"
               )}>
                 {item.label}
               </span>
+              {active && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
+              )}
             </Link>
           );
         })}

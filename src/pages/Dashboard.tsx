@@ -21,6 +21,13 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
 const Dashboard = () => {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,17 +39,15 @@ const Dashboard = () => {
   const { data: eventTypes, isLoading: eventTypesLoading } = useEventTypes();
   const { refreshSubscription, isPro } = useSubscription();
 
-  // Handle checkout success - refresh subscription and show toast
+  // Handle checkout success
   useEffect(() => {
     const checkoutStatus = searchParams.get("checkout");
     if (checkoutStatus === "success") {
-      // Refresh subscription status immediately
       refreshSubscription().then(() => {
         toast.success("Welcome to Pro! Your subscription is now active.", {
           duration: 5000,
         });
       });
-      // Clean up URL
       searchParams.delete("checkout");
       setSearchParams(searchParams, { replace: true });
     }
@@ -91,8 +96,8 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav">
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">
-              Welcome back, {profile?.full_name || "User"}!
+            <h1 className="font-display text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">
+              {getGreeting()}, {profile?.full_name?.split(" ")[0] || "there"}!
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               Here's what's happening with your schedule today
@@ -113,7 +118,9 @@ const Dashboard = () => {
         
         <QuickActions 
           username={profile?.username} 
-          onShare={() => setShowShareModal(true)} 
+          onShare={() => setShowShareModal(true)}
+          hasEventTypes={hasEventTypes}
+          hasAvailability={hasAvailability}
         />
         
         <div className="mt-6">
@@ -144,7 +151,7 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Mobile FAB — share booking link */}
+      {/* Mobile FAB */}
       {profile?.username && (
         <button
           onClick={() => setShowShareModal(true)}

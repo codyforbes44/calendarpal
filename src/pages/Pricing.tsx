@@ -140,14 +140,14 @@ const Pricing = () => {
         "name": "Free Plan",
         "price": "0",
         "priceCurrency": "USD",
-        "priceValidUntil": "2025-12-31"
+        "priceValidUntil": "2026-12-31"
       },
       {
         "@type": "Offer",
         "name": "Pro Monthly",
         "price": "8",
         "priceCurrency": "USD",
-        "priceValidUntil": "2025-12-31",
+        "priceValidUntil": "2026-12-31",
         "billingIncrement": 1,
         "billingDuration": { "@type": "QuantitativeValue", "value": 1, "unitCode": "MON" }
       },
@@ -156,7 +156,7 @@ const Pricing = () => {
         "name": "Pro Yearly",
         "price": "84",
         "priceCurrency": "USD",
-        "priceValidUntil": "2025-12-31",
+        "priceValidUntil": "2026-12-31",
         "billingIncrement": 1,
         "billingDuration": { "@type": "QuantitativeValue", "value": 1, "unitCode": "ANN" }
       }

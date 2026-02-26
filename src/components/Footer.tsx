@@ -8,7 +8,7 @@ const Footer = () => {
           <div className="flex items-center gap-2">
             <img src="/bookme-logo.png" alt="BookMe.Bet" className="h-6 w-6 rounded object-cover" />
             <span className="text-sm text-muted-foreground">
-              © 2025 BookMe.Bet. Built with love for better scheduling.
+              © 2026 BookMe.Bet. Built with love for better scheduling.
             </span>
           </div>
           <div className="flex gap-5 sm:gap-6 text-sm">
