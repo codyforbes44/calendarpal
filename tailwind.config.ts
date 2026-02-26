@@ -123,6 +123,10 @@ export default {
           from: { backgroundPosition: "-200% 0" },
           to: { backgroundPosition: "200% 0" },
         },
+        "progress": {
+          from: { width: "0%" },
+          to: { width: "100%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
