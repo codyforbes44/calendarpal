@@ -57,7 +57,7 @@ const ResetPassword = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
         <SEO
-          title="Check Your Email | CalendarPal"
+          title="Check Your Email | Bookme.bet"
           description="Password reset email sent"
         />
         <Card className="w-full max-w-md">
@@ -96,8 +96,8 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <SEO
-        title="Reset Password | CalendarPal"
-        description="Reset your CalendarPal password"
+        title="Reset Password | Bookme.bet"
+        description="Reset your Bookme.bet password"
       />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">

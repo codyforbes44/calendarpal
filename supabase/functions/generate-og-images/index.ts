@@ -8,35 +8,35 @@ const corsHeaders = {
 };
 
 const prompts: Record<string, string> = {
-  home: `Create a professional Open Graph image at 1200x630 pixels for a scheduling app called "BookMe.cool".
+  home: `Create a professional Open Graph image at 1200x630 pixels for a scheduling app called "Bookme.bet".
 Design specs:
 - Dark background gradient from deep slate (#0F172A) to dark indigo (#1E1B4B), filling the entire canvas
-- Top-left: small calendar icon (white) next to bold "BookMe.cool" wordmark in white, subtitle "Scheduling Made Simple" in indigo/purple
+- Top-left: small calendar icon (white) next to bold "Bookme.bet" wordmark in white, subtitle "Scheduling Made Simple" in indigo/purple
 - Center: large bold white headline text "Scheduling Made Simple" on two lines
 - Below headline: lighter grey subtext "Book meetings in seconds. No back-and-forth."
 - Right side: two overlapping rounded UI cards floating at a slight angle — one showing a calendar date picker, one showing a booking confirmation with a green checkmark and a person's name "Sarah Johnson - 30 min call"
 - Bottom-right: soft indigo/purple radial glow effect
-- Bottom-left: small "bookme.cool" URL in muted grey
+- Bottom-left: small "bookme.bet" URL in muted grey
 - Style: modern, clean, dark SaaS aesthetic, professional`,
 
-  pricing: `Create a professional Open Graph image at 1200x630 pixels for the Pricing page of "BookMe.cool", a scheduling app.
+  pricing: `Create a professional Open Graph image at 1200x630 pixels for the Pricing page of "Bookme.bet", a scheduling app.
 Design specs:
 - Dark background gradient from deep slate (#0F172A) to dark indigo (#1E1B4B)
 - Top area: bold white headline "Simple, honest pricing." centered
 - Below: three pricing card mockups side by side: "Free $0/mo", "Pro $12/mo" (highlighted with indigo border and "Most Popular" badge), "Enterprise Custom"
 - Each card has a checkmark list of 3 features in small white text
 - The Pro card glows with an indigo halo effect
-- Top-left: "BookMe.cool" wordmark in white
+- Top-left: "Bookme.bet" wordmark in white
 - Bottom: soft tagline "No hidden fees. Cancel anytime." in muted text
 - Style: modern dark SaaS, clean layout`,
 
-  support: `Create a professional Open Graph image at 1200x630 pixels for the Help & Support page of "BookMe.cool", a scheduling app.
+  support: `Create a professional Open Graph image at 1200x630 pixels for the Help & Support page of "Bookme.bet", a scheduling app.
 Design specs:
 - Dark background gradient from deep slate (#0F172A) to dark indigo (#1E1B4B)
 - Center-left: large bold white headline "We're here to help." on two lines
-- Below headline: subtitle "Get answers fast. 24/7 support for BookMe.cool users."
+- Below headline: subtitle "Get answers fast. 24/7 support for Bookme.bet users."
 - Right side: an illustration of a chat interface with speech bubbles — one blue bubble "How do I reschedule?" and one indigo/purple bubble reply "Sure! Here's how..." with a friendly assistant icon
-- Top-left: "BookMe.cool" wordmark in white with a small support/headset icon
+- Top-left: "Bookme.bet" wordmark in white with a small support/headset icon
 - Subtle FAQ list items visible in the background (blurred/faded): "How do I..." style questions
 - Style: modern, warm, approachable, dark SaaS aesthetic`,
 };

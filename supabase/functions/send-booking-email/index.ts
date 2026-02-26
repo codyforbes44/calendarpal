@@ -173,17 +173,17 @@ function generateICS(booking: EmailRequest["booking"], method: "REQUEST" | "CANC
 
   const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//BookMe.cool//Booking//EN
+PRODID:-//Bookme.bet//Booking//EN
 CALSCALE:GREGORIAN
 METHOD:${method}
 BEGIN:VEVENT
-UID:booking-${booking.id}@bookme.cool
+UID:booking-${booking.id}@bookme.bet
 DTSTAMP:${timestamp}
 DTSTART:${startDateTime}
 DTEND:${endDateTime}
 SUMMARY:${booking.eventTitle} with ${booking.guestName}
-DESCRIPTION:Meeting booked via BookMe.cool.${booking.meetingLink ? `\\n\\nMeeting Link: ${booking.meetingLink}` : ""}
-ORGANIZER;CN=${booking.hostName}:mailto:${booking.hostEmail || "noreply@bookme.cool"}
+DESCRIPTION:Meeting booked via Bookme.bet.${booking.meetingLink ? `\\n\\nMeeting Link: ${booking.meetingLink}` : ""}
+ORGANIZER;CN=${booking.hostName}:mailto:${booking.hostEmail || "noreply@bookme.bet"}
 ATTENDEE;CN=${booking.guestName};RSVP=TRUE:mailto:${booking.guestEmail}
 STATUS:${method === "CANCEL" ? "CANCELLED" : "CONFIRMED"}
 SEQUENCE:${method === "CANCEL" ? "1" : "0"}

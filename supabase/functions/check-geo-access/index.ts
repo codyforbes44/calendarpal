@@ -59,7 +59,7 @@ serve(async (req) => {
         country,
         reason: isBlocked ? 'regulatory_compliance' : null,
         message: isBlocked 
-          ? 'CalendarPal is not available in your region due to regulatory requirements.' 
+          ? 'Bookme.bet is not available in your region due to regulatory requirements.' 
           : null
       }),
       { 

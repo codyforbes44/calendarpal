@@ -86,7 +86,7 @@ const UpdatePassword = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
         <SEO
-          title="Invalid Link | CalendarPal"
+          title="Invalid Link | Bookme.bet"
           description="Password reset link is invalid or expired"
         />
         <Card className="w-full max-w-md">
@@ -114,7 +114,7 @@ const UpdatePassword = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
         <SEO
-          title="Password Updated | CalendarPal"
+          title="Password Updated | Bookme.bet"
           description="Your password has been successfully updated"
         />
         <Card className="w-full max-w-md">
@@ -135,8 +135,8 @@ const UpdatePassword = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <SEO
-        title="Set New Password | CalendarPal"
-        description="Create a new password for your CalendarPal account"
+        title="Set New Password | Bookme.bet"
+        description="Create a new password for your Bookme.bet account"
       />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">

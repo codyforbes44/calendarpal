@@ -102,7 +102,7 @@ const Privacy = () => {
 
       <footer className="border-t border-border py-8 bg-muted/30">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          © 2025 Bᴏᴏᴋᴍᴇ.ʙᴇᴛ. All rights reserved.
+          © 2026 Bᴏᴏᴋᴍᴇ.ʙᴇᴛ. All rights reserved.
         </div>
       </footer>
     </div>

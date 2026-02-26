@@ -150,8 +150,8 @@ const handler = async (req: Request): Promise<Response> => {
         try {
           const isApproved = action === "approve";
           const subject = isApproved 
-            ? "Your Access Appeal Has Been Approved - CalendarPal"
-            : "Update on Your Access Appeal - CalendarPal";
+            ? "Your Access Appeal Has Been Approved - Bookme.bet"
+            : "Update on Your Access Appeal - Bookme.bet";
 
           const htmlContent = isApproved
             ? `
@@ -164,17 +164,17 @@ const handler = async (req: Request): Promise<Response> => {
                     Hi ${appeal.full_name},
                   </p>
                   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.6;">
-                    Great news! Your appeal to access CalendarPal has been approved. You should now be able to access the platform normally.
+                    Great news! Your appeal to access Bookme.bet has been approved. You should now be able to access the platform normally.
                   </p>
                   ${reviewerNotes ? `<p style="color: #6b6b6b; font-size: 14px; background: #f5f5f5; padding: 16px; border-radius: 6px;"><strong>Note from reviewer:</strong><br>${reviewerNotes}</p>` : ""}
                   <div style="text-align: center; margin: 32px 0;">
-                    <a href="https://calendarpal.lovable.app" style="display: inline-block; background-color: #6366f1; color: white; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">
-                      Go to CalendarPal
+                    <a href="https://bookme.bet" style="display: inline-block; background-color: #6366f1; color: white; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                      Go to Bookme.bet
                     </a>
                   </div>
                   <p style="color: #4a4a4a; font-size: 14px; margin-top: 24px;">
                     Thank you for your patience!<br>
-                    The CalendarPal Team
+                    The Bookme.bet Team
                   </p>
                 </div>
               </body>
@@ -190,7 +190,7 @@ const handler = async (req: Request): Promise<Response> => {
                     Hi ${appeal.full_name},
                   </p>
                   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.6;">
-                    We've reviewed your appeal to access CalendarPal. Unfortunately, we're unable to approve your request at this time.
+                    We've reviewed your appeal to access Bookme.bet. Unfortunately, we're unable to approve your request at this time.
                   </p>
                   ${reviewerNotes ? `<p style="color: #6b6b6b; font-size: 14px; background: #f5f5f5; padding: 16px; border-radius: 6px;"><strong>Reason:</strong><br>${reviewerNotes}</p>` : ""}
                   <p style="color: #4a4a4a; font-size: 16px; line-height: 1.6;">
@@ -198,7 +198,7 @@ const handler = async (req: Request): Promise<Response> => {
                   </p>
                   <p style="color: #4a4a4a; font-size: 14px; margin-top: 24px;">
                     Best regards,<br>
-                    The CalendarPal Team
+                    The Bookme.bet Team
                   </p>
                 </div>
               </body>
@@ -212,7 +212,7 @@ const handler = async (req: Request): Promise<Response> => {
               "Authorization": `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-              from: `CalendarPal <${fromEmail}>`,
+              from: `Bookme.bet <${fromEmail}>`,
               to: [appeal.email],
               subject,
               html: htmlContent,
