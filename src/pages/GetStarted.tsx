@@ -239,15 +239,28 @@ const GetStarted = () => {
               </a>
             </div>
 
-            {/* Progress indicator */}
-            <div className="flex items-center justify-center gap-2 mb-8">
-              {[1, 2, 3, 4].map((s) => (
-                <div
-                  key={s}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    s === step ? "w-8 bg-primary" : s < step ? "w-8 bg-primary/40" : "w-2 bg-muted"
-                  }`}
-                />
+            {/* Progress indicator with labels */}
+            <div className="flex items-center justify-between gap-1 mb-8 px-2">
+              {[
+                { num: 1, label: "Profile" },
+                { num: 2, label: "Event" },
+                { num: 3, label: "Hours" },
+                { num: 4, label: "Account" },
+              ].map((s) => (
+                <div key={s.num} className="flex flex-col items-center gap-1.5 flex-1">
+                  <div
+                    className={`h-2 w-full max-w-12 rounded-full transition-all duration-300 ${
+                      s.num === step ? "bg-primary" : s.num < step ? "bg-primary/40" : "bg-muted"
+                    }`}
+                  />
+                  <span
+                    className={`text-[10px] font-medium transition-colors duration-200 ${
+                      s.num === step ? "text-primary" : s.num < step ? "text-primary/50" : "text-muted-foreground/60"
+                    }`}
+                  >
+                    {s.label}
+                  </span>
+                </div>
               ))}
             </div>
 
@@ -299,12 +312,20 @@ const GetStarted = () => {
                 showPassword={showPassword}
                 acceptedTerms={acceptedTerms}
                 loading={loading}
+                fullName={onboarding.fullName}
+                username={onboarding.username}
+                eventTitle={onboarding.eventTitle}
+                eventDuration={onboarding.eventDuration}
+                availability={onboarding.availability}
+                startTime={onboarding.startTime}
+                endTime={onboarding.endTime}
                 onEmailChange={setEmail}
                 onPasswordChange={setPassword}
                 onToggleShowPassword={() => setShowPassword(!showPassword)}
                 onAcceptedTermsChange={setAcceptedTerms}
                 onSubmit={handleRegister}
                 onBack={() => setStep(3)}
+                onEditStep={(s) => setStep(s)}
               />
             )}
           </Card>

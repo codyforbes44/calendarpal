@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Shield, ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 import SocialLoginButton from "@/components/auth/SocialLoginButton";
+import OnboardingSummary from "@/components/get-started/OnboardingSummary";
 
 interface StepAccountProps {
   email: string;
@@ -12,12 +13,20 @@ interface StepAccountProps {
   showPassword: boolean;
   acceptedTerms: boolean;
   loading: boolean;
+  fullName: string;
+  username: string;
+  eventTitle: string;
+  eventDuration: number;
+  availability: { day: string; enabled: boolean }[];
+  startTime: string;
+  endTime: string;
   onEmailChange: (v: string) => void;
   onPasswordChange: (v: string) => void;
   onToggleShowPassword: () => void;
   onAcceptedTermsChange: (v: boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
   onBack: () => void;
+  onEditStep: (step: number) => void;
 }
 
 const StepAccount = ({
@@ -26,21 +35,40 @@ const StepAccount = ({
   showPassword,
   acceptedTerms,
   loading,
+  fullName,
+  username,
+  eventTitle,
+  eventDuration,
+  availability,
+  startTime,
+  endTime,
   onEmailChange,
   onPasswordChange,
   onToggleShowPassword,
   onAcceptedTermsChange,
   onSubmit,
   onBack,
+  onEditStep,
 }: StepAccountProps) => (
-  <div className="space-y-6 animate-fade-in">
-    <div className="text-center mb-6">
+  <div className="space-y-5 animate-fade-in">
+    <div className="text-center mb-4">
       <div className="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center mx-auto mb-4">
         <Shield className="w-7 h-7 text-primary-foreground" />
       </div>
-      <h1 className="text-2xl font-bold mb-2">Create your account</h1>
-      <p className="text-muted-foreground">Last step — secure your profile</p>
+      <h1 className="text-2xl font-bold mb-1">Create your account</h1>
+      <p className="text-muted-foreground text-sm">Review your setup, then sign up</p>
     </div>
+
+    <OnboardingSummary
+      fullName={fullName}
+      username={username}
+      eventTitle={eventTitle}
+      eventDuration={eventDuration}
+      availability={availability}
+      startTime={startTime}
+      endTime={endTime}
+      onEditStep={onEditStep}
+    />
 
     <SocialLoginButton provider="google" disabled={loading} />
 
@@ -113,7 +141,7 @@ const StepAccount = ({
         className="w-full h-12"
         disabled={loading || !acceptedTerms}
       >
-        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account"}
+        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account & Go to Dashboard"}
       </Button>
     </form>
 
