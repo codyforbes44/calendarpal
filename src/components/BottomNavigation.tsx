@@ -1,16 +1,19 @@
-import { Home, Calendar, Settings, CalendarCheck, CreditCard, Shield } from "lucide-react";
+import { Home, Calendar, Settings, CalendarCheck, CreditCard, Shield, Users } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const BottomNavigation = () => {
   const location = useLocation();
   const { data: isAdmin } = useAdminRole();
+  const { isPro } = useSubscription();
 
 const baseNavItems = [
     { href: "/dashboard", label: "Home", icon: Home },
     { href: "/bookings", label: "Bookings", icon: CalendarCheck },
     { href: "/availability", label: "Availability", icon: Calendar },
+    ...(isPro ? [{ href: "/clients", label: "Clients", icon: Users }] : []),
     { href: "/subscription", label: "Plan", icon: CreditCard },
     { href: "/settings", label: "Settings", icon: Settings },
   ];

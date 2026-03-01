@@ -42,6 +42,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const EmbedBooking = lazy(() => import("./pages/EmbedBooking"));
 const BookingPaymentSuccess = lazy(() => import("./pages/BookingPaymentSuccess"));
+const Clients = lazy(() => import("./pages/Clients"));
 
 // Admin pages
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
@@ -169,6 +170,14 @@ const App = () => (
                       element={
                         <ProtectedRoute>
                           <Notifications />
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route
+                      path="/clients"
+                      element={
+                        <ProtectedRoute>
+                          <Clients />
                         </ProtectedRoute>
                       }
                     />
