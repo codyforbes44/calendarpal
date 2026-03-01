@@ -22,15 +22,17 @@ const HeroBackground = ({ page, opacity = 0.3, className = "" }: HeroBackgroundP
         alt=""
         aria-hidden="true"
         loading="eager"
+        fetchPriority="high"
+        sizes="100vw"
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
         className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
         style={{ opacity: loaded ? opacity : 0 }}
       />
-      {/* Gradient overlay for text readability */}
+      {/* Gradient overlay - stronger on mobile for text readability, lighter on desktop to show image */}
       {loaded && (
         <div
-          className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/20 to-background/60"
+          className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/70 sm:from-background/30 sm:via-background/15 sm:to-background/50"
           aria-hidden="true"
         />
       )}

@@ -5,7 +5,7 @@ import HeroBackground from "@/components/HeroBackground";
 
 const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-subtle">
+    <section className="relative min-h-[85vh] sm:min-h-screen flex items-center justify-center overflow-hidden bg-gradient-subtle">
       <HeroBackground page="home" />
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
@@ -54,7 +54,7 @@ const Hero = () => {
             </div>
 
             {/* Trust indicators */}
-            <AnimatedSection delay={400} animation="fade-up" className="flex flex-wrap items-center gap-3 sm:gap-5 pt-1 sm:pt-2 justify-center lg:justify-start">
+            <AnimatedSection delay={400} animation="fade-up" className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 sm:pt-2 justify-center lg:justify-start">
               <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
                 <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
                 <span>Free forever</span>
@@ -169,7 +169,7 @@ const Hero = () => {
               </div>
 
               {/* Floating card */}
-              <div className="absolute -bottom-4 -left-4 bg-card/90 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-border animate-float" style={{ animationDelay: "1.5s" }}>
+              <div className="absolute -bottom-6 -left-2 bg-card/90 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-border animate-float" style={{ animationDelay: "1.5s" }}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
                     <Bell className="w-5 h-5 text-accent" />

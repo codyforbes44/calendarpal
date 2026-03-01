@@ -60,12 +60,12 @@ const About = () => {
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
         {/* Hero */}
-        <section className="relative text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+        <section className="relative text-center max-w-3xl mx-auto mb-16 sm:mb-20 py-12 sm:py-16 lg:py-20 overflow-hidden rounded-2xl">
           <HeroBackground page="about" opacity={0.3} />
-          <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
+          <h1 className="relative z-10 font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
             Scheduling, <span className="text-primary">simplified</span>.
           </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
+          <p className="relative z-10 text-lg sm:text-xl text-muted-foreground leading-relaxed px-4">
             Bᴏᴏᴋᴍᴇ.ʙᴇᴛ removes the back-and-forth from meeting coordination. 
             Set your availability once, share a link, and let others book time with you effortlessly.
           </p>
