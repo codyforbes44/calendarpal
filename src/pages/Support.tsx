@@ -1,4 +1,5 @@
 import Navigation from "@/components/Navigation";
+import AISearchBox from "@/components/support/AISearchBox";
 import Footer from "@/components/Footer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -92,6 +93,8 @@ const Support = () => {
             Find answers to common questions or reach out to our team for personalized support.
           </p>
         </div>
+
+        <AISearchBox />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 mb-12 sm:mb-16">
           <Card className="text-center hover:shadow-lg transition-shadow min-h-[130px] flex flex-col">
