@@ -91,7 +91,7 @@ const Navigation = () => {
       <div className="container flex h-14 md:h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-semibold">
-          <ThemeLogo width={32} height={32} className="h-7 w-7 md:h-8 md:w-8 rounded-lg object-contain" />
+          <ThemeLogo width={140} height={36} className="h-7 md:h-9 w-auto object-contain" />
           {isPro && (
             <Badge variant="secondary" className="hidden sm:flex text-xs gap-1">
               <Crown className="w-3 h-3" />
