@@ -376,15 +376,24 @@ function buildTimezoneBlock(params: {
   </tr>`;
 }
 
-function actionButton(text: string, url: string, bgColor: string = BRAND_COLOR): string {
+// Build a tracked redirect URL via the track-email-click edge function
+function trackedUrl(destination: string, bookingId: string | undefined, linkType: string): string {
+  if (!bookingId) return destination;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+  return `${supabaseUrl}/functions/v1/track-email-click?bid=${encodeURIComponent(bookingId)}&type=${encodeURIComponent(linkType)}&url=${encodeURIComponent(destination)}`;
+}
+
+function actionButton(text: string, url: string, bgColor: string = BRAND_COLOR, bookingId?: string, linkType?: string): string {
+  const href = linkType ? trackedUrl(url, bookingId, linkType) : url;
   return `<div style="text-align:center;margin:24px 0;">
-    <a href="${url}" style="display:inline-block;background:${bgColor};color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.2px;box-shadow:0 2px 8px rgba(99,102,241,0.3);">${text}</a>
+    <a href="${href}" style="display:inline-block;background:${bgColor};color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.2px;box-shadow:0 2px 8px rgba(99,102,241,0.3);">${text}</a>
   </div>`;
 }
 
-function secondaryButton(text: string, url: string): string {
+function secondaryButton(text: string, url: string, bookingId?: string, linkType?: string): string {
+  const href = linkType ? trackedUrl(url, bookingId, linkType) : url;
   return `<div style="text-align:center;margin:16px 0;">
-    <a href="${url}" style="display:inline-block;background:#f3f4f6;color:#374151;padding:11px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;border:1px solid #e5e7eb;">${text}</a>
+    <a href="${href}" style="display:inline-block;background:#f3f4f6;color:#374151;padding:11px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;border:1px solid #e5e7eb;">${text}</a>
   </div>`;
 }
 
@@ -432,6 +441,7 @@ function calendarLinks(params: {
   hostTimezone?: string;
   meetingLink?: string;
   description?: string;
+  bookingId?: string;
 }): string {
   const tz = params.hostTimezone || "UTC";
   const start = toUtcIso(params.scheduledDate, params.startTime, tz);
@@ -442,17 +452,20 @@ function calendarLinks(params: {
   const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(params.eventTitle)}&dates=${start.google}/${end.google}&details=${encodeURIComponent(details)}`;
   const outlookUrl = `https://outlook.live.com/calendar/0/action/compose?subject=${encodeURIComponent(params.eventTitle)}&startdt=${encodeURIComponent(start.outlook)}&enddt=${encodeURIComponent(end.outlook)}&body=${encodeURIComponent(details)}`;
 
+  const trackedGoogle = trackedUrl(googleUrl, params.bookingId, "add_to_google");
+  const trackedOutlook = trackedUrl(outlookUrl, params.bookingId, "add_to_outlook");
+
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 0;">
     <tr><td align="center">
       <table role="presentation" cellpadding="0" cellspacing="0">
         <tr>
           <td style="padding:0 6px;">
-            <a href="${googleUrl}" target="_blank" style="display:inline-block;background:#ffffff;color:#4285f4;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;border:1.5px solid #4285f4;line-height:1;">
+            <a href="${trackedGoogle}" target="_blank" style="display:inline-block;background:#ffffff;color:#4285f4;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;border:1.5px solid #4285f4;line-height:1;">
               <img src="https://www.google.com/favicon.ico" width="14" height="14" alt="" style="vertical-align:-2px;margin-right:6px;">Add to Google Calendar
             </a>
           </td>
           <td style="padding:0 6px;">
-            <a href="${outlookUrl}" target="_blank" style="display:inline-block;background:#ffffff;color:#0078d4;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;border:1.5px solid #0078d4;line-height:1;">
+            <a href="${trackedOutlook}" target="_blank" style="display:inline-block;background:#ffffff;color:#0078d4;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;border:1.5px solid #0078d4;line-height:1;">
               <img src="https://outlook.live.com/favicon.ico" width="14" height="14" alt="" style="vertical-align:-2px;margin-right:6px;">Add to Outlook
             </a>
           </td>
@@ -495,8 +508,8 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
       + detailRow("⏱️", "Duration", `${booking.duration} minutes`)
       + detailRow("👤", "Host", booking.hostName);
 
-    const meetingBtn = booking.meetingLink ? actionButton("Join Meeting →", booking.meetingLink) : "";
-    const manageBtn = booking.manageUrl ? secondaryButton("Reschedule or Cancel", booking.manageUrl) : "";
+    const meetingBtn = booking.meetingLink ? actionButton("Join Meeting →", booking.meetingLink, BRAND_COLOR, booking.id, "join_meeting") : "";
+    const manageBtn = booking.manageUrl ? secondaryButton("Reschedule or Cancel", booking.manageUrl, booking.id, "manage_booking") : "";
 
     await sendEmailWithRetry({
       from: RESEND_FROM_EMAIL,
@@ -516,7 +529,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
           ${meetingBtn}
           ${manageBtn}
           ${icsNote("Add this event to your calendar using the attached .ics file.")}
-          ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
+          ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink, bookingId: booking.id })}
         `,
         bookingId: booking.id,
       }),
@@ -563,7 +576,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
             <h2 style="margin:0 0 16px;font-size:20px;color:#1f2937;font-weight:700;">${booking.eventTitle}</h2>
             ${detailsCard(bodyRows + meetingRow)}
             ${icsNote("Add this event to your calendar using the attached .ics file.")}
-            ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
+            ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink, bookingId: booking.id })}
           `,
           bookingId: booking.id,
         }),
@@ -710,7 +723,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
       + detailRow("⏱️", "Duration", `${booking.duration} minutes`)
       + detailRow("👤", "Host", booking.hostName);
 
-    const manageBtn = booking.manageUrl ? secondaryButton("Reschedule or Cancel", booking.manageUrl) : "";
+    const manageBtn = booking.manageUrl ? secondaryButton("Reschedule or Cancel", booking.manageUrl, booking.id, "manage_booking") : "";
 
     await sendEmailWithRetry({
       from: RESEND_FROM_EMAIL,
@@ -731,7 +744,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
           ${detailsCard(newRows, "#22c55e")}
           ${manageBtn}
           ${icsNote("The attached .ics file will update this event in your calendar.")}
-          ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
+          ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink, bookingId: booking.id })}
         `,
         bookingId: booking.id,
       }),
@@ -778,7 +791,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
             <h2 style="margin:0 0 16px;font-size:20px;color:#1f2937;font-weight:700;">${booking.eventTitle} <span style="display:inline-block;font-size:12px;font-weight:700;background:#22c55e;color:white;padding:2px 8px;border-radius:5px;vertical-align:middle;margin-left:8px;">NEW</span></h2>
             ${detailsCard(newRows, "#22c55e")}
             ${icsNote("The attached .ics file will update this event in your calendar.")}
-            ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
+            ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink, bookingId: booking.id })}
           `,
           bookingId: booking.id,
         }),
