@@ -16,6 +16,7 @@ import QuickActions from "@/components/dashboard/QuickActions";
 import BookingStatsChart from "@/components/dashboard/BookingStatsChart";
 import CalendarHeatmap from "@/components/dashboard/CalendarHeatmap";
 import TodaySchedule from "@/components/dashboard/TodaySchedule";
+import AIChatbot from "@/components/dashboard/AIChatbot";
 import { SkeletonDashboard } from "@/components/ui/skeleton-card";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -162,6 +163,7 @@ const Dashboard = () => {
         </button>
       )}
 
+      <AIChatbot />
       <BottomNavigation />
     </div>
   );
