@@ -37,6 +37,7 @@ import AvatarUpload from "@/components/profile/AvatarUpload";
 import ShareModal from "@/components/ShareModal";
 import NotificationPreferences from "@/components/settings/NotificationPreferences";
 import SlackSettings from "@/components/settings/SlackSettings";
+import ThemePicker from "@/components/settings/ThemePicker";
 import { SkeletonProfile } from "@/components/ui/skeleton-card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -389,6 +390,11 @@ const ProfileSettings = () => {
               </p>
             </Card>
           )}
+
+          {/* Theme & Branding */}
+          <div className="mt-4 sm:mt-6">
+            <ThemePicker />
+          </div>
 
           {/* Slack Settings */}
           <div className="mt-4 sm:mt-6">
