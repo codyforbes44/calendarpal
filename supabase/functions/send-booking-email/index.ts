@@ -746,7 +746,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${requestId}] Guest: ${booking.guestName} (${maskEmail(booking.guestEmail)})`);
     console.log(`[${requestId}] Host: ${booking.hostName} (${booking.hostEmail ? maskEmail(booking.hostEmail) : "NO EMAIL PROVIDED"})`);
 
-    // Check host's email notification preferences
+    // Check host's email notification preferences + resolve missing host email
     let hostEmailEnabled = true;
     try {
       const supabaseForPrefs = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -760,9 +760,34 @@ const handler = async (req: Request): Promise<Response> => {
       if (bookingData?.host_user_id) {
         const { data: profileData } = await supabaseForPrefs
           .from("profiles")
-          .select("notification_preferences")
+          .select("notification_preferences, email, full_name")
           .eq("user_id", bookingData.host_user_id)
           .single();
+
+        // Fallback: fill missing host email from profile
+        if (!booking.hostEmail && profileData?.email) {
+          booking.hostEmail = profileData.email;
+          console.log(`[${requestId}] Resolved host email from profile: ${maskEmail(booking.hostEmail)}`);
+        }
+
+        // Fallback: fill missing host name from profile
+        if ((!booking.hostName || booking.hostName === "Host") && profileData?.full_name) {
+          booking.hostName = profileData.full_name;
+          console.log(`[${requestId}] Resolved host name from profile: ${booking.hostName}`);
+        }
+
+        // Ultimate fallback: fetch email from auth.users if profile has none
+        if (!booking.hostEmail) {
+          try {
+            const { data: { user: authUser } } = await supabaseForPrefs.auth.admin.getUserById(bookingData.host_user_id);
+            if (authUser?.email) {
+              booking.hostEmail = authUser.email;
+              console.log(`[${requestId}] Resolved host email from auth: ${maskEmail(booking.hostEmail)}`);
+            }
+          } catch (authErr: any) {
+            console.warn(`[${requestId}] Could not fetch host email from auth: ${authErr.message}`);
+          }
+        }
 
         if (profileData?.notification_preferences) {
           const prefs = profileData.notification_preferences as Record<string, boolean>;
