@@ -14,6 +14,7 @@ import SEO from "@/components/SEO";
 import { pageSEO, siteConfig } from "@/lib/seo-config";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 import SocialLoginButton from "@/components/auth/SocialLoginButton";
+import ThemeLogo from "@/components/ThemeLogo";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address").max(255),
@@ -185,7 +186,7 @@ const Auth = () => {
           
           <div className="relative z-10 max-w-md space-y-8">
             <a href="/" className="inline-flex items-center gap-3">
-              <img src="/bookme-logo.png" alt="Bᴏᴏᴋᴍᴇ.ʙᴇᴛ" width={48} height={48} className="h-12 w-12 rounded-2xl object-cover shadow-md" />
+              <ThemeLogo width={48} height={48} className="h-12 w-12 rounded-2xl object-contain shadow-md" />
               <span className="font-display text-2xl font-bold">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</span>
             </a>
             
@@ -226,13 +227,7 @@ const Auth = () => {
 
             {/* Logo (mobile only) */}
             <div className="flex items-center justify-center mb-5 sm:mb-7 lg:hidden">
-              <img
-                src="/bookme-logo.png"
-                alt="Bᴏᴏᴋᴍᴇ.ʙᴇᴛ"
-                width={56}
-                height={56}
-                className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl object-cover shadow-md"
-              />
+              <ThemeLogo width={56} height={56} className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl object-contain shadow-md" />
             </div>
 
             {/* Header */}
