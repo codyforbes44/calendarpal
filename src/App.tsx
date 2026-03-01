@@ -41,6 +41,7 @@ const Events = lazy(() => import("./pages/Events"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const EmbedBooking = lazy(() => import("./pages/EmbedBooking"));
+const BookingPaymentSuccess = lazy(() => import("./pages/BookingPaymentSuccess"));
 
 // Admin pages
 const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
@@ -97,6 +98,7 @@ const App = () => (
                     <Route path="/book/:username" element={<PublicBooking />} />
                     <Route path="/book/:username/:eventSlug" element={<PublicBooking />} />
                     <Route path="/embed/:username" element={<EmbedBooking />} />
+                    <Route path="/booking-payment-success" element={<BookingPaymentSuccess />} />
                     <Route path="/booking/:bookingId/manage" element={<GuestBookingManage />} />
                     <Route
                       path="/dashboard"

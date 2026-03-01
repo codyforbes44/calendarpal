@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Crown, DollarSign } from "lucide-react";
 import {
   FormControl,
   FormDescription,
@@ -14,6 +16,7 @@ import {
 import AIGenerateButton from "./AIGenerateButton";
 import BufferTimeSettings from "./BufferTimeSettings";
 import { EVENT_COLORS, type EventFormValues } from "./types";
+import { useSubscription } from "@/hooks/useSubscription";
 
 function getLocationLabel(type: string) {
   return type === "video" ? "video call" : type === "phone" ? "phone call" : "in-person meeting";
@@ -24,6 +27,8 @@ interface EventFormFieldsProps {
 }
 
 const EventFormFields = ({ form }: EventFormFieldsProps) => {
+  const { isPro } = useSubscription();
+
   return (
     <>
       {/* Title */}
@@ -195,6 +200,73 @@ const EventFormFields = ({ form }: EventFormFieldsProps) => {
             </FormItem>
           )}
         />
+      </div>
+
+      {/* Pricing (Pro only) */}
+      <div className={`space-y-4 p-3 sm:p-4 rounded-lg border border-border ${!isPro ? "opacity-50" : ""}`}>
+        <div className="flex items-center gap-2">
+          <DollarSign className="w-4 h-4" />
+          <span className="font-medium text-sm">Session Pricing</span>
+          {!isPro && (
+            <Badge variant="secondary" className="text-xs gap-1">
+              <Crown className="w-3 h-3" /> Pro
+            </Badge>
+          )}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <FormField
+            control={form.control}
+            name="price_amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs">Price (cents)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    disabled={!isPro}
+                    {...field}
+                    className="h-10"
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  e.g. 2500 = $25.00
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="price_currency"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs">Currency</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  disabled={!isPro}
+                >
+                  <FormControl>
+                    <SelectTrigger className="h-10">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="usd">USD</SelectItem>
+                    <SelectItem value="eur">EUR</SelectItem>
+                    <SelectItem value="gbp">GBP</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        {!isPro && (
+          <p className="text-xs text-muted-foreground">Upgrade to Pro to charge for sessions.</p>
+        )}
       </div>
     </>
   );

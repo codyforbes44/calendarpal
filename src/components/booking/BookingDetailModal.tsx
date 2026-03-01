@@ -81,10 +81,17 @@ const BookingDetailModal = ({
         </DialogHeader>
 
         <div className="space-y-3 sm:space-y-4">
-          {/* Status badge */}
-          <Badge className={cn("capitalize", getStatusColor(booking.status))}>
-            {booking.status}
-          </Badge>
+          {/* Status badges */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge className={cn("capitalize", getStatusColor(booking.status))}>
+              {booking.status}
+            </Badge>
+            {booking.payment_status === "paid" && (
+              <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                💰 Paid
+              </Badge>
+            )}
+          </div>
 
           {/* Date and time */}
           <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/50 rounded-lg">
