@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Bell, Mail, CalendarPlus, CalendarX, CalendarClock, Clock } from "lucide-react";
+import { Bell, Mail, MessageSquare, CalendarPlus, CalendarX, CalendarClock, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface NotificationPrefs {
@@ -16,6 +16,9 @@ interface NotificationPrefs {
   email_booking_cancelled: boolean;
   email_booking_rescheduled: boolean;
   email_reminder: boolean;
+  slack_booking_created: boolean;
+  slack_booking_cancelled: boolean;
+  slack_booking_rescheduled: boolean;
 }
 
 const defaultPrefs: NotificationPrefs = {
@@ -27,12 +30,16 @@ const defaultPrefs: NotificationPrefs = {
   email_booking_cancelled: true,
   email_booking_rescheduled: true,
   email_reminder: true,
+  slack_booking_created: true,
+  slack_booking_cancelled: true,
+  slack_booking_rescheduled: true,
 };
 
 const prefItems = [
   {
     inAppKey: "booking_created" as const,
     emailKey: "email_booking_created" as const,
+    slackKey: "slack_booking_created" as const,
     label: "New Bookings",
     description: "When someone books a meeting with you",
     icon: CalendarPlus,
@@ -41,6 +48,7 @@ const prefItems = [
   {
     inAppKey: "booking_cancelled" as const,
     emailKey: "email_booking_cancelled" as const,
+    slackKey: "slack_booking_cancelled" as const,
     label: "Cancellations",
     description: "When a guest cancels their booking",
     icon: CalendarX,
@@ -49,6 +57,7 @@ const prefItems = [
   {
     inAppKey: "booking_rescheduled" as const,
     emailKey: "email_booking_rescheduled" as const,
+    slackKey: "slack_booking_rescheduled" as const,
     label: "Reschedules",
     description: "When a guest reschedules their booking",
     icon: CalendarClock,
@@ -57,6 +66,7 @@ const prefItems = [
   {
     inAppKey: "reminder" as const,
     emailKey: "email_reminder" as const,
+    slackKey: undefined,
     label: "Reminders",
     description: "Upcoming meeting reminders",
     icon: Clock,
@@ -114,7 +124,7 @@ const NotificationPreferences = () => {
       </p>
 
       {/* Channel headers */}
-      <div className="flex items-center justify-end gap-6 mb-3 pr-1">
+      <div className="flex items-center justify-end gap-4 sm:gap-6 mb-3 pr-1">
         <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <Bell className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">In-App</span>
@@ -122,6 +132,10 @@ const NotificationPreferences = () => {
         <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
           <Mail className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Email</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <MessageSquare className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Slack</span>
         </div>
       </div>
 
@@ -144,7 +158,7 @@ const NotificationPreferences = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 sm:gap-6">
               <Switch
                 id={item.inAppKey}
                 checked={prefs[item.inAppKey]}
@@ -159,6 +173,17 @@ const NotificationPreferences = () => {
                 disabled={saving}
                 aria-label={`${item.label} email`}
               />
+              {item.slackKey ? (
+                <Switch
+                  id={item.slackKey}
+                  checked={prefs[item.slackKey]}
+                  onCheckedChange={() => handleToggle(item.slackKey)}
+                  disabled={saving}
+                  aria-label={`${item.label} slack`}
+                />
+              ) : (
+                <div className="w-[36px]" />
+              )}
             </div>
           </div>
         ))}

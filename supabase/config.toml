@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.generate-hero-images]
 verify_jwt = false
+
+[functions.slack-notify]
+verify_jwt = false

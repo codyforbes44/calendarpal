@@ -353,6 +353,8 @@ export type Database = {
           full_name: string | null
           id: string
           notification_preferences: Json
+          slack_channel_id: string | null
+          slack_notifications_enabled: boolean
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_plan: string
@@ -369,6 +371,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           notification_preferences?: Json
+          slack_channel_id?: string | null
+          slack_notifications_enabled?: boolean
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_plan?: string
@@ -385,6 +389,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           notification_preferences?: Json
+          slack_channel_id?: string | null
+          slack_notifications_enabled?: boolean
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_plan?: string
