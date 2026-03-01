@@ -38,9 +38,9 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <span className="text-muted-foreground/50 cursor-default">
-                  Blog (Coming Soon)
-                </span>
+                <Link to="/changelog" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Changelog
+                </Link>
               </li>
               <li>
                 <span className="text-muted-foreground/50 cursor-default">
