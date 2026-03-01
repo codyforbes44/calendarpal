@@ -57,7 +57,7 @@ const Support = () => {
       <Navigation />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 sm:pb-20">
-        <div className="relative text-center mb-10 sm:mb-16 py-10 sm:py-14 lg:py-16 overflow-hidden rounded-2xl">
+        <div className="relative text-center max-w-3xl mx-auto mb-10 sm:mb-16 py-10 sm:py-14 lg:py-16 overflow-hidden rounded-2xl">
           <HeroBackground page="support" opacity={0.3} />
           <h1 className="relative z-10 text-3xl sm:text-4xl font-bold mb-4">How can we help?</h1>
           <p className="relative z-10 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
