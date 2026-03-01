@@ -630,6 +630,9 @@ const PublicBooking = () => {
                 <img
                   src={profile.avatar_url}
                   alt={profile.full_name || ""}
+                  width={80}
+                  height={80}
+                  loading="lazy"
                   className="w-20 h-20 rounded-full object-cover mx-auto mb-4 ring-4 ring-primary/20"
                 />
               ) : (

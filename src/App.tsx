@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,42 +13,45 @@ import AdminRouteGuard from "@/components/admin/AdminRouteGuard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import GeoAccessGuard from "@/components/GeoAccessGuard";
 import ScrollToTop from "@/components/ScrollToTop";
+
+// Eagerly load the landing page for LCP
 import Index from "./pages/Index";
-import GetStarted from "./pages/GetStarted";
-import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
-import UpdatePassword from "./pages/UpdatePassword";
-import Onboarding from "./pages/Onboarding";
-import Dashboard from "./pages/Dashboard";
-// Booking page now redirects to /bookings
-import Bookings from "./pages/Bookings";
-import Availability from "./pages/Availability";
-import EventForm from "./pages/EventForm";
-import PublicBooking from "./pages/PublicBooking";
-import ProfileSettings from "./pages/ProfileSettings";
-import GuestBookingManage from "./pages/GuestBookingManage";
-import Pricing from "./pages/Pricing";
-import Subscription from "./pages/Subscription";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
-import Support from "./pages/Support";
-import AppealVerify from "./pages/AppealVerify";
-import About from "./pages/About";
-import Events from "./pages/Events";
-import Notifications from "./pages/Notifications";
-import NotFound from "./pages/NotFound";
+
+// Lazy-load all other pages for reduced initial bundle
+const GetStarted = lazy(() => import("./pages/GetStarted"));
+const Auth = lazy(() => import("./pages/Auth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const UpdatePassword = lazy(() => import("./pages/UpdatePassword"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Bookings = lazy(() => import("./pages/Bookings"));
+const Availability = lazy(() => import("./pages/Availability"));
+const EventForm = lazy(() => import("./pages/EventForm"));
+const PublicBooking = lazy(() => import("./pages/PublicBooking"));
+const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
+const GuestBookingManage = lazy(() => import("./pages/GuestBookingManage"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Subscription = lazy(() => import("./pages/Subscription"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Support = lazy(() => import("./pages/Support"));
+const AppealVerify = lazy(() => import("./pages/AppealVerify"));
+const About = lazy(() => import("./pages/About"));
+const Events = lazy(() => import("./pages/Events"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Admin pages
-import AdminLayout from "./layouts/AdminLayout";
-import AdminOverview from "./pages/admin/AdminOverview";
-import AdminUsers from "./pages/admin/AdminUsers";
-import AdminRoles from "./pages/admin/AdminRoles";
-import AdminBookings from "./pages/admin/AdminBookings";
-import AdminAppeals from "./pages/admin/AdminAppeals";
-import AdminBlockedLogs from "./pages/admin/AdminBlockedLogs";
-import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminOGImages from "./pages/admin/AdminOGImages";
+const AdminLayout = lazy(() => import("./layouts/AdminLayout"));
+const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
+const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminRoles = lazy(() => import("./pages/admin/AdminRoles"));
+const AdminBookings = lazy(() => import("./pages/admin/AdminBookings"));
+const AdminAppeals = lazy(() => import("./pages/admin/AdminAppeals"));
+const AdminBlockedLogs = lazy(() => import("./pages/admin/AdminBlockedLogs"));
+const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminOGImages = lazy(() => import("./pages/admin/AdminOGImages"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,6 +62,13 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Minimal loading fallback to avoid CLS
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 const App = () => (
   <HelmetProvider>
@@ -72,6 +83,7 @@ const App = () => (
                 <Sonner />
                 <BrowserRouter>
                   <ScrollToTop />
+                  <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/get-started" element={<GetStarted />} />
@@ -185,6 +197,7 @@ const App = () => (
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </Suspense>
                 </BrowserRouter>
                 </OnboardingProvider>
               </AuthProvider>
