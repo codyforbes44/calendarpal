@@ -1,58 +1,88 @@
 
+# Create Database RPC Functions for Client Aggregation and Popular Times
 
-# Fix Embed Widget Branding and Add Payment Support
+## Problem
 
-## Changes Overview
+Both `Clients.tsx` and `PopularTimesChart.tsx` fetch all bookings client-side and aggregate in JavaScript. With the default 1000-row query limit, users with more than 1000 bookings will get incomplete/incorrect data.
 
-Two fixes: update branding text and add Stripe payment support to the embedded booking flow.
+## Solution
 
----
+Create two PostgreSQL RPC functions that perform the aggregation server-side, then update the frontend to call them via `supabase.rpc()`.
 
-## 1. Fix Branding (3 locations in EmbedBooking.tsx)
+## 1. Database Migration -- Two RPC Functions
 
-Replace all instances of `Powered by <strong>Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</strong>` with `Powered by <strong>CalendarPal</strong>` in the embed page. There are two occurrences:
-- Line 354 (event selection step)
-- Line 453 (details form step)
+### `get_client_directory(p_user_id uuid)`
 
-Also update the `postMessage` event type from `bookme-booking-confirmed` to `calendarpal-booking-confirmed` (line 206), and update the matching reference in the embed code generator (`EmbedCodeGenerator.tsx`, line 43).
+Returns aggregated client data directly from the database:
 
----
+```sql
+CREATE OR REPLACE FUNCTION public.get_client_directory(p_user_id uuid)
+RETURNS TABLE(
+  email text,
+  name text,
+  total_meetings bigint,
+  last_meeting date,
+  first_meeting date
+)
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+  SELECT
+    lower(guest_email) AS email,
+    max(guest_name) AS name,
+    count(*) AS total_meetings,
+    max(scheduled_date) AS last_meeting,
+    min(scheduled_date) AS first_meeting
+  FROM bookings
+  WHERE host_user_id = p_user_id
+  GROUP BY lower(guest_email)
+  ORDER BY max(scheduled_date) DESC;
+$$;
+```
 
-## 2. Add Payment Support to Embed Booking Flow
+### `get_popular_times(p_user_id uuid)`
 
-The `PublicBooking.tsx` page already handles paid events by calling `create-booking-payment` when `price_amount > 0`. The embed flow skips this entirely. We need to replicate the same logic.
+Returns a heatmap grid of booking counts by day-of-week (0=Mon..6=Sun) and hour (8-19):
 
-### 2a. Update EventType interface (EmbedBooking.tsx)
+```sql
+CREATE OR REPLACE FUNCTION public.get_popular_times(p_user_id uuid)
+RETURNS TABLE(
+  day_index integer,
+  hour_index integer,
+  booking_count bigint
+)
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+  SELECT
+    CASE extract(isodow FROM scheduled_date)::int
+      WHEN 7 THEN 6 ELSE extract(isodow FROM scheduled_date)::int - 1
+    END AS day_index,
+    extract(hour FROM start_time)::int - 8 AS hour_index,
+    count(*) AS booking_count
+  FROM bookings
+  WHERE host_user_id = p_user_id
+    AND status = 'confirmed'
+    AND extract(hour FROM start_time)::int BETWEEN 8 AND 19
+  GROUP BY day_index, hour_index;
+$$;
+```
 
-Add `price_amount` and `price_currency` fields to the `EventType` interface (currently missing).
+Both use `SECURITY DEFINER` so they bypass RLS but explicitly filter by the passed `user_id`. The frontend will pass `auth.uid()`.
 
-### 2b. Show price on event cards
+## 2. Update `Clients.tsx`
 
-In the event selection step, display the price next to duration/location when `price_amount > 0`. Format as currency (e.g., "$5.00").
+Replace `useBookings()` + client-side `useMemo` aggregation with a direct `supabase.rpc('get_client_directory', { p_user_id: user.id })` call. The search/sort filtering stays client-side (operating on the already-aggregated, much smaller dataset). Remove the `useBookings` import.
 
-### 2c. Add payment redirect in handleBooking
+## 3. Update `PopularTimesChart.tsx`
 
-Before the direct booking insert, add the same conditional check from PublicBooking:
-- If `selectedEvent.price_amount > 0`, invoke `create-booking-payment` with the same payload
-- For embeds, use `window.top.location.href` (or `window.location.href`) to redirect to Stripe Checkout since the embed runs in an iframe
-- If no price, proceed with the existing direct booking flow
+Replace the raw `supabase.from("bookings").select(...)` query with `supabase.rpc('get_popular_times', { p_user_id: user.id })`. Map the flat result rows into the 7x12 grid array. Remove client-side loop aggregation.
 
-### 2d. Show price in details form
+## Summary
 
-Display the price in the booking summary card so guests know the cost before confirming.
-
----
-
-## Files Modified
-
-| File | Change |
+| Component | Change |
 |---|---|
-| `src/pages/EmbedBooking.tsx` | Fix branding (2 spots), update EventType interface, add payment redirect logic, show price on cards |
-| `src/components/settings/EmbedCodeGenerator.tsx` | Update `bookme-booking-confirmed` to `calendarpal-booking-confirmed` in JS widget code |
-
-## Technical Notes
-
-- The `create-booking-payment` edge function already handles CORS and works without auth (guest checkout), so no edge function changes are needed.
-- The Stripe checkout `success_url` already points to `/booking-payment-success` which handles verification and booking creation server-side, so the embed payment flow will work end-to-end.
-- For iframe context: `window.location.href` works inside iframes for navigation to external URLs (Stripe Checkout). No special handling needed since Stripe opens in the same frame/tab context.
-
+| Database migration | Add `get_client_directory` and `get_popular_times` RPC functions |
+| `src/pages/Clients.tsx` | Call RPC instead of fetching all bookings |
+| `src/components/dashboard/PopularTimesChart.tsx` | Call RPC instead of fetching all bookings |
+| `src/integrations/supabase/types.ts` | Auto-updated (no manual edit) |
