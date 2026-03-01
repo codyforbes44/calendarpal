@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Form,
   FormControl,
@@ -21,7 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { ArrowLeft, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Sparkles, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const eventSchema = z.object({
@@ -134,6 +136,39 @@ const EventForm = () => {
     }
   };
 
+  const [generating, setGenerating] = useState(false);
+
+  const generateDescription = async () => {
+    const title = form.getValues("title");
+    const duration = form.getValues("duration");
+    const locationType = form.getValues("location_type");
+
+    if (!title.trim()) {
+      toast.error("Enter an event title first.");
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const locationLabel = locationType === "video" ? "video call" : locationType === "phone" ? "phone call" : "in-person meeting";
+      const prompt = `Write a short, professional booking page description (2-3 sentences, under 80 words) for a ${duration}-minute ${locationLabel} called "${title}". Make it welcoming and tell the guest what to expect. Do not use markdown. Do not include the title or duration in the description.`;
+
+      const { data, error } = await supabase.functions.invoke("ai-search", {
+        body: { query: prompt },
+      });
+
+      if (error) throw error;
+      if (data?.answer) {
+        form.setValue("description", data.answer, { shouldDirty: true });
+        toast.success("Description generated!");
+      }
+    } catch {
+      toast.error("Could not generate description. Try again.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const isSubmitting = createEventType.isPending || updateEventType.isPending;
   const isDeleting = deleteEventType.isPending;
 
@@ -214,7 +249,24 @@ const EventForm = () => {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Description</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Description</FormLabel>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={generateDescription}
+                          disabled={generating}
+                          className="h-7 text-xs gap-1 text-primary"
+                        >
+                          {generating ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Sparkles className="h-3 w-3" />
+                          )}
+                          {generating ? "Generating..." : "AI Generate"}
+                        </Button>
+                      </div>
                       <FormControl>
                         <Textarea
                           placeholder="What is this meeting about?"
