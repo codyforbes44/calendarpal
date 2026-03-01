@@ -1,16 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MessageSquare, X, Send, Loader2, Sparkles, ExternalLink, ChevronDown } from "lucide-react";
+import { X, Send, Loader2, Sparkles, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
-  citations?: string[];
 }
 
 const SUGGESTIONS = [
@@ -18,6 +16,8 @@ const SUGGESTIONS = [
   "Tips for managing my calendar",
   "How to set buffer times between meetings?",
 ];
+
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
 
 const AIChatbot = () => {
   const [open, setOpen] = useState(false);
@@ -57,33 +57,122 @@ const AIChatbot = () => {
     setInput("");
     setLoading(true);
 
-    try {
-      const chatHistory = newMessages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+    const chatHistory = newMessages.map((m) => ({
+      role: m.role,
+      content: m.content,
+    }));
 
-      const { data, error } = await supabase.functions.invoke("ai-search", {
-        body: { messages: chatHistory },
+    try {
+      const resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ messages: chatHistory }),
       });
 
-      if (error) throw error;
+      if (!resp.ok) {
+        if (resp.status === 429) {
+          toast.error("Too many requests. Please wait a moment.");
+        } else if (resp.status === 402) {
+          toast.error("AI credits exhausted. Contact your admin.");
+        }
+        throw new Error(`Request failed: ${resp.status}`);
+      }
 
-      const assistantMsg: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: data.answer,
-        citations: data.citations,
-      };
+      if (!resp.body) throw new Error("No response body");
 
-      setMessages((prev) => [...prev, assistantMsg]);
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let assistantSoFar = "";
+      const assistantId = crypto.randomUUID();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || line.trim() === "") continue;
+          if (!line.startsWith("data: ")) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantSoFar += content;
+              const snapshot = assistantSoFar;
+              setMessages((prev) => {
+                const last = prev[prev.length - 1];
+                if (last?.role === "assistant" && last.id === assistantId) {
+                  return prev.map((m) =>
+                    m.id === assistantId ? { ...m, content: snapshot } : m
+                  );
+                }
+                return [...prev, { id: assistantId, role: "assistant", content: snapshot }];
+              });
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
+        }
+      }
+
+      // Flush remaining buffer
+      if (textBuffer.trim()) {
+        for (let raw of textBuffer.split("\n")) {
+          if (!raw) continue;
+          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+          if (raw.startsWith(":") || raw.trim() === "") continue;
+          if (!raw.startsWith("data: ")) continue;
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantSoFar += content;
+              const snapshot = assistantSoFar;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantId ? { ...m, content: snapshot } : m
+                )
+              );
+            }
+          } catch { /* ignore partial leftovers */ }
+        }
+      }
+
+      // Ensure assistant message exists even if stream was empty
+      if (!assistantSoFar) {
+        setMessages((prev) => [
+          ...prev,
+          { id: assistantId, role: "assistant", content: "Sorry, I couldn't generate a response." },
+        ]);
+      }
     } catch {
-      const errorMsg: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: "Sorry, I couldn't process that. Please try again.",
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      setMessages((prev) => {
+        if (prev[prev.length - 1]?.role === "assistant") return prev;
+        return [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: "Sorry, I couldn't process that. Please try again.",
+          },
+        ];
+      });
     } finally {
       setLoading(false);
     }
@@ -96,7 +185,6 @@ const AIChatbot = () => {
 
   return (
     <>
-      {/* Floating trigger button */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -108,10 +196,8 @@ const AIChatbot = () => {
         </button>
       )}
 
-      {/* Chat panel */}
       {open && (
         <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-96 max-h-[70vh] flex flex-col rounded-xl border bg-card shadow-lg overflow-hidden">
-          {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b bg-primary/5">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
@@ -122,7 +208,6 @@ const AIChatbot = () => {
             </Button>
           </div>
 
-          {/* Messages */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[200px] max-h-[50vh]">
             {messages.length === 0 && (
               <div className="space-y-3">
@@ -162,36 +247,11 @@ const AIChatbot = () => {
                   ) : (
                     <p>{msg.content}</p>
                   )}
-
-                  {msg.citations && msg.citations.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-border/50 flex flex-wrap gap-1">
-                      {msg.citations.slice(0, 3).map((url, i) => {
-                        let hostname = "";
-                        try {
-                          hostname = new URL(url).hostname.replace("www.", "");
-                        } catch {
-                          hostname = url;
-                        }
-                        return (
-                          <a
-                            key={i}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-0.5 text-[10px] text-primary hover:underline bg-background/50 px-1.5 py-0.5 rounded"
-                          >
-                            <ExternalLink className="h-2.5 w-2.5" />
-                            {hostname}
-                          </a>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
 
-            {loading && (
+            {loading && messages[messages.length - 1]?.role !== "assistant" && (
               <div className="flex justify-start">
                 <div className="bg-muted rounded-xl px-3 py-2 flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -201,7 +261,6 @@ const AIChatbot = () => {
             )}
           </div>
 
-          {/* Input */}
           <form onSubmit={handleSubmit} className="border-t p-3 flex gap-2">
             <Input
               ref={inputRef}

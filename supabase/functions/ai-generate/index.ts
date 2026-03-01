@@ -6,15 +6,13 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are CalendarPal Assistant, a helpful AI for CalendarPal (also known as Bᴏᴏᴋᴍᴇ.ʙᴇᴛ), a scheduling and booking platform. You help users with:
-- Setting up and managing their availability
-- Creating and configuring event types
-- Managing bookings and calendar
-- Sharing booking links
-- Subscription and billing questions
-- Scheduling best practices and productivity tips
-
-Be concise, friendly, and actionable. Use markdown formatting for clarity. If a question is unrelated to scheduling or productivity, politely redirect. Keep answers under 250 words.`;
+const SYSTEM_PROMPT = `You are a professional scheduling assistant. Generate concise, professional text for calendar events and meetings. 
+Rules:
+- Return ONLY the requested text (title or description), nothing else
+- No quotes, no prefixes, no explanations
+- Keep titles under 60 characters
+- Keep descriptions under 200 characters
+- Be professional and clear`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -22,31 +20,31 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get("PERPLEXITY_API_KEY");
-    if (!apiKey) throw new Error("PERPLEXITY_API_KEY is not configured");
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { query } = await req.json();
-    if (!query || typeof query !== "string" || query.trim().length < 3) {
+    const { prompt } = await req.json();
+    if (!prompt || typeof prompt !== "string") {
       return new Response(
-        JSON.stringify({ error: "Query must be at least 3 characters" }),
+        JSON.stringify({ error: "A 'prompt' string is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "sonar",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: query },
+          { role: "user", content: prompt },
         ],
-        max_tokens: 500,
-        temperature: 0.2,
+        max_tokens: 150,
+        temperature: 0.7,
       }),
     });
 
@@ -63,21 +61,20 @@ serve(async (req) => {
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errBody = await response.text();
-      console.error(`Perplexity API error [${response.status}]: ${errBody}`);
-      throw new Error(`Perplexity API call failed [${response.status}]`);
+      const errText = await response.text();
+      console.error(`AI gateway error [${response.status}]:`, errText);
+      throw new Error(`AI gateway error [${response.status}]`);
     }
 
     const data = await response.json();
-    const answer = data.choices?.[0]?.message?.content ?? "No answer available.";
-    const citations: string[] = data.citations ?? [];
+    const suggestion = data.choices?.[0]?.message?.content?.trim() ?? "";
 
     return new Response(
-      JSON.stringify({ answer, citations }),
+      JSON.stringify({ suggestion }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
-    console.error("AI search error:", error);
+    console.error("ai-generate error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return new Response(
       JSON.stringify({ error: message }),
