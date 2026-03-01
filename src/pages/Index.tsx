@@ -23,6 +23,17 @@ const Index = () => {
     }]
   };
 
+  const speakableSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": pageSEO.home.title,
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": [".hero-headline", ".hero-description"]
+    },
+    "url": siteConfig.url
+  };
+
   return (
     <div className="min-h-screen">
       <SEO
@@ -31,7 +42,7 @@ const Index = () => {
         keywords={pageSEO.home.keywords}
         canonical={siteConfig.url}
         ogImage={`${siteConfig.url}${siteConfig.ogImages.home}`}
-        structuredData={[organizationSchema, webApplicationSchema, breadcrumbSchema]}
+        structuredData={[organizationSchema, webApplicationSchema, breadcrumbSchema, speakableSchema]}
       />
       <Navigation />
       <Hero />

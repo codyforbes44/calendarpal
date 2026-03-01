@@ -21,7 +21,7 @@ const Hero = () => {
               <span>The Future of Booking Automation</span>
             </div>
             
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight">
+            <h1 className="hero-headline font-display text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight">
               Automate Your
               <br />
               Bookings.{" "}
@@ -30,7 +30,7 @@ const Hero = () => {
               </span>
             </h1>
             
-            <p className="text-base sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
+            <p className="hero-description text-base sm:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
               The intelligent booking platform that handles availability, reminders, time zones, and follow-ups — so you don't have to.
             </p>
 
