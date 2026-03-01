@@ -270,6 +270,75 @@ function convertTimeBetweenZones(
   }
 }
 
+// ─── Shared email layout builder ───
+const BRAND_COLOR = "#6366f1";
+const BRAND_GRADIENT = "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%)";
+const LOGO_URL = "https://calendarpal.lovable.app/bookme-logo.png";
+
+function emailLayout(options: {
+  preheader: string;
+  headerIcon: string;
+  headerTitle: string;
+  headerColor: string;
+  headerGradient?: string;
+  greeting: string;
+  introParagraph: string;
+  bodyHtml: string;
+  footerHtml?: string;
+}): string {
+  const gradient = options.headerGradient || BRAND_GRADIENT;
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${options.headerTitle}</title></head>
+<body style="margin:0;padding:0;background-color:#f0f0f5;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<!-- Preheader -->
+<div style="display:none;max-height:0;overflow:hidden;">${options.preheader}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f0f5;">
+<tr><td align="center" style="padding:32px 16px;">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+    <!-- Gradient Header -->
+    <tr><td style="background:${gradient};border-radius:16px 16px 0 0;padding:36px 32px 28px;text-align:center;">
+      <img src="${LOGO_URL}" alt="Bᴏᴏᴋᴍᴇ.ʙᴇᴛ" width="120" height="auto" style="display:block;margin:0 auto 20px;max-width:120px;">
+      <div style="font-size:36px;line-height:1;">${options.headerIcon}</div>
+      <h1 style="margin:12px 0 0;font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">${options.headerTitle}</h1>
+    </td></tr>
+    <!-- Body Card -->
+    <tr><td style="background:#ffffff;padding:36px 32px 32px;border-radius:0 0 16px 16px;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
+      <p style="margin:0 0 6px;font-size:17px;font-weight:600;color:#1f2937;">${options.greeting}</p>
+      <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">${options.introParagraph}</p>
+      ${options.bodyHtml}
+      ${options.footerHtml || ""}
+    </td></tr>
+    <!-- Footer -->
+    <tr><td style="padding:24px 32px;text-align:center;">
+      <p style="margin:0 0 6px;font-size:12px;color:#9ca3af;">Powered by <a href="https://bookme.bet" style="color:${BRAND_COLOR};text-decoration:none;font-weight:600;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a></p>
+      <p style="margin:0;font-size:11px;color:#c4c7cc;">Scheduling Made Simple</p>
+    </td></tr>
+  </table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
+function detailRow(icon: string, label: string, value: string, options?: { strikethrough?: boolean }): string {
+  const textStyle = options?.strikethrough ? "text-decoration:line-through;color:#9ca3af;" : "color:#1f2937;";
+  return `<tr>
+    <td style="padding:10px 16px;vertical-align:top;width:28px;font-size:18px;">${icon}</td>
+    <td style="padding:10px 16px;">
+      <p style="margin:0;font-size:12px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">${label}</p>
+      <p style="margin:3px 0 0;font-size:15px;font-weight:600;${textStyle}">${value}</p>
+    </td>
+  </tr>`;
+}
+
+function detailsCard(rows: string, borderColor: string = BRAND_COLOR): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;border-left:4px solid ${borderColor};margin:0 0 24px;">
+    ${rows}
+  </table>`;
+}
+
 function buildTimezoneBlock(params: {
   primaryTime: string;
   primaryTzAbbr: string;
@@ -285,20 +354,39 @@ function buildTimezoneBlock(params: {
       ? ` <span style="color:#ef4444;font-weight:600;">(previous day ⚠️)</span>`
       : "";
 
-  return `
-    <div style="margin:14px 0 6px;padding:14px 18px;background:white;border-radius:10px;border:1px solid #e5e7eb;">
-      <p style="margin:0 0 4px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">Your local time</p>
-      <p style="margin:0;font-size:24px;font-weight:700;color:#111827;line-height:1.2;">
+  return `<tr>
+    <td style="padding:10px 16px;vertical-align:top;width:28px;font-size:18px;">🕐</td>
+    <td style="padding:10px 16px;">
+      <p style="margin:0;font-size:12px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">YOUR LOCAL TIME</p>
+      <p style="margin:4px 0 0;font-size:22px;font-weight:700;color:#1f2937;line-height:1.2;">
         ${params.primaryTime}
-        <span style="display:inline-block;font-size:12px;font-weight:700;background:#6366f1;color:white;padding:3px 9px;border-radius:5px;margin-left:10px;vertical-align:middle;">${params.primaryTzAbbr}</span>
+        <span style="display:inline-block;font-size:11px;font-weight:700;background:${BRAND_COLOR};color:white;padding:3px 8px;border-radius:5px;margin-left:8px;vertical-align:middle;">${params.primaryTzAbbr}</span>
       </p>
-    </div>
-    <p style="margin:6px 0 14px 4px;font-size:14px;color:#6b7280;">
-      ${params.secondaryLabel}:
-      <strong style="color:#374151;">${params.secondaryTime}</strong>
-      <span style="color:#9ca3af;">&nbsp;(${params.secondaryTzAbbr})</span>${crossDayWarning}
-    </p>`;
+      <p style="margin:6px 0 0;font-size:13px;color:#6b7280;">
+        ${params.secondaryLabel}: <strong style="color:#374151;">${params.secondaryTime}</strong>
+        <span style="color:#9ca3af;"> (${params.secondaryTzAbbr})</span>${crossDayWarning}
+      </p>
+    </td>
+  </tr>`;
 }
+
+function actionButton(text: string, url: string, bgColor: string = BRAND_COLOR): string {
+  return `<div style="text-align:center;margin:24px 0;">
+    <a href="${url}" style="display:inline-block;background:${bgColor};color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.2px;box-shadow:0 2px 8px rgba(99,102,241,0.3);">${text}</a>
+  </div>`;
+}
+
+function secondaryButton(text: string, url: string): string {
+  return `<div style="text-align:center;margin:16px 0;">
+    <a href="${url}" style="display:inline-block;background:#f3f4f6;color:#374151;padding:11px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;border:1px solid #e5e7eb;">${text}</a>
+  </div>`;
+}
+
+function icsNote(text: string): string {
+  return `<p style="margin:24px 0 0;font-size:13px;color:#9ca3af;text-align:center;">📎 ${text}</p>`;
+}
+
+// ─── Confirmation Emails ───
 
 async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise<{ guestSent: boolean; hostSent: boolean }> {
   console.log(`[Confirmation] Processing confirmation emails for booking ${booking.id}`);
@@ -312,55 +400,48 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
   const guestTz = booking.guestTimezone || "UTC";
   const hostTimeFormatted = formatTime(booking.startTime);
   const hostTzAbbr = getTimezoneAbbr(hostTz);
-
-  // Convert host time → guest local time (times are stored in host tz)
   const guestConverted = convertTimeBetweenZones(booking.scheduledDate, booking.startTime, hostTz, guestTz);
 
   let guestSent = false;
   let hostSent = false;
   
-  // Email to guest — primary: guest local time, secondary: host time
+  // Guest email
   try {
+    const bodyRows = detailRow("📅", "Date", formattedDate)
+      + buildTimezoneBlock({
+          primaryTime: guestConverted.time,
+          primaryTzAbbr: guestConverted.abbr,
+          secondaryTime: hostTimeFormatted,
+          secondaryTzAbbr: hostTzAbbr,
+          secondaryLabel: "Host's time",
+          dateDiff: -guestConverted.dateDiff,
+        })
+      + detailRow("⏱️", "Duration", `${booking.duration} minutes`)
+      + detailRow("👤", "Host", booking.hostName);
+
+    const meetingBtn = booking.meetingLink ? actionButton("Join Meeting →", booking.meetingLink) : "";
+    const manageBtn = booking.manageUrl ? secondaryButton("Reschedule or Cancel", booking.manageUrl) : "";
+
     await sendEmailWithRetry({
       from: RESEND_FROM_EMAIL,
       to: [booking.guestEmail],
       replyTo: booking.hostEmail,
-      subject: `Confirmed: Meeting with ${booking.hostName} on ${formattedDate}`,
-      html: `
-        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-          <div style="text-align:center;margin-bottom:30px;">
-            <h1 style="color:#6366f1;margin:0;">✓ Booking Confirmed</h1>
-          </div>
-          <p style="font-size:16px;color:#374151;">Hi ${booking.guestName},</p>
-          <p style="font-size:16px;color:#374151;">Your meeting has been confirmed! Here are the details:</p>
-          <div style="background:#f3f4f6;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #6366f1;">
-            <h2 style="margin:0 0 16px 0;color:#111827;">${booking.eventTitle}</h2>
-            <p style="margin:8px 0;color:#4b5563;"><strong>📅 Date:</strong> ${formattedDate}</p>
-            ${buildTimezoneBlock({
-              primaryTime: guestConverted.time,
-              primaryTzAbbr: guestConverted.abbr,
-              secondaryTime: hostTimeFormatted,
-              secondaryTzAbbr: hostTzAbbr,
-              secondaryLabel: "Host's time",
-              dateDiff: -guestConverted.dateDiff,
-            })}
-            <p style="margin:8px 0;color:#4b5563;"><strong>⏱️ Duration:</strong> ${booking.duration} minutes</p>
-            <p style="margin:8px 0;color:#4b5563;"><strong>👤 Host:</strong> ${booking.hostName}</p>
-            ${booking.meetingLink ? `
-            <p style="margin:16px 0 8px;color:#4b5563;"><strong>🔗 Meeting Link:</strong></p>
-            <a href="${booking.meetingLink}" style="display:inline-block;background:#6366f1;color:white;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;">Join Meeting</a>
-            ` : ""}
-          </div>
-          ${booking.manageUrl ? `
-          <div style="text-align:center;margin:20px 0;">
-            <a href="${booking.manageUrl}" style="display:inline-block;background:#f3f4f6;color:#374151;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;border:1px solid #e5e7eb;">Reschedule or Cancel</a>
-          </div>
-          ` : ""}
-          <p style="font-size:14px;color:#6b7280;margin-top:20px;">Add this event to your calendar using the attached .ics file.</p>
-          <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
-          <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple</p>
-        </div>
-      `,
+      subject: `✅ Confirmed: ${booking.eventTitle} with ${booking.hostName} — ${formattedDate}`,
+      html: emailLayout({
+        preheader: `Your meeting with ${booking.hostName} is confirmed for ${formattedDate}.`,
+        headerIcon: "✓",
+        headerTitle: "Booking Confirmed",
+        headerColor: BRAND_COLOR,
+        greeting: `Hi ${booking.guestName},`,
+        introParagraph: "Your meeting has been confirmed! Here are the details:",
+        bodyHtml: `
+          <h2 style="margin:0 0 16px;font-size:20px;color:#1f2937;font-weight:700;">${booking.eventTitle}</h2>
+          ${detailsCard(bodyRows)}
+          ${meetingBtn}
+          ${manageBtn}
+          ${icsNote("Add this event to your calendar using the attached .ics file.")}
+        `,
+      }),
       attachments: [{ filename: "meeting.ics", content: icsBase64, content_type: "text/calendar" }],
     });
     guestSent = true;
@@ -369,41 +450,43 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
     console.error(`[Confirmation] Failed to send guest email: ${error.message}`);
   }
 
-  // Email to host — primary: host local time, secondary: guest time
+  // Host email
   if (booking.hostEmail) {
     try {
+      const bodyRows = detailRow("👤", "Guest", `${booking.guestName} (${booking.guestEmail})`)
+        + detailRow("📅", "Date", formattedDate)
+        + buildTimezoneBlock({
+            primaryTime: hostTimeFormatted,
+            primaryTzAbbr: hostTzAbbr,
+            secondaryTime: guestConverted.time,
+            secondaryTzAbbr: guestConverted.abbr,
+            secondaryLabel: "Guest's time",
+            dateDiff: guestConverted.dateDiff,
+          })
+        + detailRow("⏱️", "Duration", `${booking.duration} minutes`);
+
+      const meetingRow = booking.meetingLink
+        ? detailRow("🔗", "Meeting Link", `<a href="${booking.meetingLink}" style="color:${BRAND_COLOR};text-decoration:none;">${booking.meetingLink}</a>`)
+        : "";
+
       await sendEmailWithRetry({
         from: RESEND_FROM_EMAIL,
         to: [booking.hostEmail],
         replyTo: booking.guestEmail,
-        subject: `New Booking: ${booking.guestName} on ${formattedDate}`,
-        html: `
-          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-            <div style="text-align:center;margin-bottom:30px;">
-              <h1 style="color:#6366f1;">📅 New Booking</h1>
-            </div>
-            <p style="font-size:16px;color:#374151;">Hi ${booking.hostName},</p>
-            <p style="font-size:16px;color:#374151;">You have a new booking! Here are the details:</p>
-            <div style="background:#f3f4f6;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #6366f1;">
-              <h2 style="margin:0 0 16px 0;color:#111827;">${booking.eventTitle}</h2>
-              <p style="margin:8px 0;color:#4b5563;"><strong>👤 Guest:</strong> ${booking.guestName} (${booking.guestEmail})</p>
-              <p style="margin:8px 0;color:#4b5563;"><strong>📅 Date:</strong> ${formattedDate}</p>
-              ${buildTimezoneBlock({
-                primaryTime: hostTimeFormatted,
-                primaryTzAbbr: hostTzAbbr,
-                secondaryTime: guestConverted.time,
-                secondaryTzAbbr: guestConverted.abbr,
-                secondaryLabel: "Guest's time",
-                dateDiff: guestConverted.dateDiff,
-              })}
-              <p style="margin:8px 0;color:#4b5563;"><strong>⏱️ Duration:</strong> ${booking.duration} minutes</p>
-              ${booking.meetingLink ? `<p style="margin:8px 0;color:#4b5563;"><strong>🔗 Meeting Link:</strong> <a href="${booking.meetingLink}" style="color:#6366f1;">${booking.meetingLink}</a></p>` : ""}
-            </div>
-            <p style="font-size:14px;color:#6b7280;margin-top:20px;">Add this event to your calendar using the attached .ics file.</p>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
-            <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple</p>
-          </div>
-        `,
+        subject: `📅 New Booking: ${booking.guestName} — ${formattedDate}`,
+        html: emailLayout({
+          preheader: `New booking from ${booking.guestName} on ${formattedDate}.`,
+          headerIcon: "📅",
+          headerTitle: "New Booking",
+          headerColor: BRAND_COLOR,
+          greeting: `Hi ${booking.hostName},`,
+          introParagraph: "You have a new booking! Here are the details:",
+          bodyHtml: `
+            <h2 style="margin:0 0 16px;font-size:20px;color:#1f2937;font-weight:700;">${booking.eventTitle}</h2>
+            ${detailsCard(bodyRows + meetingRow)}
+            ${icsNote("Add this event to your calendar using the attached .ics file.")}
+          `,
+        }),
         attachments: [{ filename: "meeting.ics", content: icsBase64, content_type: "text/calendar" }],
       });
       hostSent = true;
@@ -418,6 +501,8 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
   return { guestSent, hostSent };
 }
 
+// ─── Cancellation Emails ───
+
 async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<{ guestSent: boolean; hostSent: boolean }> {
   console.log(`[Cancellation] Processing cancellation emails for booking ${booking.id}`);
   console.log(`[Cancellation] Guest: ${maskEmail(booking.guestEmail)}, Host: ${booking.hostEmail ? maskEmail(booking.hostEmail) : "NOT PROVIDED"}`);
@@ -427,58 +512,37 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
   
   const formattedDate = formatDate(booking.scheduledDate);
   const formattedTime = formatTime(booking.startTime);
+  const cancelGradient = "linear-gradient(135deg, #ef4444 0%, #f87171 50%, #fca5a5 100%)";
   
   let guestSent = false;
   let hostSent = false;
   
-  // Email to guest
+  // Guest email
   try {
+    const bodyRows = detailRow("📅", "Date", formattedDate, { strikethrough: true })
+      + detailRow("🕐", "Time", formattedTime, { strikethrough: true })
+      + detailRow("👤", "Host", booking.hostName);
+
     await sendEmailWithRetry({
       from: RESEND_FROM_EMAIL,
       to: [booking.guestEmail],
       replyTo: booking.hostEmail,
-      subject: `Cancelled: Meeting with ${booking.hostName} on ${formattedDate}`,
-      html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #ef4444;">✕ Meeting Cancelled</h1>
-          </div>
-          
-          <p style="font-size: 16px; color: #374151;">Hi ${booking.guestName},</p>
-          
-          <p style="font-size: 16px; color: #374151;">Your meeting has been cancelled:</p>
-          
-          <div style="background: #fef2f2; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #ef4444;">
-            <h2 style="margin: 0 0 16px 0; color: #111827; text-decoration: line-through;">${booking.eventTitle}</h2>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>📅 Date:</strong> ${formattedDate}
-            </p>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>🕐 Time:</strong> ${formattedTime}
-            </p>
-            <p style="margin: 8px 0; color: #4b5563;">
-              <strong>👤 Host:</strong> ${booking.hostName}
-            </p>
-          </div>
-          
-          <p style="font-size: 14px; color: #6b7280; margin-top: 30px;">
-            The attached .ics file will remove this event from your calendar.
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-          
-          <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple
-          </p>
-        </div>
-      `,
-      attachments: [
-        {
-          filename: "meeting-cancelled.ics",
-          content: icsBase64,
-          content_type: "text/calendar",
-        },
-      ],
+      subject: `❌ Cancelled: ${booking.eventTitle} with ${booking.hostName} — ${formattedDate}`,
+      html: emailLayout({
+        preheader: `Your meeting with ${booking.hostName} on ${formattedDate} has been cancelled.`,
+        headerIcon: "✕",
+        headerTitle: "Meeting Cancelled",
+        headerColor: "#ef4444",
+        headerGradient: cancelGradient,
+        greeting: `Hi ${booking.guestName},`,
+        introParagraph: "Your meeting has been cancelled. Here were the details:",
+        bodyHtml: `
+          <h2 style="margin:0 0 16px;font-size:20px;color:#9ca3af;font-weight:700;text-decoration:line-through;">${booking.eventTitle}</h2>
+          ${detailsCard(bodyRows, "#ef4444")}
+          ${icsNote("The attached .ics file will remove this event from your calendar.")}
+        `,
+      }),
+      attachments: [{ filename: "meeting-cancelled.ics", content: icsBase64, content_type: "text/calendar" }],
     });
     guestSent = true;
     console.log(`[Cancellation] Guest email sent successfully`);
@@ -486,51 +550,32 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
     console.error(`[Cancellation] Failed to send guest email: ${error.message}`);
   }
 
-  // Email to host
+  // Host email
   if (booking.hostEmail) {
     try {
+      const bodyRows = detailRow("👤", "Guest", `${booking.guestName} (${booking.guestEmail})`)
+        + detailRow("📅", "Date", formattedDate, { strikethrough: true })
+        + detailRow("🕐", "Time", formattedTime, { strikethrough: true });
+
       await sendEmailWithRetry({
         from: RESEND_FROM_EMAIL,
         to: [booking.hostEmail],
         replyTo: booking.guestEmail,
-        subject: `Cancelled: Meeting with ${booking.guestName} on ${formattedDate}`,
-        html: `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #ef4444;">✕ Booking Cancelled</h1>
-            </div>
-            
-            <p style="font-size: 16px; color: #374151;">Hi ${booking.hostName},</p>
-            
-            <p style="font-size: 16px; color: #374151;">A booking has been cancelled:</p>
-            
-            <div style="background: #fef2f2; border-radius: 12px; padding: 24px; margin: 24px 0; border-left: 4px solid #ef4444;">
-              <h2 style="margin: 0 0 16px 0; color: #111827; text-decoration: line-through;">${booking.eventTitle}</h2>
-              <p style="margin: 8px 0; color: #4b5563;">
-                <strong>👤 Guest:</strong> ${booking.guestName} (${booking.guestEmail})
-              </p>
-              <p style="margin: 8px 0; color: #4b5563;">
-                <strong>📅 Date:</strong> ${formattedDate}
-              </p>
-              <p style="margin: 8px 0; color: #4b5563;">
-                <strong>🕐 Time:</strong> ${formattedTime}
-              </p>
-            </div>
-            
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-            
-            <p style="font-size: 12px; color: #9ca3af; text-align: center;">
-              Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple
-            </p>
-          </div>
-        `,
-        attachments: [
-          {
-            filename: "meeting-cancelled.ics",
-            content: icsBase64,
-            content_type: "text/calendar",
-          },
-        ],
+        subject: `❌ Cancelled: ${booking.guestName} — ${formattedDate}`,
+        html: emailLayout({
+          preheader: `Booking from ${booking.guestName} on ${formattedDate} has been cancelled.`,
+          headerIcon: "✕",
+          headerTitle: "Booking Cancelled",
+          headerColor: "#ef4444",
+          headerGradient: cancelGradient,
+          greeting: `Hi ${booking.hostName},`,
+          introParagraph: "A booking has been cancelled:",
+          bodyHtml: `
+            <h2 style="margin:0 0 16px;font-size:20px;color:#9ca3af;font-weight:700;text-decoration:line-through;">${booking.eventTitle}</h2>
+            ${detailsCard(bodyRows, "#ef4444")}
+          `,
+        }),
+        attachments: [{ filename: "meeting-cancelled.ics", content: icsBase64, content_type: "text/calendar" }],
       });
       hostSent = true;
       console.log(`[Cancellation] Host email sent successfully`);
@@ -543,6 +588,8 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
   
   return { guestSent, hostSent };
 }
+
+// ─── Reschedule Emails ───
 
 async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime: { date: string; time: string }): Promise<{ guestSent: boolean; hostSent: boolean }> {
   console.log(`[Reschedule] Processing reschedule emails for booking ${booking.id}`);
@@ -560,53 +607,50 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
   const hostTimeFormatted = formatTime(booking.startTime);
   const hostTzAbbr = getTimezoneAbbr(hostTz);
   const guestConverted = convertTimeBetweenZones(booking.scheduledDate, booking.startTime, hostTz, guestTz);
+  const rescheduleGradient = "linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #fde68a 100%)";
 
   let guestSent = false;
   let hostSent = false;
   
-  // Email to guest — primary: guest local time, secondary: host time
+  // Guest email
   try {
+    const oldRow = detailRow("📅", "Previous Time", `${oldFormattedDate} at ${oldFormattedTime}`, { strikethrough: true });
+
+    const newRows = detailRow("📅", "New Date", newFormattedDate)
+      + buildTimezoneBlock({
+          primaryTime: guestConverted.time,
+          primaryTzAbbr: guestConverted.abbr,
+          secondaryTime: hostTimeFormatted,
+          secondaryTzAbbr: hostTzAbbr,
+          secondaryLabel: "Host's time",
+          dateDiff: -guestConverted.dateDiff,
+        })
+      + detailRow("⏱️", "Duration", `${booking.duration} minutes`)
+      + detailRow("👤", "Host", booking.hostName);
+
+    const manageBtn = booking.manageUrl ? secondaryButton("Reschedule or Cancel", booking.manageUrl) : "";
+
     await sendEmailWithRetry({
       from: RESEND_FROM_EMAIL,
       to: [booking.guestEmail],
       replyTo: booking.hostEmail,
-      subject: `Rescheduled: Meeting with ${booking.hostName} - New time: ${newFormattedDate}`,
-      html: `
-        <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-          <div style="text-align:center;margin-bottom:30px;">
-            <h1 style="color:#f59e0b;">🔄 Meeting Rescheduled</h1>
-          </div>
-          <p style="font-size:16px;color:#374151;">Hi ${booking.guestName},</p>
-          <p style="font-size:16px;color:#374151;">Your meeting has been rescheduled. Here's the updated information:</p>
-          <div style="background:#fef2f2;border-radius:12px;padding:20px;margin:24px 0;border-left:4px solid #ef4444;">
-            <p style="margin:0 0 8px 0;font-weight:bold;color:#ef4444;">Previous Time</p>
-            <p style="margin:4px 0;color:#4b5563;text-decoration:line-through;">${oldFormattedDate} at ${oldFormattedTime}</p>
-          </div>
-          <div style="background:#f0fdf4;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #22c55e;">
-            <p style="margin:0 0 8px 0;font-weight:bold;color:#22c55e;">✓ New Time</p>
-            <h2 style="margin:0 0 16px 0;color:#111827;">${booking.eventTitle}</h2>
-            <p style="margin:8px 0;color:#4b5563;"><strong>📅 Date:</strong> ${newFormattedDate}</p>
-            ${buildTimezoneBlock({
-              primaryTime: guestConverted.time,
-              primaryTzAbbr: guestConverted.abbr,
-              secondaryTime: hostTimeFormatted,
-              secondaryTzAbbr: hostTzAbbr,
-              secondaryLabel: "Host's time",
-              dateDiff: -guestConverted.dateDiff,
-            })}
-            <p style="margin:8px 0;color:#4b5563;"><strong>⏱️ Duration:</strong> ${booking.duration} minutes</p>
-            <p style="margin:8px 0;color:#4b5563;"><strong>👤 Host:</strong> ${booking.hostName}</p>
-          </div>
-          ${booking.manageUrl ? `
-          <div style="text-align:center;margin:20px 0;">
-            <a href="${booking.manageUrl}" style="display:inline-block;background:#f3f4f6;color:#374151;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;border:1px solid #e5e7eb;">Reschedule or Cancel</a>
-          </div>
-          ` : ""}
-          <p style="font-size:14px;color:#6b7280;margin-top:20px;">The attached .ics file will update this event in your calendar.</p>
-          <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
-          <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple</p>
-        </div>
-      `,
+      subject: `🔄 Rescheduled: ${booking.eventTitle} with ${booking.hostName} — ${newFormattedDate}`,
+      html: emailLayout({
+        preheader: `Your meeting with ${booking.hostName} has been rescheduled to ${newFormattedDate}.`,
+        headerIcon: "🔄",
+        headerTitle: "Meeting Rescheduled",
+        headerColor: "#f59e0b",
+        headerGradient: rescheduleGradient,
+        greeting: `Hi ${booking.guestName},`,
+        introParagraph: "Your meeting has been rescheduled. Here's the updated information:",
+        bodyHtml: `
+          ${detailsCard(oldRow, "#ef4444")}
+          <h2 style="margin:0 0 16px;font-size:20px;color:#1f2937;font-weight:700;">${booking.eventTitle} <span style="display:inline-block;font-size:12px;font-weight:700;background:#22c55e;color:white;padding:2px 8px;border-radius:5px;vertical-align:middle;margin-left:8px;">NEW</span></h2>
+          ${detailsCard(newRows, "#22c55e")}
+          ${manageBtn}
+          ${icsNote("The attached .ics file will update this event in your calendar.")}
+        `,
+      }),
       attachments: [{ filename: "meeting-updated.ics", content: icsBase64, content_type: "text/calendar" }],
     });
     guestSent = true;
@@ -615,45 +659,43 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
     console.error(`[Reschedule] Failed to send guest email: ${error.message}`);
   }
 
-  // Email to host — primary: host local time, secondary: guest time
+  // Host email
   if (booking.hostEmail) {
     try {
+      const oldRow = detailRow("📅", "Previous Time", `${oldFormattedDate} at ${oldFormattedTime}`, { strikethrough: true });
+
+      const newRows = detailRow("👤", "Guest", `${booking.guestName} (${booking.guestEmail})`)
+        + detailRow("📅", "New Date", newFormattedDate)
+        + buildTimezoneBlock({
+            primaryTime: hostTimeFormatted,
+            primaryTzAbbr: hostTzAbbr,
+            secondaryTime: guestConverted.time,
+            secondaryTzAbbr: guestConverted.abbr,
+            secondaryLabel: "Guest's time",
+            dateDiff: guestConverted.dateDiff,
+          })
+        + detailRow("⏱️", "Duration", `${booking.duration} minutes`);
+
       await sendEmailWithRetry({
         from: RESEND_FROM_EMAIL,
         to: [booking.hostEmail],
         replyTo: booking.guestEmail,
-        subject: `Rescheduled: Meeting with ${booking.guestName} - New time: ${newFormattedDate}`,
-        html: `
-          <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-            <div style="text-align:center;margin-bottom:30px;">
-              <h1 style="color:#f59e0b;">🔄 Booking Rescheduled</h1>
-            </div>
-            <p style="font-size:16px;color:#374151;">Hi ${booking.hostName},</p>
-            <p style="font-size:16px;color:#374151;">A booking has been rescheduled:</p>
-            <div style="background:#fef2f2;border-radius:12px;padding:20px;margin:24px 0;border-left:4px solid #ef4444;">
-              <p style="margin:0 0 8px 0;font-weight:bold;color:#ef4444;">Previous Time</p>
-              <p style="margin:4px 0;color:#4b5563;text-decoration:line-through;">${oldFormattedDate} at ${oldFormattedTime}</p>
-            </div>
-            <div style="background:#f0fdf4;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #22c55e;">
-              <p style="margin:0 0 8px 0;font-weight:bold;color:#22c55e;">✓ New Time</p>
-              <h2 style="margin:0 0 16px 0;color:#111827;">${booking.eventTitle}</h2>
-              <p style="margin:8px 0;color:#4b5563;"><strong>👤 Guest:</strong> ${booking.guestName} (${booking.guestEmail})</p>
-              <p style="margin:8px 0;color:#4b5563;"><strong>📅 Date:</strong> ${newFormattedDate}</p>
-              ${buildTimezoneBlock({
-                primaryTime: hostTimeFormatted,
-                primaryTzAbbr: hostTzAbbr,
-                secondaryTime: guestConverted.time,
-                secondaryTzAbbr: guestConverted.abbr,
-                secondaryLabel: "Guest's time",
-                dateDiff: guestConverted.dateDiff,
-              })}
-              <p style="margin:8px 0;color:#4b5563;"><strong>⏱️ Duration:</strong> ${booking.duration} minutes</p>
-            </div>
-            <p style="font-size:14px;color:#6b7280;margin-top:20px;">The attached .ics file will update this event in your calendar.</p>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
-            <p style="font-size:12px;color:#9ca3af;text-align:center;">Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple</p>
-          </div>
-        `,
+        subject: `🔄 Rescheduled: ${booking.guestName} — ${newFormattedDate}`,
+        html: emailLayout({
+          preheader: `Booking from ${booking.guestName} has been rescheduled to ${newFormattedDate}.`,
+          headerIcon: "🔄",
+          headerTitle: "Booking Rescheduled",
+          headerColor: "#f59e0b",
+          headerGradient: rescheduleGradient,
+          greeting: `Hi ${booking.hostName},`,
+          introParagraph: "A booking has been rescheduled:",
+          bodyHtml: `
+            ${detailsCard(oldRow, "#ef4444")}
+            <h2 style="margin:0 0 16px;font-size:20px;color:#1f2937;font-weight:700;">${booking.eventTitle} <span style="display:inline-block;font-size:12px;font-weight:700;background:#22c55e;color:white;padding:2px 8px;border-radius:5px;vertical-align:middle;margin-left:8px;">NEW</span></h2>
+            ${detailsCard(newRows, "#22c55e")}
+            ${icsNote("The attached .ics file will update this event in your calendar.")}
+          `,
+        }),
         attachments: [{ filename: "meeting-updated.ics", content: icsBase64, content_type: "text/calendar" }],
       });
       hostSent = true;
