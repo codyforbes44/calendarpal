@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ThemeLogo from "@/components/ThemeLogo";
 
 const Footer = () => {
   return (
@@ -77,7 +78,7 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-3">
           <div className="flex items-center gap-2">
-            <img src="/bookme-logo.png" alt="Bᴏᴏᴋᴍᴇ.ʙᴇᴛ" width={24} height={24} loading="lazy" className="h-6 w-6 rounded object-cover" />
+            <ThemeLogo width={24} height={24} className="h-6 w-6 rounded object-contain" />
             <span className="text-sm text-muted-foreground">
               © 2026 Bᴏᴏᴋᴍᴇ.ʙᴇᴛ. Built with love for better scheduling.
             </span>

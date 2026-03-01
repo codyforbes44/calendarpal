@@ -11,6 +11,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
+import ThemeLogo from "@/components/ThemeLogo";
 
 interface NavLink {
   href: string;
@@ -90,7 +91,7 @@ const Navigation = () => {
       <div className="container flex h-14 md:h-16 items-center justify-between px-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-semibold">
-          <img src="/bookme-logo.png" alt="Bᴏᴏᴋᴍᴇ.ʙᴇᴛ" width={32} height={32} className="h-7 w-7 md:h-8 md:w-8 rounded-lg object-cover" />
+          <ThemeLogo width={32} height={32} className="h-7 w-7 md:h-8 md:w-8 rounded-lg object-contain" />
           <span className="text-base md:text-lg">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</span>
           {isPro && (
             <Badge variant="secondary" className="hidden sm:flex text-xs gap-1">
@@ -186,7 +187,7 @@ const Navigation = () => {
               <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between pb-4 border-b">
                   <Link to="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-                    <img src="/bookme-logo.png" alt="Bᴏᴏᴋᴍᴇ.ʙᴇᴛ" width={24} height={24} className="h-6 w-6 rounded-lg object-cover" />
+                    <ThemeLogo width={24} height={24} className="h-6 w-6 rounded-lg object-contain" />
                     <span className="font-semibold">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</span>
                   </Link>
                   <SheetClose asChild>
