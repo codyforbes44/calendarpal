@@ -17,7 +17,7 @@ const SEO = ({
   description = siteConfig.description,
   keywords = "scheduling app, appointment booking, calendar scheduling",
   canonical,
-  ogImage = `${siteConfig.url}${siteConfig.logo}`,
+  ogImage = siteConfig.ogImages.home,
   ogType = "website",
   noindex = false,
   structuredData,
