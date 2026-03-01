@@ -13,7 +13,7 @@ import { z } from "zod";
 import SEO from "@/components/SEO";
 import { pageSEO, siteConfig } from "@/lib/seo-config";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
-import SocialLoginButton from "@/components/auth/SocialLoginButton";
+
 import ThemeLogo from "@/components/ThemeLogo";
 
 const authSchema = z.object({
@@ -239,23 +239,6 @@ const Auth = () => {
                   ? "Sign in to manage your scheduling"
                   : "Get started with your free account"}
               </p>
-            </div>
-
-            {/* Social Login */}
-            <div className="mb-5 sm:mb-6">
-              <SocialLoginButton provider="google" disabled={loading} />
-            </div>
-
-            {/* Divider */}
-            <div className="relative mb-5 sm:mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  or continue with email
-                </span>
-              </div>
             </div>
 
             {/* Form */}

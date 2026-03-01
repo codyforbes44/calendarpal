@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Shield, ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
-import SocialLoginButton from "@/components/auth/SocialLoginButton";
+
 import OnboardingSummary from "@/components/get-started/OnboardingSummary";
 
 interface StepAccountProps {
@@ -69,17 +69,6 @@ const StepAccount = ({
       endTime={endTime}
       onEditStep={onEditStep}
     />
-
-    <SocialLoginButton provider="google" disabled={loading} />
-
-    <div className="relative">
-      <div className="absolute inset-0 flex items-center">
-        <span className="w-full border-t border-border" />
-      </div>
-      <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-card px-2 text-muted-foreground">or continue with email</span>
-      </div>
-    </div>
 
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
