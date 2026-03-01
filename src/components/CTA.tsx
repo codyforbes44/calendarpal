@@ -3,10 +3,10 @@ import { ArrowRight, CheckCircle } from "lucide-react";
 import AnimatedSection from "@/components/ui/animated-section";
 
 const benefits = [
-  "Free forever plan",
-  "No credit card required",
-  "Live in 2 minutes",
-  "Cancel anytime"
+  "AI-powered scheduling",
+  "Collect payments automatically",
+  "Slack & Google Calendar sync",
+  "Free forever plan"
 ];
 
 const CTA = () => {

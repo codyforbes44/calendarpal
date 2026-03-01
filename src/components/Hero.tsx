@@ -65,7 +65,7 @@ const Hero = () => {
               </div>
               <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground">
                 <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary shrink-0" />
-                <span>5,000+ bookings automated</span>
+                <span>50,000+ bookings automated</span>
               </div>
             </AnimatedSection>
           </div>

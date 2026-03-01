@@ -34,7 +34,7 @@ const faqCategories: FAQCategory[] = [
       },
       {
         question: "How do I create my first event type?",
-        answer: "From your dashboard, click \"Create Event\" in the Quick Actions section. Fill in the title, duration, location type (video, phone, or in-person), and an optional description. Choose a color label and click \"Create Event Type\" to publish it."
+        answer: "From your dashboard, click \"Create Event\" in the Quick Actions section. Fill in the title, duration, location type (video, phone, or in-person), and an optional description. You can also use the AI Generate button to auto-create a professional title and description. Choose a color label and click \"Create Event Type\" to publish it."
       }
     ]
   },
@@ -43,7 +43,7 @@ const faqCategories: FAQCategory[] = [
     faqs: [
       {
         question: "How does the booking process work for guests?",
-        answer: "Guests visit your booking link, select an event type, choose an available date and time slot (displayed in their local timezone), enter their name, email, and optional notes, then confirm the booking. Both you and the guest receive confirmation emails."
+        answer: "Guests visit your booking link, select an event type, choose an available date and time slot (displayed in their local timezone), enter their name, email, and optional notes, then confirm the booking. If the event type has a price, payment is collected at booking via Stripe. Both you and the guest receive confirmation emails."
       },
       {
         question: "What does the guest experience look like?",
@@ -55,7 +55,7 @@ const faqCategories: FAQCategory[] = [
       },
       {
         question: "How do notifications work?",
-        answer: "You receive in-app notifications (bell icon) for new bookings, reschedules, and cancellations. You can customize notification preferences in Profile Settings to control which events trigger notifications."
+        answer: "You receive in-app notifications (bell icon) for new bookings, reschedules, and cancellations. You can also enable Slack notifications to receive booking alerts directly in a Slack channel. Customize notification preferences in Profile Settings."
       },
       {
         question: "Do guests receive confirmation emails?",
@@ -68,7 +68,11 @@ const faqCategories: FAQCategory[] = [
     faqs: [
       {
         question: "What's the difference between Free and Pro plans?",
-        answer: "The Free plan includes up to 5 active event types, basic booking management, and email notifications. Pro unlocks unlimited event types, buffer times between meetings, booking analytics, priority support, and the AI assistant for event creation."
+        answer: "The Free plan includes 1 active event type, unlimited bookings, basic calendar integration, and email notifications. Pro unlocks unlimited event types, buffer times, Google Calendar two-way sync, Slack notifications, payment collection, embeddable booking widget, AI assistant, client directory, advanced analytics (popular times, conversion funnel), and priority support."
+      },
+      {
+        question: "Can I collect payments for bookings?",
+        answer: "Yes — Pro users can set a price on any event type. Payments are collected automatically via Stripe when guests book. You can track payment status on your Bookings page and manage refunds as needed."
       },
       {
         question: "Is there a free trial for Pro?",
@@ -85,6 +89,44 @@ const faqCategories: FAQCategory[] = [
       {
         question: "What is your refund policy?",
         answer: "If you cancel within the first 7 days of your initial Pro subscription, you can request a full refund by contacting support. After 7 days, cancellation takes effect at the end of the billing cycle with no partial refunds."
+      }
+    ]
+  },
+  {
+    label: "Integrations",
+    faqs: [
+      {
+        question: "How does Google Calendar sync work?",
+        answer: "Connect your Google Calendar in Settings to enable two-way sync. Your Google Calendar events are checked for conflicts so guests can't double-book you. New bookings are automatically added to your Google Calendar. Busy-time detection works in real time."
+      },
+      {
+        question: "How do I set up Slack notifications?",
+        answer: "Go to Settings → Slack, enable Slack notifications, and enter your Slack channel ID. You'll receive instant alerts for new bookings, reschedules, and cancellations. Use the \"Send Test Notification\" button to verify your setup works."
+      },
+      {
+        question: "Can I embed my booking page on my website?",
+        answer: "Yes — Pro users can embed their booking page using an iframe or JavaScript snippet. Go to Settings → Embed to generate the code, customize the dimensions, and preview the result. The embedded widget supports booking confirmations and QR code sharing."
+      },
+      {
+        question: "What integrations are supported?",
+        answer: "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ integrates with Google Calendar (two-way sync), Slack (booking alerts), Stripe (payment collection), Zoom, Microsoft Teams, and Outlook. More integrations are coming soon."
+      }
+    ]
+  },
+  {
+    label: "AI & Advanced",
+    faqs: [
+      {
+        question: "What can the AI assistant do?",
+        answer: "The AI assistant helps in three ways: (1) Generate professional event titles and descriptions when creating event types, (2) Answer questions about your schedule and bookings via the dashboard chatbot, and (3) Power the AI search on the Support page for instant answers."
+      },
+      {
+        question: "What is the Client Directory?",
+        answer: "The Client Directory (Pro) is a CRM-style page that shows all guests who've booked with you, their total meetings, first and last meeting dates, and contact info. It's automatically populated from your booking history — no manual entry needed."
+      },
+      {
+        question: "How does the embeddable widget work?",
+        answer: "Pro users can embed their booking page on any website. Go to Settings → Embed to get an iframe or JavaScript code snippet. The widget is responsive, supports all event types, and sends a postMessage event when a booking is confirmed so your site can react to it."
       }
     ]
   },

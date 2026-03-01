@@ -4,7 +4,7 @@ import SEO from "@/components/SEO";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Calendar, Shield, Globe, Zap, Users, Clock } from "lucide-react";
+import { Calendar, Shield, Globe, Zap, Users, Clock, Brain, CreditCard } from "lucide-react";
 import HeroBackground from "@/components/HeroBackground";
 
 const steps = [
@@ -16,17 +16,17 @@ const steps = [
   {
     icon: Zap,
     title: "Create Event Types",
-    description: "Build custom meeting types — 15-min calls, 1-hour demos, or anything you need. Each gets a unique booking link.",
+    description: "Build custom meeting types with optional payment collection. Each gets a unique booking link you can share or embed.",
   },
   {
     icon: Globe,
     title: "Share Your Link",
-    description: "Send your personal booking page to clients. They pick a time that works — no back-and-forth emails.",
+    description: "Send your booking page to clients via link, QR code, or embed it on your website. They pick a time — no back-and-forth.",
   },
   {
     icon: Users,
-    title: "Get Booked",
-    description: "Confirmations, reminders, and calendar files are sent automatically. You just show up.",
+    title: "Get Booked & Get Paid",
+    description: "Confirmations, reminders, Slack alerts, and calendar files are sent automatically. Payments are collected at booking.",
   },
 ];
 
@@ -46,6 +46,11 @@ const values = [
     title: "Built for Everyone",
     description: "Automatic timezone detection, multi-language support, and accessible design ensure nobody is left behind.",
   },
+  {
+    icon: Brain,
+    title: "AI-Powered & Integrated",
+    description: "AI generates events and answers questions. Slack, Google Calendar, and Stripe integrate seamlessly for a unified workflow.",
+  },
 ];
 
 const About = () => {
@@ -53,8 +58,8 @@ const About = () => {
     <div className="min-h-screen bg-background">
       <SEO
         title="About | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ"
-        description="Learn how Bᴏᴏᴋᴍᴇ.ʙᴇᴛ works. Simple, modern scheduling for professionals — set availability, share your link, get booked."
-        keywords="how it works, about bookme, scheduling platform, appointment booking"
+        description="Learn how Bᴏᴏᴋᴍᴇ.ʙᴇᴛ works. AI-powered scheduling with payments, Slack alerts, and Google Calendar sync for professionals."
+        keywords="how it works, about bookme, scheduling platform, appointment booking, AI scheduling, payment collection"
       />
       <Navigation />
 
@@ -67,7 +72,7 @@ const About = () => {
           </h1>
           <p className="relative z-10 text-lg sm:text-xl text-foreground/80 leading-relaxed px-4">
             Bᴏᴏᴋᴍᴇ.ʙᴇᴛ removes the back-and-forth from meeting coordination. 
-            Set your availability once, share a link, and let others book time with you effortlessly.
+            Set your availability once, share a link, and let others book time with you effortlessly — with AI assistance, payment collection, and integrations built in.
           </p>
         </section>
 
@@ -97,7 +102,7 @@ const About = () => {
           <h2 className="font-display text-2xl sm:text-3xl font-bold text-center mb-10 sm:mb-12">
             What We Stand For
           </h2>
-          <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {values.map((value) => (
               <div key={value.title} className="text-center">
                 <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mx-auto mb-4">

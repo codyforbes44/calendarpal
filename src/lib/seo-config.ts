@@ -16,7 +16,7 @@ export const siteConfig = {
 export const defaultSEO = {
   title: "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ - Scheduling Made Simple",
   description: siteConfig.description,
-  keywords: "scheduling app, appointment booking, calendar scheduling, meeting scheduler, online booking, time management, professional scheduling",
+  keywords: "scheduling app, appointment booking, calendar scheduling, meeting scheduler, online booking, time management, professional scheduling, payment collection, Slack integration, AI scheduling",
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -28,12 +28,12 @@ export const pageSEO = {
   home: {
     title: "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ — Booking Automation for Professionals",
     description: "The intelligent booking platform that automates scheduling, reminders, and follow-ups. Free to start, live in 2 minutes.",
-    keywords: "booking automation, automated scheduling, smart booking platform, appointment booking, calendar scheduling, meeting scheduler, online booking software",
+    keywords: "booking automation, automated scheduling, smart booking platform, appointment booking, calendar scheduling, meeting scheduler, online booking software, AI scheduling, payment collection, Slack integration",
   },
   pricing: {
     title: "Pricing Plans | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ",
     description: "Affordable scheduling plans starting free. Compare Free, Pro & Enterprise features. No hidden fees, cancel anytime.",
-    keywords: "scheduling software pricing, appointment booking cost, calendar app pricing, meeting scheduler plans",
+    keywords: "scheduling software pricing, appointment booking cost, calendar app pricing, meeting scheduler plans, Stripe payment collection, Slack notifications, AI scheduling assistant",
   },
   auth: {
     title: "Sign In | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ",
