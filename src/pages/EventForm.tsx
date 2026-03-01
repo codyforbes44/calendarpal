@@ -35,6 +35,8 @@ const EventForm = () => {
       buffer_before: 0,
       buffer_after: 0,
       allow_recurring: false,
+      price_amount: 0,
+      price_currency: "usd",
     },
   });
 
@@ -50,6 +52,8 @@ const EventForm = () => {
         buffer_before: eventType.buffer_before || 0,
         buffer_after: eventType.buffer_after || 0,
         allow_recurring: eventType.allow_recurring || false,
+        price_amount: (eventType as any).price_amount || 0,
+        price_currency: (eventType as any).price_currency || "usd",
       });
     }
   }, [eventType, form]);
@@ -66,6 +70,8 @@ const EventForm = () => {
         buffer_before: data.buffer_before,
         buffer_after: data.buffer_after,
         allow_recurring: data.allow_recurring,
+        price_amount: data.price_amount && data.price_amount > 0 ? data.price_amount : null,
+        price_currency: data.price_currency || "usd",
       };
 
       if (id) {

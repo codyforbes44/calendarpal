@@ -10,6 +10,8 @@ export const eventSchema = z.object({
   buffer_before: z.coerce.number().min(0).max(60),
   buffer_after: z.coerce.number().min(0).max(60),
   allow_recurring: z.boolean(),
+  price_amount: z.coerce.number().min(0).optional(),
+  price_currency: z.string().default("usd"),
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;

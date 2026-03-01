@@ -49,6 +49,8 @@ interface EventType {
   buffer_before: number;
   buffer_after: number;
   allow_recurring: boolean;
+  price_amount: number | null;
+  price_currency: string;
 }
 
 const PublicBooking = () => {
@@ -260,6 +262,36 @@ const PublicBooking = () => {
       const startTime = convertTo24Hour(selectedTime);
       const endTime = calculateEndTime(startTime, selectedEvent.duration);
       const hostTimezone = profile.timezone || "America/New_York";
+
+      // If event has a price, redirect to Stripe Checkout instead of creating booking directly
+      if (selectedEvent.price_amount && selectedEvent.price_amount > 0) {
+        const { data, error } = await supabase.functions.invoke("create-booking-payment", {
+          body: {
+            eventTypeId: selectedEvent.id,
+            hostUserId: profile.user_id,
+            scheduledDate: format(selectedDate, "yyyy-MM-dd"),
+            startTime,
+            endTime,
+            guestName: formData.name,
+            guestEmail: formData.email,
+            guestNotes: formData.notes || null,
+            meetingLink: formData.meetingLink.trim() || null,
+            guestTimezone,
+            hostTimezone,
+            priceAmount: selectedEvent.price_amount,
+            priceCurrency: selectedEvent.price_currency || "usd",
+            eventTitle: selectedEvent.title,
+            username: profile.username,
+          },
+        });
+
+        if (error) throw error;
+        if (data?.url) {
+          window.location.href = data.url;
+          return;
+        }
+        throw new Error("No checkout URL returned");
+      }
 
       // Calculate all dates for recurring bookings
       const bookingDates: Date[] = [selectedDate];
@@ -758,6 +790,11 @@ const PublicBooking = () => {
                                     <span className="flex items-center gap-1.5 text-primary">
                                       <Repeat className="w-3 h-3" />
                                       Recurring available
+                                    </span>
+                                  )}
+                                  {event.price_amount && event.price_amount > 0 && (
+                                    <span className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
+                                      ${(event.price_amount / 100).toFixed(2)} {(event.price_currency || "usd").toUpperCase()}
                                     </span>
                                   )}
                                 </div>

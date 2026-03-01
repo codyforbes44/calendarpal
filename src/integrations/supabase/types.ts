@@ -120,6 +120,7 @@ export type Database = {
           last_email_type: string | null
           meeting_link: string | null
           parent_booking_id: string | null
+          payment_status: string | null
           recurrence_count: number | null
           recurrence_end_date: string | null
           recurrence_pattern: string | null
@@ -128,6 +129,7 @@ export type Database = {
           scheduled_date: string
           start_time: string
           status: string
+          stripe_payment_id: string | null
           updated_at: string
         }
         Insert: {
@@ -148,6 +150,7 @@ export type Database = {
           last_email_type?: string | null
           meeting_link?: string | null
           parent_booking_id?: string | null
+          payment_status?: string | null
           recurrence_count?: number | null
           recurrence_end_date?: string | null
           recurrence_pattern?: string | null
@@ -156,6 +159,7 @@ export type Database = {
           scheduled_date: string
           start_time: string
           status?: string
+          stripe_payment_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -176,6 +180,7 @@ export type Database = {
           last_email_type?: string | null
           meeting_link?: string | null
           parent_booking_id?: string | null
+          payment_status?: string | null
           recurrence_count?: number | null
           recurrence_end_date?: string | null
           recurrence_pattern?: string | null
@@ -184,6 +189,7 @@ export type Database = {
           scheduled_date?: string
           start_time?: string
           status?: string
+          stripe_payment_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -222,6 +228,8 @@ export type Database = {
           id: string
           is_active: boolean
           location_type: string | null
+          price_amount: number | null
+          price_currency: string
           title: string
           updated_at: string
           user_id: string
@@ -237,6 +245,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           location_type?: string | null
+          price_amount?: number | null
+          price_currency?: string
           title: string
           updated_at?: string
           user_id: string
@@ -252,6 +262,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           location_type?: string | null
+          price_amount?: number | null
+          price_currency?: string
           title?: string
           updated_at?: string
           user_id?: string

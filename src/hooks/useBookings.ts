@@ -21,6 +21,8 @@ export interface Booking {
   parent_booking_id: string | null;
   cancellation_token: string | null;
   meeting_link: string | null;
+  payment_status: string | null;
+  stripe_payment_id: string | null;
   created_at: string;
   updated_at: string;
   event_types: {
