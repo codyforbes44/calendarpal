@@ -36,6 +36,7 @@ import { getLocalTimezone } from "@/lib/timezones";
 import AvatarUpload from "@/components/profile/AvatarUpload";
 import ShareModal from "@/components/ShareModal";
 import NotificationPreferences from "@/components/settings/NotificationPreferences";
+import SlackSettings from "@/components/settings/SlackSettings";
 import { SkeletonProfile } from "@/components/ui/skeleton-card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -388,6 +389,11 @@ const ProfileSettings = () => {
               </p>
             </Card>
           )}
+
+          {/* Slack Settings */}
+          <div className="mt-4 sm:mt-6">
+            <SlackSettings />
+          </div>
 
           {/* Notification Preferences */}
           <div className="mt-4 sm:mt-6">

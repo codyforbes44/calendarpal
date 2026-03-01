@@ -769,6 +769,51 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${requestId}] Host email sent: ${result.hostSent}`);
     console.log(`[${requestId}] ===================================`);
 
+    // Trigger Slack notification (fire-and-forget)
+    try {
+      const bookingForSlack = await (async () => {
+        const supabaseSlack = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const { data: bData } = await supabaseSlack
+          .from("bookings")
+          .select("host_user_id, event_types(duration)")
+          .eq("id", booking.id)
+          .single();
+        return bData;
+      })();
+
+      if (bookingForSlack?.host_user_id) {
+        const slackPayload = {
+          type,
+          booking: {
+            id: booking.id,
+            guestName: booking.guestName,
+            guestEmail: booking.guestEmail,
+            hostName: booking.hostName,
+            eventTitle: booking.eventTitle,
+            scheduledDate: booking.scheduledDate,
+            startTime: booking.startTime,
+            duration: (bookingForSlack.event_types as any)?.duration || booking.duration || 30,
+            hostTimezone: booking.hostTimezone,
+          },
+          hostUserId: bookingForSlack.host_user_id,
+        };
+
+        fetch(`${SUPABASE_URL}/functions/v1/slack-notify`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify(slackPayload),
+        }).catch((err) =>
+          console.warn(`[${requestId}] Slack notify fire-and-forget error: ${err.message}`)
+        );
+        console.log(`[${requestId}] Slack notification triggered`);
+      }
+    } catch (slackErr: any) {
+      console.warn(`[${requestId}] Slack notify skipped: ${slackErr.message}`);
+    }
+
     // Update booking record with email status
     try {
       const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
