@@ -94,6 +94,15 @@ const PublicBooking = () => {
     bufferAfter: selectedEvent?.buffer_after || 0,
   });
 
+  // Generate a stable session ID for page view tracking
+  const [viewerSessionId] = useState(() => {
+    const stored = sessionStorage.getItem("calendarpal_session");
+    if (stored) return stored;
+    const id = crypto.randomUUID();
+    sessionStorage.setItem("calendarpal_session", id);
+    return id;
+  });
+
   useEffect(() => {
     if (username) {
       loadProfileAndEvents();
@@ -232,9 +241,33 @@ const PublicBooking = () => {
     setSelectedTime(null);
   };
 
+  // Track page view when profile loads
+  useEffect(() => {
+    if (profile?.user_id) {
+      supabase.functions.invoke("track-page-view", {
+        body: {
+          hostUserId: profile.user_id,
+          sessionId: viewerSessionId,
+          step: "page_view",
+        },
+      }).catch(() => {}); // fire-and-forget
+    }
+  }, [profile?.user_id]);
+
   const handleEventSelect = (event: EventType) => {
     setSelectedEvent(event);
     setStep("selection");
+    // Track time slot click
+    if (profile?.user_id) {
+      supabase.functions.invoke("track-page-view", {
+        body: {
+          hostUserId: profile.user_id,
+          eventTypeId: event.id,
+          sessionId: viewerSessionId,
+          step: "time_slot_click",
+        },
+      }).catch(() => {});
+    }
   };
 
   const handleConfirm = () => {

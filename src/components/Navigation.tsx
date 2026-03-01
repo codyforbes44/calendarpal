@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Menu, Sun, Moon, X, Shield, Crown, LayoutDashboard, CalendarCheck, Calendar, CreditCard, Settings } from "lucide-react";
+import { Menu, Sun, Moon, X, Shield, Crown, LayoutDashboard, CalendarCheck, Calendar, CreditCard, Settings, Users } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
@@ -61,6 +61,7 @@ const Navigation = () => {
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/bookings", label: "Bookings", icon: CalendarCheck },
     { href: "/availability", label: "Availability", icon: Calendar },
+    ...(isPro ? [{ href: "/clients", label: "Clients", icon: Users }] : []),
     { href: "/subscription", label: "Plan", icon: CreditCard },
     { href: "/settings", label: "Settings", icon: Settings },
   ];

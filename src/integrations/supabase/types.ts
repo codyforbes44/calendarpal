@@ -101,6 +101,41 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_page_views: {
+        Row: {
+          created_at: string
+          event_type_id: string | null
+          host_user_id: string
+          id: string
+          step: string
+          viewer_session_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type_id?: string | null
+          host_user_id: string
+          id?: string
+          step?: string
+          viewer_session_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type_id?: string | null
+          host_user_id?: string
+          id?: string
+          step?: string
+          viewer_session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_page_views_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           cancellation_token: string | null

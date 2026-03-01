@@ -15,6 +15,8 @@ import ShareModal from "@/components/ShareModal";
 import QuickActions from "@/components/dashboard/QuickActions";
 import BookingStatsChart from "@/components/dashboard/BookingStatsChart";
 import CalendarHeatmap from "@/components/dashboard/CalendarHeatmap";
+import ConversionFunnel from "@/components/dashboard/ConversionFunnel";
+import PopularTimesChart from "@/components/dashboard/PopularTimesChart";
 import TodaySchedule from "@/components/dashboard/TodaySchedule";
 import AIChatbot from "@/components/dashboard/AIChatbot";
 import { SkeletonDashboard } from "@/components/ui/skeleton-card";
@@ -141,6 +143,13 @@ const Dashboard = () => {
         <div className="mt-4 sm:mt-6">
           <EventTypesList />
         </div>
+
+        {isPro && (
+          <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
+            <ConversionFunnel />
+            <PopularTimesChart />
+          </div>
+        )}
       </div>
 
       {profile?.username && (
