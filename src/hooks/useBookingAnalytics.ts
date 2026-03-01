@@ -13,6 +13,9 @@ interface EmailStats {
   total: number;
   deliveryRate: number;
   openRate: number;
+  totalClicks: number;
+  clickRate: number;
+  clicksByType: Record<string, number>;
 }
 
 interface DailyTrend {
@@ -58,7 +61,7 @@ export function useBookingAnalytics(range: TimeRange, isAdmin = false) {
       const startDate = getStartDate(range);
       const labelFormat = getLabelFormat(range);
 
-      // Build query
+      // Build bookings query
       let query = supabase
         .from("bookings")
         .select("status, email_status, email_opened_at, created_at, scheduled_date");
@@ -74,10 +77,22 @@ export function useBookingAnalytics(range: TimeRange, isAdmin = false) {
       const { data: bookings, error } = await query;
       if (error) throw error;
 
+      // Fetch click events
+      let clickQuery = supabase
+        .from("email_click_events")
+        .select("link_type, clicked_at, booking_id");
+
+      if (startDate) {
+        clickQuery = clickQuery.gte("clicked_at", startDate.toISOString());
+      }
+
+      const { data: clickEvents } = await clickQuery;
+
       const allBookings = bookings || [];
+      const allClicks = clickEvents || [];
 
       // Email stats
-      const emailStats: EmailStats = { sent: 0, pending: 0, failed: 0, opened: 0, total: allBookings.length, deliveryRate: 0, openRate: 0 };
+      const emailStats: EmailStats = { sent: 0, pending: 0, failed: 0, opened: 0, total: allBookings.length, deliveryRate: 0, openRate: 0, totalClicks: allClicks.length, clickRate: 0, clicksByType: {} };
       for (const b of allBookings) {
         if (b.email_status === "sent") emailStats.sent++;
         else if (b.email_status === "failed") emailStats.failed++;
@@ -86,6 +101,12 @@ export function useBookingAnalytics(range: TimeRange, isAdmin = false) {
       }
       emailStats.deliveryRate = emailStats.total > 0 ? Math.round((emailStats.sent / emailStats.total) * 100) : 0;
       emailStats.openRate = emailStats.sent > 0 ? Math.round((emailStats.opened / emailStats.sent) * 100) : 0;
+      emailStats.clickRate = emailStats.sent > 0 ? Math.round((allClicks.length / emailStats.sent) * 100) : 0;
+
+      // Click breakdown by type
+      for (const click of allClicks) {
+        emailStats.clicksByType[click.link_type] = (emailStats.clicksByType[click.link_type] || 0) + 1;
+      }
 
       // Status breakdown
       const statusCounts: Record<string, number> = {};

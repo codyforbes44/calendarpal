@@ -254,6 +254,38 @@ export type Database = {
           },
         ]
       }
+      email_click_events: {
+        Row: {
+          booking_id: string | null
+          clicked_at: string
+          id: string
+          link_type: string
+          user_agent: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          clicked_at?: string
+          id?: string
+          link_type: string
+          user_agent?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          clicked_at?: string
+          id?: string
+          link_type?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_click_events_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_types: {
         Row: {
           allow_recurring: boolean

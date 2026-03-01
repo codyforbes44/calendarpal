@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
-import { Mail, CheckCircle2, AlertTriangle, Clock, TrendingDown, RefreshCw, Eye } from "lucide-react";
+import { Mail, CheckCircle2, AlertTriangle, Clock, TrendingDown, RefreshCw, Eye, MousePointerClick } from "lucide-react";
 import { useBookingAnalytics, type TimeRange } from "@/hooks/useBookingAnalytics";
 
 const chartConfig = {
@@ -28,8 +28,8 @@ const BookingAnalytics = ({ isAdmin = false }: BookingAnalyticsProps) => {
           <Skeleton className="h-7 w-56" />
           <Skeleton className="h-9 w-64" />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i}><CardContent className="pt-6"><Skeleton className="h-16 w-full" /></CardContent></Card>
           ))}
         </div>
@@ -67,7 +67,7 @@ const BookingAnalytics = ({ isAdmin = false }: BookingAnalyticsProps) => {
       </div>
 
       {/* Email Delivery Stats */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-6">
         <Card>
           <CardContent className="pt-5 pb-4 px-4">
             <div className="flex items-center gap-3">
@@ -129,6 +129,19 @@ const BookingAnalytics = ({ isAdmin = false }: BookingAnalyticsProps) => {
               <div>
                 <p className="text-2xl font-bold">{emailStats.failed}</p>
                 <p className="text-xs text-muted-foreground">Failed</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-5 pb-4 px-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-violet-500/10">
+                <MousePointerClick className="h-4 w-4 text-violet-500" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{emailStats.clickRate}%</p>
+                <p className="text-xs text-muted-foreground">Click Rate</p>
               </div>
             </div>
           </CardContent>
