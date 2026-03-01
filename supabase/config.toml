@@ -53,3 +53,12 @@ verify_jwt = false
 
 [functions.slack-notify]
 verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.create-booking-payment]
+verify_jwt = false
+
+[functions.verify-booking-payment]
+verify_jwt = false
