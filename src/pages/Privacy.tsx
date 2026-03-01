@@ -14,7 +14,7 @@ const Privacy = () => {
       />
       <Navigation />
       
-      <main className="container mx-auto px-6 py-24 max-w-4xl">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 max-w-4xl">
         <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
         <p className="text-muted-foreground mb-8">Last updated: January 1, 2025</p>
         
@@ -101,7 +101,7 @@ const Privacy = () => {
       </main>
 
       <footer className="border-t border-border py-8 bg-muted/30">
-        <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-muted-foreground">
           © 2026 Bᴏᴏᴋᴍᴇ.ʙᴇᴛ. All rights reserved.
         </div>
       </footer>
