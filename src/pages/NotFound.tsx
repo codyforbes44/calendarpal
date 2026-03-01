@@ -75,10 +75,10 @@ const NotFound = () => {
             </a>
             <span className="text-border">•</span>
             <a
-              href="/booking"
+              href="/get-started"
               className="text-sm text-primary hover:underline flex items-center gap-1"
             >
-              Book a Demo
+              Get Started
             </a>
             <span className="text-border">•</span>
             <a
