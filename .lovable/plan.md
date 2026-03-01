@@ -1,97 +1,58 @@
 
 
-# Fix Critical Security: Move Google OAuth Tokens to Separate Table
+# Fix Embed Widget Branding and Add Payment Support
 
-## Problem
+## Changes Overview
 
-The `profiles` table has a public RLS SELECT policy: `"Public can view profiles by username"` with `USING (username IS NOT NULL)`. This means **anyone** can read all columns including `google_access_token` and `google_refresh_token` from any profile with a username set. These tokens grant full access to a user's Google Calendar.
+Two fixes: update branding text and add Stripe payment support to the embedded booking flow.
 
-## Solution
+---
 
-Create a new `google_calendar_tokens` table with strict RLS, migrate the token columns there, and remove them from `profiles`.
+## 1. Fix Branding (3 locations in EmbedBooking.tsx)
 
-## Implementation Steps
+Replace all instances of `Powered by <strong>Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</strong>` with `Powered by <strong>CalendarPal</strong>` in the embed page. There are two occurrences:
+- Line 354 (event selection step)
+- Line 453 (details form step)
 
-### 1. Database Migration
+Also update the `postMessage` event type from `bookme-booking-confirmed` to `calendarpal-booking-confirmed` (line 206), and update the matching reference in the embed code generator (`EmbedCodeGenerator.tsx`, line 43).
 
-Create a new `google_calendar_tokens` table and migrate data:
+---
 
-```sql
--- Create secure token storage table
-CREATE TABLE public.google_calendar_tokens (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL UNIQUE,
-  access_token text,
-  refresh_token text,
-  token_expires_at timestamptz,
-  connected boolean NOT NULL DEFAULT false,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
-);
+## 2. Add Payment Support to Embed Booking Flow
 
-ALTER TABLE public.google_calendar_tokens ENABLE ROW LEVEL SECURITY;
+The `PublicBooking.tsx` page already handles paid events by calling `create-booking-payment` when `price_amount > 0`. The embed flow skips this entirely. We need to replicate the same logic.
 
--- Only the token owner can read their own tokens
-CREATE POLICY "Users can view their own tokens"
-  ON public.google_calendar_tokens FOR SELECT
-  TO authenticated
-  USING (auth.uid() = user_id);
+### 2a. Update EventType interface (EmbedBooking.tsx)
 
--- Only the token owner can insert
-CREATE POLICY "Users can insert their own tokens"
-  ON public.google_calendar_tokens FOR INSERT
-  TO authenticated
-  WITH CHECK (auth.uid() = user_id);
+Add `price_amount` and `price_currency` fields to the `EventType` interface (currently missing).
 
--- Only the token owner can update
-CREATE POLICY "Users can update their own tokens"
-  ON public.google_calendar_tokens FOR UPDATE
-  TO authenticated
-  USING (auth.uid() = user_id);
+### 2b. Show price on event cards
 
--- Only the token owner can delete
-CREATE POLICY "Users can delete their own tokens"
-  ON public.google_calendar_tokens FOR DELETE
-  TO authenticated
-  USING (auth.uid() = user_id);
+In the event selection step, display the price next to duration/location when `price_amount > 0`. Format as currency (e.g., "$5.00").
 
--- Migrate existing data
-INSERT INTO public.google_calendar_tokens (user_id, access_token, refresh_token, token_expires_at, connected)
-SELECT user_id, google_access_token, google_refresh_token, google_token_expires_at, google_calendar_connected
-FROM public.profiles
-WHERE google_calendar_connected = true;
+### 2c. Add payment redirect in handleBooking
 
--- Remove token columns from profiles (keep google_calendar_connected as a non-sensitive flag)
-ALTER TABLE public.profiles
-  DROP COLUMN google_access_token,
-  DROP COLUMN google_refresh_token,
-  DROP COLUMN google_token_expires_at;
-```
+Before the direct booking insert, add the same conditional check from PublicBooking:
+- If `selectedEvent.price_amount > 0`, invoke `create-booking-payment` with the same payload
+- For embeds, use `window.top.location.href` (or `window.location.href`) to redirect to Stripe Checkout since the embed runs in an iframe
+- If no price, proceed with the existing direct booking flow
 
-Note: `google_calendar_connected` stays on `profiles` as a non-sensitive boolean flag for UI display purposes.
+### 2d. Show price in details form
 
-### 2. Update Edge Functions (3 files)
+Display the price in the booking summary card so guests know the cost before confirming.
 
-**`google-calendar-auth/index.ts`** -- Change all token read/write operations from `profiles` to `google_calendar_tokens`. The `callback` action upserts into `google_calendar_tokens` and also updates `profiles.google_calendar_connected`. The `disconnect` action deletes from `google_calendar_tokens` and sets `profiles.google_calendar_connected = false`. The `refresh` action reads/writes `google_calendar_tokens`.
+---
 
-**`google-calendar-sync/index.ts`** -- Update `getValidToken()` to query `google_calendar_tokens` instead of `profiles`.
+## Files Modified
 
-**`google-calendar-busy/index.ts`** -- Update its `getValidToken()` to query `google_calendar_tokens` instead of `profiles`.
-
-### 3. Update Frontend (minimal changes)
-
-**`useProfile.ts`** -- No change needed. The `Profile` interface already only exposes `google_calendar_connected` (not the tokens). The tokens were never used client-side.
-
-**`GoogleCalendarSettings.tsx`** -- No change needed. It only reads `profile?.google_calendar_connected`.
-
-**`Dashboard.tsx`** -- No change needed. It only reads `profile?.google_calendar_connected`.
-
-### Summary
-
-| Component | Change |
+| File | Change |
 |---|---|
-| New table `google_calendar_tokens` | Strict RLS: owner-only access |
-| `profiles` table | Remove 3 token columns, keep `google_calendar_connected` flag |
-| 3 edge functions | Query `google_calendar_tokens` instead of `profiles` for tokens |
-| Frontend code | No changes needed |
+| `src/pages/EmbedBooking.tsx` | Fix branding (2 spots), update EventType interface, add payment redirect logic, show price on cards |
+| `src/components/settings/EmbedCodeGenerator.tsx` | Update `bookme-booking-confirmed` to `calendarpal-booking-confirmed` in JS widget code |
+
+## Technical Notes
+
+- The `create-booking-payment` edge function already handles CORS and works without auth (guest checkout), so no edge function changes are needed.
+- The Stripe checkout `success_url` already points to `/booking-payment-success` which handles verification and booking creation server-side, so the embed payment flow will work end-to-end.
+- For iframe context: `window.location.href` works inside iframes for navigation to external URLs (Stripe Checkout). No special handling needed since Stripe opens in the same frame/tab context.
 
