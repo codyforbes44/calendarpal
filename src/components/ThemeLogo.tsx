@@ -9,12 +9,12 @@ interface ThemeLogoProps {
 }
 
 const ThemeLogo = ({ className, width, height, alt = "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ" }: ThemeLogoProps) => {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
-  const src = mounted && theme === "dark" ? "/logo-dark.png" : "/logo-light.png";
+  const src = mounted && resolvedTheme === "dark" ? "/logo-dark.png" : "/logo-light.png";
 
   return (
     <img
@@ -23,7 +23,6 @@ const ThemeLogo = ({ className, width, height, alt = "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ"
       width={width}
       height={height}
       className={className}
-      loading="lazy"
     />
   );
 };
