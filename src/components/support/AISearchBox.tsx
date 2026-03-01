@@ -33,9 +33,16 @@ const AISearchBox = () => {
 
       if (error) throw error;
       setResult(data as SearchResult);
-    } catch (err) {
+    } catch (err: any) {
       console.error("AI search error:", err);
-      toast.error("Could not get an answer. Please try again.");
+      const status = err?.status || err?.context?.status;
+      if (status === 429) {
+        toast.error("Too many requests. Please wait a moment.");
+      } else if (status === 402) {
+        toast.error("AI credits exhausted. Contact your admin.");
+      } else {
+        toast.error("Could not get an answer. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

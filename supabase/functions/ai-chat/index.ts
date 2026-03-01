@@ -22,31 +22,30 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get("PERPLEXITY_API_KEY");
-    if (!apiKey) throw new Error("PERPLEXITY_API_KEY is not configured");
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { query } = await req.json();
-    if (!query || typeof query !== "string" || query.trim().length < 3) {
+    const { messages } = await req.json();
+    if (!messages || !Array.isArray(messages)) {
       return new Response(
-        JSON.stringify({ error: "Query must be at least 3 characters" }),
+        JSON.stringify({ error: "A 'messages' array is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "sonar",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: query },
+          ...messages,
         ],
-        max_tokens: 500,
-        temperature: 0.2,
+        stream: true,
       }),
     });
 
@@ -63,21 +62,19 @@ serve(async (req) => {
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      const errBody = await response.text();
-      console.error(`Perplexity API error [${response.status}]: ${errBody}`);
-      throw new Error(`Perplexity API call failed [${response.status}]`);
+      const errText = await response.text();
+      console.error(`AI gateway error [${response.status}]:`, errText);
+      return new Response(
+        JSON.stringify({ error: "AI service error" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const data = await response.json();
-    const answer = data.choices?.[0]?.message?.content ?? "No answer available.";
-    const citations: string[] = data.citations ?? [];
-
-    return new Response(
-      JSON.stringify({ answer, citations }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(response.body, {
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    });
   } catch (error: unknown) {
-    console.error("AI search error:", error);
+    console.error("ai-chat error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return new Response(
       JSON.stringify({ error: message }),

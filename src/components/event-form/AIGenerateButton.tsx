@@ -38,13 +38,26 @@ const AIGenerateButton = ({
     setPrevValue(getCurrentValue());
     setGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke("ai-search", {
-        body: { query: buildPrompt() },
+      const { data, error } = await supabase.functions.invoke("ai-generate", {
+        body: { prompt: buildPrompt() },
       });
 
-      if (error) throw error;
-      if (data?.answer) {
-        const clean = data.answer.replace(/^["']|["']$/g, "").split("\n")[0].trim();
+      if (error) {
+        // Check for rate limit / credit errors from the response
+        const status = (error as any)?.status;
+        if (status === 429) {
+          toast.error("Too many requests. Please wait a moment.");
+          return;
+        }
+        if (status === 402) {
+          toast.error("AI credits exhausted. Contact your admin.");
+          return;
+        }
+        throw error;
+      }
+
+      if (data?.suggestion) {
+        const clean = data.suggestion.replace(/^["']|["']$/g, "").split("\n")[0].trim();
         onGenerated(clean);
         setGenerated(true);
         toast.success(`${label.replace("AI ", "")} generated!`);
