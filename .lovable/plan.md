@@ -1,88 +1,128 @@
 
-# Create Database RPC Functions for Client Aggregation and Popular Times
+# Refactor All Public Pages to Reflect Current Platform Capabilities
 
-## Problem
+## Audit Summary
 
-Both `Clients.tsx` and `PopularTimesChart.tsx` fetch all bookings client-side and aggregate in JavaScript. With the default 1000-row query limit, users with more than 1000 bookings will get incomplete/incorrect data.
+After reviewing every public-facing page and component against the actual codebase, here are the gaps and inconsistencies found:
 
-## Solution
+---
 
-Create two PostgreSQL RPC functions that perform the aggregation server-side, then update the frontend to call them via `supabase.rpc()`.
+## Issues Found
 
-## 1. Database Migration -- Two RPC Functions
+### 1. Features Section -- Missing Recent Capabilities
+The homepage `Features.tsx` lists only 6 features. It omits several major capabilities that are already built:
+- **Paid bookings / Stripe payments** (booking payments, refunds, webhook handling)
+- **Slack notifications** (with test notification support)
+- **Google Calendar sync** (two-way sync, busy-time detection)
+- **Embeddable booking widget** (iframe and JS embed code generator)
+- **AI-powered assistant** (dashboard chatbot, AI event generation, AI search)
+- **Client directory** (CRM-style client tracking with aggregated stats)
+- **QR code sharing** (share modal with QR generation)
+- **Guest self-service** (reschedule/cancel via secure link)
 
-### `get_client_directory(p_user_id uuid)`
+**Fix**: Restructure features into 4 core + 6 advanced cards covering all current capabilities.
 
-Returns aggregated client data directly from the database:
+### 2. Pricing Page -- Feature Lists Are Incomplete
+The Free and Pro plan feature lists are generic and don't mention:
+- Slack notifications (Pro)
+- Embeddable widget (Pro)
+- AI event generation (Pro)
+- Paid bookings / payment collection (Pro)
+- Client directory / CRM (Pro)
+- Conversion funnel and Popular Times analytics (Pro)
 
-```sql
-CREATE OR REPLACE FUNCTION public.get_client_directory(p_user_id uuid)
-RETURNS TABLE(
-  email text,
-  name text,
-  total_meetings bigint,
-  last_meeting date,
-  first_meeting date
-)
-LANGUAGE sql STABLE SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-  SELECT
-    lower(guest_email) AS email,
-    max(guest_name) AS name,
-    count(*) AS total_meetings,
-    max(scheduled_date) AS last_meeting,
-    min(scheduled_date) AS first_meeting
-  FROM bookings
-  WHERE host_user_id = p_user_id
-  GROUP BY lower(guest_email)
-  ORDER BY max(scheduled_date) DESC;
-$$;
-```
+The feature comparison table is also missing rows for these capabilities.
 
-### `get_popular_times(p_user_id uuid)`
+**Fix**: Update plan feature bullets and comparison table rows.
 
-Returns a heatmap grid of booking counts by day-of-week (0=Mon..6=Sun) and hour (8-19):
+### 3. About Page -- Generic, Missing Key Differentiators
+The About page is very basic with generic steps. It doesn't mention:
+- AI capabilities
+- Payment collection
+- Slack/Google Calendar integrations
+- Embeddable widgets
+- Client management
 
-```sql
-CREATE OR REPLACE FUNCTION public.get_popular_times(p_user_id uuid)
-RETURNS TABLE(
-  day_index integer,
-  hour_index integer,
-  booking_count bigint
-)
-LANGUAGE sql STABLE SECURITY DEFINER
-SET search_path TO 'public'
-AS $$
-  SELECT
-    CASE extract(isodow FROM scheduled_date)::int
-      WHEN 7 THEN 6 ELSE extract(isodow FROM scheduled_date)::int - 1
-    END AS day_index,
-    extract(hour FROM start_time)::int - 8 AS hour_index,
-    count(*) AS booking_count
-  FROM bookings
-  WHERE host_user_id = p_user_id
-    AND status = 'confirmed'
-    AND extract(hour FROM start_time)::int BETWEEN 8 AND 19
-  GROUP BY day_index, hour_index;
-$$;
-```
+**Fix**: Add an "Integrations and AI" values card, update step descriptions to mention automation and payments.
 
-Both use `SECURITY DEFINER` so they bypass RLS but explicitly filter by the passed `user_id`. The frontend will pass `auth.uid()`.
+### 4. FAQ Section -- Outdated and Missing Topics
+- The "Free vs Pro" FAQ answer says Free has "up to 5 active event types" -- the pricing page says "1 event type". These are inconsistent.
+- No FAQ about Slack integration, embeddable widgets, paid bookings, or AI features.
+- No FAQ about Google Calendar sync.
 
-## 2. Update `Clients.tsx`
+**Fix**: Correct Free plan event type limit to match pricing, add FAQs for Slack, embed widget, paid bookings, Google Calendar, and AI assistant.
 
-Replace `useBookings()` + client-side `useMemo` aggregation with a direct `supabase.rpc('get_client_directory', { p_user_id: user.id })` call. The search/sort filtering stays client-side (operating on the already-aggregated, much smaller dataset). Remove the `useBookings` import.
+### 5. Documentation Section -- Missing Guides for Recent Features
+No documentation guides for:
+- Setting up Slack notifications (with test button)
+- Collecting payments for bookings
+- Using the embeddable booking widget
+- Google Calendar sync setup
+- Client directory usage
 
-## 3. Update `PopularTimesChart.tsx`
+**Fix**: Add guides under "Advanced Features" and a new "Integrations" category.
 
-Replace the raw `supabase.from("bookings").select(...)` query with `supabase.rpc('get_popular_times', { p_user_id: user.id })`. Map the flat result rows into the 7x12 grid array. Remove client-side loop aggregation.
+### 6. LogoCloud -- Missing Stripe Integration Logo
+Stripe is a core integration (payment processing) but isn't shown in the integrations bar.
 
-## Summary
+**Fix**: Add Stripe logo/icon to the LogoCloud.
 
-| Component | Change |
-|---|---|
-| Database migration | Add `get_client_directory` and `get_popular_times` RPC functions |
-| `src/pages/Clients.tsx` | Call RPC instead of fetching all bookings |
-| `src/components/dashboard/PopularTimesChart.tsx` | Call RPC instead of fetching all bookings |
-| `src/integrations/supabase/types.ts` | Auto-updated (no manual edit) |
+### 7. Homepage CTA Benefits -- Underselling
+The CTA lists generic benefits: "Free forever plan", "No credit card required", "Live in 2 minutes", "Cancel anytime". These don't differentiate the platform.
+
+**Fix**: Replace with value-driven benefits: "AI-powered scheduling", "Collect payments automatically", "Slack and Google Calendar sync", "Free forever plan".
+
+### 8. Homepage Stats -- Inconsistent Numbers
+Stats show "50,000+ Bookings Automated" but the hero says "5,000+ bookings automated" and testimonials say "5,000+ professionals". These should be consistent.
+
+**Fix**: Align the stats numbers across all sections.
+
+---
+
+## Implementation Plan
+
+### File 1: `src/components/Features.tsx`
+- Expand `coreFeatures` to 4 items: Smart Scheduling, Automated Reminders, Branded Booking Pages, **Payment Collection**
+- Expand `advancedFeatures` to 6 items: Recurring Meetings, **Slack and Calendar Sync**, Analytics Dashboard, **AI Assistant**, **Embeddable Widget**, **Client Directory**
+
+### File 2: `src/components/LogoCloud.tsx`
+- Add Stripe SVG icon to integrations array
+
+### File 3: `src/components/CTA.tsx`
+- Update benefits array to highlight differentiating capabilities
+
+### File 4: `src/components/Stats.tsx`
+- Change "5,000+ bookings automated" in hero to align with stats, or adjust stats value. Will standardize to "50,000+" across the board.
+
+### File 5: `src/components/Hero.tsx`
+- Update trust indicator from "5,000+ bookings automated" to "50,000+ bookings automated" for consistency with Stats section
+
+### File 6: `src/components/Testimonials.tsx`
+- Update social proof bar from "5,000+ professionals" to a consistent figure
+
+### File 7: `src/pages/Pricing.tsx`
+- Add Slack notifications, embed widget, AI generation, paid bookings, and client directory to Pro plan features
+- Add corresponding rows to the comparison table
+
+### File 8: `src/pages/About.tsx`
+- Add an integrations/AI values card
+- Update step descriptions to mention payments and AI
+
+### File 9: `src/components/support/FAQSection.tsx`
+- Fix Free plan event type count to "1"
+- Add FAQs for: Slack integration, embeddable widgets, paid bookings, Google Calendar sync, AI assistant
+
+### File 10: `src/components/support/DocumentationSection.tsx`
+- Add new "Integrations" category with guides for: Google Calendar sync, Slack notifications, payment collection, embeddable widget
+- Add AI assistant guide under "Advanced Features"
+
+### File 11: `src/components/Footer.tsx`
+- Add "Blog" placeholder and "API" link under Resources for better footer completeness
+
+---
+
+## Technical Notes
+
+- All changes are purely presentational / static content updates -- no database migrations or backend changes needed
+- SEO keywords in `seo-config.ts` should be updated to include "payment collection", "Slack integration", "AI scheduling" for the home and pricing pages
+- Structured data in `webApplicationSchema` already has correct category ("BusinessApplication") so no change needed there
