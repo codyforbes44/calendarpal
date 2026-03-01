@@ -10,8 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import EventFormFields from "@/components/event-form/EventFormFields";
-import { eventSchema, type EventFormValues } from "@/components/event-form/types";
+import { EventFormFields, eventSchema, type EventFormValues } from "@/components/event-form";
 
 const EventForm = () => {
   const { id } = useParams();
