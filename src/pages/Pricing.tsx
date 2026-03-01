@@ -204,7 +204,7 @@ const Pricing = () => {
             <h1 className="relative z-10 font-display text-4xl md:text-5xl font-bold mb-6">
               Simple, transparent pricing
             </h1>
-            <p className="relative z-10 text-lg text-muted-foreground">
+            <p className="relative z-10 text-lg text-foreground/80">
               Choose the plan that fits your needs. Start with a free trial and scale as you grow.
             </p>
           </div>
