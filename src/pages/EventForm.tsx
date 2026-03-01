@@ -23,7 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { ArrowLeft, Save, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Sparkles, Loader2, Undo2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const eventSchema = z.object({
@@ -140,11 +140,14 @@ const EventForm = () => {
   const [generatingTitle, setGeneratingTitle] = useState(false);
   const [titleGenerated, setTitleGenerated] = useState(false);
   const [descGenerated, setDescGenerated] = useState(false);
+  const [prevTitle, setPrevTitle] = useState<string | null>(null);
+  const [prevDesc, setPrevDesc] = useState<string | null>(null);
 
   const generateTitle = async () => {
     const duration = form.getValues("duration");
     const locationType = form.getValues("location_type");
 
+    setPrevTitle(form.getValues("title"));
     setGeneratingTitle(true);
     try {
       const locationLabel = locationType === "video" ? "video call" : locationType === "phone" ? "phone call" : "in-person meeting";
@@ -178,6 +181,7 @@ const EventForm = () => {
       return;
     }
 
+    setPrevDesc(form.getValues("description") || "");
     setGenerating(true);
     try {
       const locationLabel = locationType === "video" ? "video call" : locationType === "phone" ? "phone call" : "in-person meeting";
@@ -264,21 +268,40 @@ const EventForm = () => {
                     <FormItem>
                       <div className="flex items-center justify-between">
                         <FormLabel>Event Title *</FormLabel>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={generateTitle}
-                          disabled={generatingTitle}
-                          className="h-7 text-xs gap-1 text-primary"
-                        >
-                          {generatingTitle ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <Sparkles className="h-3 w-3" />
+                        <div className="flex items-center gap-1">
+                          {prevTitle !== null && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                form.setValue("title", prevTitle, { shouldDirty: true });
+                                setPrevTitle(null);
+                                setTitleGenerated(false);
+                                toast.success("Title reverted");
+                              }}
+                              className="h-7 text-xs gap-1 text-muted-foreground"
+                            >
+                              <Undo2 className="h-3 w-3" />
+                              Undo
+                            </Button>
                           )}
-                          {generatingTitle ? "Generating..." : titleGenerated ? "Regenerate" : "AI Suggest"}
-                        </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={generateTitle}
+                            disabled={generatingTitle}
+                            className="h-7 text-xs gap-1 text-primary"
+                          >
+                            {generatingTitle ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-3 w-3" />
+                            )}
+                            {generatingTitle ? "Generating..." : titleGenerated ? "Regenerate" : "AI Suggest"}
+                          </Button>
+                        </div>
                       </div>
                       <FormControl>
                         <Input 
@@ -299,21 +322,40 @@ const EventForm = () => {
                     <FormItem>
                       <div className="flex items-center justify-between">
                         <FormLabel>Description</FormLabel>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={generateDescription}
-                          disabled={generating}
-                          className="h-7 text-xs gap-1 text-primary"
-                        >
-                          {generating ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
-                          ) : (
-                            <Sparkles className="h-3 w-3" />
+                        <div className="flex items-center gap-1">
+                          {prevDesc !== null && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                form.setValue("description", prevDesc, { shouldDirty: true });
+                                setPrevDesc(null);
+                                setDescGenerated(false);
+                                toast.success("Description reverted");
+                              }}
+                              className="h-7 text-xs gap-1 text-muted-foreground"
+                            >
+                              <Undo2 className="h-3 w-3" />
+                              Undo
+                            </Button>
                           )}
-                          {generating ? "Generating..." : descGenerated ? "Regenerate" : "AI Generate"}
-                        </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={generateDescription}
+                            disabled={generating}
+                            className="h-7 text-xs gap-1 text-primary"
+                          >
+                            {generating ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-3 w-3" />
+                            )}
+                            {generating ? "Generating..." : descGenerated ? "Regenerate" : "AI Generate"}
+                          </Button>
+                        </div>
                       </div>
                       <FormControl>
                         <Textarea
