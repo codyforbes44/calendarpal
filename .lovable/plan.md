@@ -1,45 +1,31 @@
 
 
-## Replace Logo with Theme-Aware Light/Dark Variants
+## Remove Google OAuth and Clean Up Onboarding
 
-The two uploaded images are full wordmark logos -- one with dark text (for light backgrounds) and one with white text (for dark backgrounds). The current app uses a single `bookme-logo.png` icon everywhere.
+### Changes
 
-### Approach
+**1. Remove Google Sign-In button from Auth page** (`src/pages/Auth.tsx`)
+- Remove the `SocialLoginButton` import and component (lines 16, 244-258)
+- Remove the "or continue with email" divider since email is now the only option
 
-1. **Copy the two logo images into the project**
-   - `public/logo-light.png` -- dark text version (IMG_4897), used on light backgrounds
-   - `public/logo-dark.png` -- white text version (IMG_4901), used on dark backgrounds
+**2. Remove Google Sign-In button from Get Started flow** (`src/components/get-started/StepAccount.tsx`)
+- Remove `SocialLoginButton` import and component (lines 7, 73)
+- Remove the "or continue with email" divider (lines 75-82)
+- This simplifies the final onboarding step to just email/password registration
 
-2. **Create a reusable `ThemeLogo` component** (`src/components/ThemeLogo.tsx`)
-   - Accepts `className`, `width`, `height` props
-   - Uses `useTheme()` from next-themes to pick the correct image
-   - Renders `logo-light.png` in light mode, `logo-dark.png` in dark mode
-   - Handles the `mounted` state to avoid hydration flash
+**3. Remove OAuth callback logic from GetStarted** (`src/pages/GetStarted.tsx`)
+- Remove the `useEffect` that auto-persists when an OAuth user lands on step 4 (lines 86-89), since OAuth sign-up is no longer possible from this flow
 
-3. **Update all logo references** across 4 files:
-   - **`src/components/Navigation.tsx`** (3 instances) -- desktop logo, mobile sheet logo
-   - **`src/components/Footer.tsx`** (1 instance) -- bottom bar logo
-   - **`src/pages/Auth.tsx`** (2 instances) -- left panel logo, mobile logo
-   - Replace `<img src="/bookme-logo.png" ...>` with `<ThemeLogo ... />`
+**4. Clean up AuthContext OAuth redirect** (`src/contexts/AuthContext.tsx`)
+- Remove the special `/get-started` path check in the `onAuthStateChange` handler (lines 52-53), since OAuth won't redirect there anymore
 
-4. **Keep favicon and PWA icons unchanged** -- `index.html` favicon and `manifest.json` icons stay as the existing square icon since those don't support theme switching.
+**5. Optionally delete the SocialLoginButton component** (`src/components/auth/SocialLoginButton.tsx`)
+- Since it's no longer used anywhere, it can be removed to keep the codebase clean
 
-### Technical Details
-
-```text
-ThemeLogo component:
-  - Props: className, width, height, alt (optional)
-  - Uses useTheme() + mounted state
-  - Returns <img src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"} />
-```
-
-Files modified:
-- `src/components/ThemeLogo.tsx` (new)
-- `src/components/Navigation.tsx` (replace 3 img tags)
-- `src/components/Footer.tsx` (replace 1 img tag)
-- `src/pages/Auth.tsx` (replace 2 img tags)
-
-Files added to public:
-- `public/logo-light.png`
-- `public/logo-dark.png`
+### Files Modified
+- `src/pages/Auth.tsx` -- remove Google button + divider
+- `src/components/get-started/StepAccount.tsx` -- remove Google button + divider
+- `src/pages/GetStarted.tsx` -- remove OAuth auto-persist effect
+- `src/contexts/AuthContext.tsx` -- remove `/get-started` special case
+- `src/components/auth/SocialLoginButton.tsx` -- delete file (unused)
 
