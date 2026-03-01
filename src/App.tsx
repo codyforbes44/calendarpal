@@ -37,6 +37,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Support = lazy(() => import("./pages/Support"));
 const AppealVerify = lazy(() => import("./pages/AppealVerify"));
 const About = lazy(() => import("./pages/About"));
+const Changelog = lazy(() => import("./pages/Changelog"));
 const Events = lazy(() => import("./pages/Events"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -185,6 +186,7 @@ const App = () => (
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/support" element={<Support />} />
                     <Route path="/about" element={<About />} />
+                    <Route path="/changelog" element={<Changelog />} />
                     <Route path="/appeal/verify" element={<AppealVerify />} />
                     
                     {/* Admin routes with nested layout - protected by AdminRouteGuard */}
