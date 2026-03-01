@@ -1,79 +1,45 @@
 
 
-# Comprehensive Support Page Overhaul
+## Replace Logo with Theme-Aware Light/Dark Variants
 
-## Overview
-Transform the Support page from placeholder cards and a basic FAQ into a fully fleshed-out help center with three rich, tabbed sections: Documentation guides, expanded FAQ (categorized), and a Feature Request board -- all built with existing UI components.
+The two uploaded images are full wordmark logos -- one with dark text (for light backgrounds) and one with white text (for dark backgrounds). The current app uses a single `bookme-logo.png` icon everywhere.
 
-## Structure
+### Approach
 
-The page will be reorganized using **Tabs** to let users navigate between three content sections, replacing the static placeholder cards.
+1. **Copy the two logo images into the project**
+   - `public/logo-light.png` -- dark text version (IMG_4897), used on light backgrounds
+   - `public/logo-dark.png` -- white text version (IMG_4901), used on dark backgrounds
 
-### 1. Documentation Section
-A grid of guide cards, each with an icon, title, description, and expandable step-by-step instructions using Accordion. Categories:
+2. **Create a reusable `ThemeLogo` component** (`src/components/ThemeLogo.tsx`)
+   - Accepts `className`, `width`, `height` props
+   - Uses `useTheme()` from next-themes to pick the correct image
+   - Renders `logo-light.png` in light mode, `logo-dark.png` in dark mode
+   - Handles the `mounted` state to avoid hydration flash
 
-- **Getting Started** (4 guides)
-  - Creating your account and completing onboarding
-  - Setting up your profile (name, bio, avatar, booking link slug)
-  - Creating your first event type (title, duration, location, description)
-  - Setting your weekly availability schedule
+3. **Update all logo references** across 4 files:
+   - **`src/components/Navigation.tsx`** (3 instances) -- desktop logo, mobile sheet logo
+   - **`src/components/Footer.tsx`** (1 instance) -- bottom bar logo
+   - **`src/pages/Auth.tsx`** (2 instances) -- left panel logo, mobile logo
+   - Replace `<img src="/bookme-logo.png" ...>` with `<ThemeLogo ... />`
 
-- **Booking Management** (4 guides)
-  - Understanding your bookings dashboard (filters, views, statuses)
-  - Managing incoming bookings (confirm, reschedule, cancel)
-  - Sharing your booking link (copy, social, QR code, embed)
-  - Guest self-service (how guests reschedule/cancel via email link)
+4. **Keep favicon and PWA icons unchanged** -- `index.html` favicon and `manifest.json` icons stay as the existing square icon since those don't support theme switching.
 
-- **Advanced Features** (4 guides)
-  - Configuring buffer times between meetings (Pro)
-  - Using the AI assistant for event creation
-  - Timezone handling and international scheduling
-  - Viewing booking analytics and calendar heatmap
+### Technical Details
 
-- **Account and Billing** (3 guides)
-  - Upgrading to Pro (monthly vs annual, checkout flow)
-  - Managing your subscription (portal, invoices, cancellation)
-  - Updating profile settings and deleting your account
+```text
+ThemeLogo component:
+  - Props: className, width, height, alt (optional)
+  - Uses useTheme() + mounted state
+  - Returns <img src={theme === "dark" ? "/logo-dark.png" : "/logo-light.png"} />
+```
 
-### 2. FAQ Section (Expanded and Categorized)
-Reorganize into categorized groups with ~20 total questions:
+Files modified:
+- `src/components/ThemeLogo.tsx` (new)
+- `src/components/Navigation.tsx` (replace 3 img tags)
+- `src/components/Footer.tsx` (replace 1 img tag)
+- `src/pages/Auth.tsx` (replace 2 img tags)
 
-- **Getting Started** (5 Qs): account creation, onboarding, profile setup, booking link, first event
-- **Bookings** (5 Qs): how booking works, guest experience, reschedule/cancel, notifications, confirmation emails
-- **Billing and Subscription** (5 Qs): free vs pro, trial, payment methods, cancel, refund policy
-- **Privacy and Security** (3 Qs): data security, GDPR, data export/deletion
-- **Technical** (3 Qs): supported browsers, timezone handling, mobile support
-
-### 3. Feature Request Section
-A structured form (separate from the contact form) with:
-- Category dropdown (Scheduling, Integrations, UI/UX, Mobile, Billing, Other)
-- Title field
-- Description textarea
-- Priority selector (Nice to have / Important / Critical)
-- A "Popular Requests" section showing commonly requested features as static cards (Google Calendar two-way sync, team scheduling, Slack integration, recurring meetings, custom email templates)
-
-### 4. Contact Form
-Keep the existing "Still need help?" contact form at the bottom of the page, visible from all tabs.
-
-## Technical Details
-
-### New Components
-- `src/components/support/DocumentationSection.tsx` -- guide cards with expandable accordion content
-- `src/components/support/FAQSection.tsx` -- categorized FAQ with tab filtering by category
-- `src/components/support/FeatureRequestSection.tsx` -- request form + popular requests display
-
-### Modified Files
-- `src/pages/Support.tsx` -- replace static cards with Tabs component containing the three new section components; keep AI search box at top and contact form at bottom
-- Update FAQ schema to include all new FAQ items for SEO
-
-### UI Components Used (all existing)
-- `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` for section navigation
-- `Accordion` for expandable guides and FAQ items
-- `Card` for guide cards and popular feature request cards
-- `Select` for category dropdown in feature request form
-- `Badge` for category labels and vote counts
-- `Button`, `Input`, `Textarea`, `Label` for the feature request form
-
-### No backend changes needed
-All content is static/hardcoded. The contact form and feature request form will show toast confirmations (matching the existing pattern). No database tables required.
+Files added to public:
+- `public/logo-light.png`
+- `public/logo-dark.png`
 
