@@ -15,6 +15,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
 import { pageSEO, siteConfig } from "@/lib/seo-config";
+import HeroBackground from "@/components/HeroBackground";
 
 const Support = () => {
   const [name, setName] = useState("");
@@ -56,7 +57,8 @@ const Support = () => {
       <Navigation />
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 sm:pb-20">
-        <div className="text-center mb-10 sm:mb-16">
+        <div className="relative text-center mb-10 sm:mb-16">
+          <HeroBackground page="support" opacity={0.15} />
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">How can we help?</h1>
           <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
             Browse our documentation, find answers to common questions, or suggest new features.

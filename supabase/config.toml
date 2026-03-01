@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.ai-chat]
 verify_jwt = false
+
+[functions.generate-hero-images]
+verify_jwt = false

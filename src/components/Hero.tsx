@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Zap, Bell, ArrowRight, Shield, Star, CheckCircle, Globe } from "lucide-react";
 import AnimatedSection from "@/components/ui/animated-section";
+import HeroBackground from "@/components/HeroBackground";
 
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-subtle">
+      <HeroBackground page="home" />
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 sm:left-20 w-48 sm:w-72 h-48 sm:h-72 bg-primary/10 rounded-full blur-3xl animate-float" />
