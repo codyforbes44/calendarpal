@@ -27,10 +27,10 @@ const DashboardStats = () => {
       color: "bg-success/10 text-success",
     },
     {
-      title: "Active Events",
+      title: "Cancelled",
       value: stats?.cancelled !== undefined ? stats.cancelled : 0,
       icon: TrendingUp,
-      color: "bg-info/10 text-info",
+      color: "bg-destructive/10 text-destructive",
     },
   ];
 

@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -18,7 +18,7 @@ import ResetPassword from "./pages/ResetPassword";
 import UpdatePassword from "./pages/UpdatePassword";
 import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
-import Booking from "./pages/Booking";
+// Booking page now redirects to /bookings
 import Bookings from "./pages/Bookings";
 import Availability from "./pages/Availability";
 import EventForm from "./pages/EventForm";
@@ -78,7 +78,7 @@ const App = () => (
                     <Route path="/auth/reset-password" element={<ResetPassword />} />
                     <Route path="/auth/update-password" element={<UpdatePassword />} />
                     <Route path="/onboarding" element={<Onboarding />} />
-                    <Route path="/booking" element={<Booking />} />
+                    <Route path="/booking" element={<Navigate to="/bookings" replace />} />
                     <Route path="/book/:username" element={<PublicBooking />} />
                     <Route path="/book/:username/:eventSlug" element={<PublicBooking />} />
                     <Route path="/booking/:bookingId/manage" element={<GuestBookingManage />} />
