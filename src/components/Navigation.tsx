@@ -92,7 +92,6 @@ const Navigation = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <ThemeLogo width={32} height={32} className="h-7 w-7 md:h-8 md:w-8 rounded-lg object-contain" />
-          <span className="text-base md:text-lg">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</span>
           {isPro && (
             <Badge variant="secondary" className="hidden sm:flex text-xs gap-1">
               <Crown className="w-3 h-3" />
@@ -188,7 +187,6 @@ const Navigation = () => {
                 <div className="flex items-center justify-between pb-4 border-b">
                   <Link to="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
                     <ThemeLogo width={24} height={24} className="h-6 w-6 rounded-lg object-contain" />
-                    <span className="font-semibold">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</span>
                   </Link>
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
