@@ -138,6 +138,8 @@ const EventForm = () => {
 
   const [generating, setGenerating] = useState(false);
   const [generatingTitle, setGeneratingTitle] = useState(false);
+  const [titleGenerated, setTitleGenerated] = useState(false);
+  const [descGenerated, setDescGenerated] = useState(false);
 
   const generateTitle = async () => {
     const duration = form.getValues("duration");
@@ -156,6 +158,7 @@ const EventForm = () => {
       if (data?.answer) {
         const clean = data.answer.replace(/^["']|["']$/g, "").split("\n")[0].trim();
         form.setValue("title", clean, { shouldDirty: true });
+        setTitleGenerated(true);
         toast.success("Title generated!");
       }
     } catch {
@@ -187,6 +190,7 @@ const EventForm = () => {
       if (error) throw error;
       if (data?.answer) {
         form.setValue("description", data.answer, { shouldDirty: true });
+        setDescGenerated(true);
         toast.success("Description generated!");
       }
     } catch {
@@ -273,7 +277,7 @@ const EventForm = () => {
                           ) : (
                             <Sparkles className="h-3 w-3" />
                           )}
-                          {generatingTitle ? "Generating..." : "AI Suggest"}
+                          {generatingTitle ? "Generating..." : titleGenerated ? "Regenerate" : "AI Suggest"}
                         </Button>
                       </div>
                       <FormControl>
@@ -308,7 +312,7 @@ const EventForm = () => {
                           ) : (
                             <Sparkles className="h-3 w-3" />
                           )}
-                          {generating ? "Generating..." : "AI Generate"}
+                          {generating ? "Generating..." : descGenerated ? "Regenerate" : "AI Generate"}
                         </Button>
                       </div>
                       <FormControl>
