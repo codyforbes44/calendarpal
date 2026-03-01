@@ -21,6 +21,7 @@ import { getTimezoneAbbr } from "@/hooks/useTimezone";
 import SEO from "@/components/SEO";
 import { siteConfig } from "@/lib/seo-config";
 import { sendConfirmationEmail } from "@/lib/email-service";
+import { getThemeById, buildThemeCSSVars } from "@/lib/booking-themes";
 
 interface Profile {
   id: string;
@@ -30,6 +31,10 @@ interface Profile {
   avatar_url: string | null;
   timezone: string | null;
   bio: string | null;
+  booking_theme: string;
+  custom_brand_color: string | null;
+  custom_brand_logo: string | null;
+  custom_welcome_message: string | null;
 }
 
 interface EventType {
@@ -448,6 +453,25 @@ const PublicBooking = () => {
 
   const guestLocalTime = getGuestLocalTime();
 
+  // Build theme CSS variables for the booking page
+  const bookingTheme = profile ? getThemeById(profile.booking_theme || "default") : null;
+  const themeCSSVars = bookingTheme
+    ? buildThemeCSSVars(bookingTheme, profile?.custom_brand_color)
+    : {};
+  const themeStyle = Object.entries(themeCSSVars).reduce(
+    (acc, [key, val]) => {
+      // Map --booking-* vars to actual CSS vars used by Tailwind
+      const cssKey = key.replace("--booking-", "--");
+      acc[cssKey] = val;
+      return acc;
+    },
+    {} as Record<string, string>
+  );
+
+  const welcomeMessage =
+    profile?.custom_welcome_message ||
+    "Welcome! Pick a meeting type below to get started.";
+
   const dynamicTitle = profile?.full_name 
     ? `Book with ${profile.full_name} | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ` 
     : "Book a Meeting | Bᴏᴏᴋᴍᴇ.ʙᴇᴛ";
@@ -620,11 +644,19 @@ const PublicBooking = () => {
     return (
       <>
         <SEO title={dynamicTitle} description={dynamicDescription} />
-        <div className="min-h-screen bg-gradient-subtle py-12 px-4 sm:px-6">
+        <div className="min-h-screen py-12 px-4 sm:px-6" style={{ ...themeStyle, backgroundColor: `hsl(${themeStyle["--background"] || "var(--background)"})`, color: `hsl(${themeStyle["--foreground"] || "var(--foreground)"})` }}>
           <div className="max-w-xl mx-auto">
 
             {/* Profile header card */}
-            <div className="rounded-2xl border border-border bg-card shadow-sm p-8 mb-6 text-center">
+            <div className="rounded-2xl border shadow-sm p-8 mb-6 text-center" style={{ borderColor: `hsl(${themeStyle["--border"] || "var(--border)"})`, backgroundColor: `hsl(${themeStyle["--card"] || "var(--card)"})` }}>
+              {/* Custom brand logo */}
+              {profile?.custom_brand_logo && (
+                <img
+                  src={profile.custom_brand_logo}
+                  alt="Brand logo"
+                  className="h-8 w-auto mx-auto mb-4 object-contain"
+                />
+              )}
               {/* Avatar */}
               {profile?.avatar_url ? (
                 <img
@@ -633,11 +665,18 @@ const PublicBooking = () => {
                   width={80}
                   height={80}
                   loading="lazy"
-                  className="w-20 h-20 rounded-full object-cover mx-auto mb-4 ring-4 ring-primary/20"
+                  className="w-20 h-20 rounded-full object-cover mx-auto mb-4"
+                  style={{ boxShadow: `0 0 0 4px hsl(${themeStyle["--primary"] || "var(--primary)"} / 0.2)` }}
                 />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center mx-auto mb-4 ring-4 ring-primary/20">
-                  <span className="text-2xl font-bold text-primary">{initials}</span>
+                <div
+                  className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+                  style={{
+                    background: `linear-gradient(to bottom right, hsl(${themeStyle["--primary"] || "var(--primary)"} / 0.3), hsl(${themeStyle["--primary"] || "var(--primary)"} / 0.1))`,
+                    boxShadow: `0 0 0 4px hsl(${themeStyle["--primary"] || "var(--primary)"} / 0.2)`,
+                  }}
+                >
+                  <span className="text-2xl font-bold" style={{ color: `hsl(${themeStyle["--primary"] || "var(--primary)"})` }}>{initials}</span>
                 </div>
               )}
 
@@ -660,8 +699,8 @@ const PublicBooking = () => {
               <div className="w-10 h-px bg-border mx-auto mb-3" />
 
               {/* Prompt */}
-              <p className="text-muted-foreground text-sm">
-                Welcome! Pick a meeting type below to get started.
+              <p className="text-sm" style={{ color: `hsl(${themeStyle["--muted-foreground"] || "var(--muted-foreground)"})` }}>
+                {welcomeMessage}
               </p>
             </div>
 
