@@ -261,7 +261,7 @@ const Pricing = () => {
                         <span className="text-xs text-muted-foreground line-through mr-2">
                           ${plan.monthlyPrice}/mo
                         </span>
-                        <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-0 text-xs">
+                        <Badge variant="secondary" className="bg-success/10 text-success border-0 text-xs">
                           Save {getYearlySavings(plan)}%
                         </Badge>
                       </div>
@@ -320,16 +320,16 @@ const Pricing = () => {
           {/* Trust Badges */}
           <div className="mt-16 grid grid-cols-2 gap-6 max-w-2xl mx-auto">
             <div className="group flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 hover:bg-muted/50">
-              <div className="w-12 h-12 flex items-center justify-center bg-green-500/10 rounded-full mb-3 transition-transform duration-300 group-hover:scale-110">
-                <Lock className="w-5 h-5 text-green-600" />
+              <div className="w-12 h-12 flex items-center justify-center bg-success/10 rounded-full mb-3 transition-transform duration-300 group-hover:scale-110">
+                <Lock className="w-5 h-5 text-success" />
               </div>
               <p className="font-semibold text-sm">SSL Encrypted</p>
               <p className="text-xs text-muted-foreground">256-bit security</p>
             </div>
             
             <div className="group flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 hover:bg-muted/50">
-              <div className="w-12 h-12 flex items-center justify-center bg-blue-500/10 rounded-full mb-3 transition-transform duration-300 group-hover:scale-110">
-                <CreditCard className="w-5 h-5 text-blue-600" />
+              <div className="w-12 h-12 flex items-center justify-center bg-info/10 rounded-full mb-3 transition-transform duration-300 group-hover:scale-110">
+                <CreditCard className="w-5 h-5 text-info" />
               </div>
               <p className="font-semibold text-sm">Secure Payments</p>
               <p className="text-xs text-muted-foreground">Powered by Stripe</p>
@@ -581,9 +581,9 @@ const Pricing = () => {
                     <TableCell className="font-medium">Modern UI/UX</TableCell>
                     <TableCell className="text-center bg-primary/5">
                       <div className="flex items-center justify-center gap-1">
-                        <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                        <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                        <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+                        <Star className="w-4 h-4 text-warning fill-warning" />
+                        <Star className="w-4 h-4 text-warning fill-warning" />
+                        <Star className="w-4 h-4 text-warning fill-warning" />
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
