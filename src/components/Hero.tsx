@@ -48,7 +48,7 @@ const Hero = () => {
                   e.preventDefault();
                   document.getElementById("preview")?.scrollIntoView({ behavior: "smooth" });
                 }}>
-                  Watch 60s Demo
+                  Interactive Demo
                 </a>
               </Button>
             </div>
