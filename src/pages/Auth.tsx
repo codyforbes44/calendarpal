@@ -187,7 +187,6 @@ const Auth = () => {
           <div className="relative z-10 max-w-md space-y-8">
             <a href="/" className="inline-flex items-center gap-3">
               <ThemeLogo width={48} height={48} className="h-12 w-12 rounded-2xl object-contain shadow-md" />
-              <span className="font-display text-2xl font-bold">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</span>
             </a>
             
             <div>
