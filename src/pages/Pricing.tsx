@@ -128,6 +128,13 @@ const Pricing = () => {
     return Math.round(((plan.monthlyPrice - plan.yearlyPrice) / plan.monthlyPrice) * 100);
   };
 
+  const pricingFaqs = [
+    { question: "Can I switch plans anytime?", answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately." },
+    { question: "Is there a free trial?", answer: "Yes, the Pro plan comes with a 14-day free trial. No credit card required." },
+    { question: "What payment methods do you accept?", answer: "We accept all major credit cards, PayPal, and bank transfers for annual plans." },
+    { question: "Can I cancel anytime?", answer: "Absolutely. You can cancel your subscription at any time with no questions asked." },
+  ];
+
   const pricingSchema = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -163,6 +170,19 @@ const Pricing = () => {
     ]
   };
 
+  const pricingFaqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": pricingFaqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SEO
@@ -171,7 +191,7 @@ const Pricing = () => {
         keywords={pageSEO.pricing.keywords}
         canonical={`${siteConfig.url}/pricing`}
         ogImage={`${siteConfig.url}${siteConfig.ogImages.pricing}`}
-        structuredData={pricingSchema}
+        structuredData={[pricingSchema, pricingFaqSchema]}
       />
       <Navigation />
       
@@ -672,33 +692,12 @@ const Pricing = () => {
             </h2>
             
             <div className="space-y-6">
-              <div className="border-b border-border pb-6">
-                <h3 className="font-semibold mb-2">Can I switch plans anytime?</h3>
-                <p className="text-muted-foreground text-sm">
-                  Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.
-                </p>
-              </div>
-              
-              <div className="border-b border-border pb-6">
-                <h3 className="font-semibold mb-2">Is there a free trial?</h3>
-                <p className="text-muted-foreground text-sm">
-                  Yes, the Pro plan comes with a 14-day free trial. No credit card required.
-                </p>
-              </div>
-              
-              <div className="border-b border-border pb-6">
-                <h3 className="font-semibold mb-2">What payment methods do you accept?</h3>
-                <p className="text-muted-foreground text-sm">
-                  We accept all major credit cards, PayPal, and bank transfers for annual plans.
-                </p>
-              </div>
-              
-              <div className="pb-6">
-                <h3 className="font-semibold mb-2">Can I cancel anytime?</h3>
-                <p className="text-muted-foreground text-sm">
-                  Absolutely. You can cancel your subscription at any time with no questions asked.
-                </p>
-              </div>
+              {pricingFaqs.map((faq, index) => (
+                <div key={index} className={index < pricingFaqs.length - 1 ? "border-b border-border pb-6" : "pb-6"}>
+                  <h3 className="font-semibold mb-2">{faq.question}</h3>
+                  <p className="text-muted-foreground text-sm">{faq.answer}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
