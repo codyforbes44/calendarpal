@@ -45,6 +45,8 @@ interface EventType {
   buffer_before: number;
   buffer_after: number;
   allow_recurring: boolean;
+  price_amount: number | null;
+  price_currency: string;
 }
 
 const EmbedBooking = () => {
@@ -156,6 +158,43 @@ const EmbedBooking = () => {
       const endTime = calculateEndTime(startTime, selectedEvent.duration);
       const hostTimezone = profile.timezone || "America/New_York";
 
+      // If paid event, redirect to Stripe Checkout
+      if (selectedEvent.price_amount && selectedEvent.price_amount > 0) {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-booking-payment`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              eventTypeId: selectedEvent.id,
+              hostUserId: profile.user_id,
+              scheduledDate: format(selectedDate, "yyyy-MM-dd"),
+              startTime,
+              endTime,
+              guestName: formData.name,
+              guestEmail: formData.email,
+              guestNotes: formData.notes || null,
+              meetingLink: formData.meetingLink.trim() || null,
+              hostTimezone,
+              guestTimezone,
+              priceAmount: selectedEvent.price_amount,
+              priceCurrency: selectedEvent.price_currency || "USD",
+              eventTitle: selectedEvent.title,
+              duration: selectedEvent.duration,
+            }),
+          }
+        );
+
+        const result = await response.json();
+        if (result.url) {
+          window.location.href = result.url;
+          return;
+        } else {
+          throw new Error(result.error || "Failed to create payment session");
+        }
+      }
+
+      // Free event: direct booking
       const { data: booking, error } = await supabase.from("bookings").insert({
         host_user_id: profile.user_id,
         event_type_id: selectedEvent.id,
@@ -203,7 +242,7 @@ const EmbedBooking = () => {
 
       // Notify parent window
       window.parent.postMessage({
-        type: "bookme-booking-confirmed",
+        type: "calendarpal-booking-confirmed",
         booking: {
           id: booking.id,
           guestName: formData.name,
@@ -341,6 +380,11 @@ const EmbedBooking = () => {
                         <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{event.duration}min</span>
                           <span className="flex items-center gap-1"><LocationIcon className="w-3 h-3" />{location.text}</span>
+                          {event.price_amount && event.price_amount > 0 && (
+                            <span className="font-medium text-foreground">
+                              {new Intl.NumberFormat("en-US", { style: "currency", currency: event.price_currency || "USD" }).format(event.price_amount)}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -351,7 +395,7 @@ const EmbedBooking = () => {
           )}
 
           <p className="text-center text-xs text-muted-foreground mt-6">
-            Powered by <strong>Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</strong>
+          Powered by <strong>CalendarPal</strong>
           </p>
         </div>
       </div>
@@ -428,6 +472,12 @@ const EmbedBooking = () => {
               <Clock className="w-4 h-4 text-primary" />
               <span>{selectedTime} ({getTimezoneAbbr(guestTimezone)})</span>
             </div>
+            {selectedEvent?.price_amount && selectedEvent.price_amount > 0 && (
+              <div className="flex items-center gap-2 font-medium">
+                <span>💳</span>
+                <span>{new Intl.NumberFormat("en-US", { style: "currency", currency: selectedEvent.price_currency || "USD" }).format(selectedEvent.price_amount)}</span>
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleBooking} className="space-y-3">
@@ -444,13 +494,13 @@ const EmbedBooking = () => {
               <Textarea value={formData.notes} onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))} rows={2} className="resize-none" />
             </div>
             <Button type="submit" variant="hero" className="w-full" disabled={submitting}>
-              {submitting ? "Booking..." : "Confirm Booking"}
+              {submitting ? "Processing..." : selectedEvent?.price_amount && selectedEvent.price_amount > 0 ? "Continue to Payment" : "Confirm Booking"}
             </Button>
           </form>
         </Card>
 
         <p className="text-center text-xs text-muted-foreground mt-4">
-          Powered by <strong>Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</strong>
+          Powered by <strong>CalendarPal</strong>
         </p>
       </div>
     </div>
