@@ -137,6 +137,33 @@ const EventForm = () => {
   };
 
   const [generating, setGenerating] = useState(false);
+  const [generatingTitle, setGeneratingTitle] = useState(false);
+
+  const generateTitle = async () => {
+    const duration = form.getValues("duration");
+    const locationType = form.getValues("location_type");
+
+    setGeneratingTitle(true);
+    try {
+      const locationLabel = locationType === "video" ? "video call" : locationType === "phone" ? "phone call" : "in-person meeting";
+      const prompt = `Suggest 1 short, professional event title (3-5 words max) for a ${duration}-minute ${locationLabel} on a scheduling platform. Just return the title text, nothing else. No quotes, no explanation.`;
+
+      const { data, error } = await supabase.functions.invoke("ai-search", {
+        body: { query: prompt },
+      });
+
+      if (error) throw error;
+      if (data?.answer) {
+        const clean = data.answer.replace(/^["']|["']$/g, "").split("\n")[0].trim();
+        form.setValue("title", clean, { shouldDirty: true });
+        toast.success("Title generated!");
+      }
+    } catch {
+      toast.error("Could not generate title. Try again.");
+    } finally {
+      setGeneratingTitle(false);
+    }
+  };
 
   const generateDescription = async () => {
     const title = form.getValues("title");
@@ -231,7 +258,24 @@ const EventForm = () => {
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Event Title *</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Event Title *</FormLabel>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={generateTitle}
+                          disabled={generatingTitle}
+                          className="h-7 text-xs gap-1 text-primary"
+                        >
+                          {generatingTitle ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Sparkles className="h-3 w-3" />
+                          )}
+                          {generatingTitle ? "Generating..." : "AI Suggest"}
+                        </Button>
+                      </div>
                       <FormControl>
                         <Input 
                           placeholder="30 Minute Meeting" 
