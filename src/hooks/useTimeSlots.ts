@@ -75,6 +75,23 @@ export const useTimeSlots = ({
 
       if (bookingsError) throw bookingsError;
 
+      // Fetch Google Calendar busy times (if connected)
+      let googleBusyTimes: { start: string; end: string }[] = [];
+      try {
+        const { data: busyData } = await supabase.functions.invoke("google-calendar-busy", {
+          body: {
+            userId,
+            date: dateStr,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+        });
+        if (busyData?.busyTimes) {
+          googleBusyTimes = busyData.busyTimes;
+        }
+      } catch {
+        // Silently skip if calendar not connected or error
+      }
+
       // Generate all possible time slots from availability
       const slots: TimeSlot[] = [];
       const now = new Date();
@@ -114,7 +131,6 @@ export const useTimeSlots = ({
             const existingBufferBefore = booking.event_types?.buffer_before || 0;
             const existingBufferAfter = booking.event_types?.buffer_after || 0;
 
-            // Calculate the blocked time for the existing booking including its buffers
             const [bookingStartHour, bookingStartMin] = bookingStart.split(":").map(Number);
             const [bookingEndHour, bookingEndMin] = bookingEnd.split(":").map(Number);
             
@@ -124,11 +140,19 @@ export const useTimeSlots = ({
             const blockedStart = `${Math.floor(Math.max(0, bookingStartMinutes) / 60).toString().padStart(2, "0")}:${(Math.max(0, bookingStartMinutes) % 60).toString().padStart(2, "0")}`;
             const blockedEnd = `${Math.floor(bookingEndMinutes / 60).toString().padStart(2, "0")}:${(bookingEndMinutes % 60).toString().padStart(2, "0")}`;
 
-            // Check for overlap between new slot (with buffers) and existing blocked time
             return (
               (slotWithBufferStart >= blockedStart && slotWithBufferStart < blockedEnd) ||
               (slotWithBufferEnd > blockedStart && slotWithBufferEnd <= blockedEnd) ||
               (slotWithBufferStart <= blockedStart && slotWithBufferEnd >= blockedEnd)
+            );
+          });
+
+          // Check if slot conflicts with Google Calendar busy times
+          const isGoogleBusy = googleBusyTimes.some((busy) => {
+            return (
+              (slotTimeStr >= busy.start && slotTimeStr < busy.end) ||
+              (slotEndStr > busy.start && slotEndStr <= busy.end) ||
+              (slotTimeStr <= busy.start && slotEndStr >= busy.end)
             );
           });
 
@@ -141,7 +165,7 @@ export const useTimeSlots = ({
 
           slots.push({
             time: displayTime,
-            available: !isBooked,
+            available: !isBooked && !isGoogleBusy,
           });
 
           currentSlot = addMinutes(currentSlot, 30);

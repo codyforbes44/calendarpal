@@ -402,6 +402,10 @@ export type Database = {
           custom_welcome_message: string | null
           email: string | null
           full_name: string | null
+          google_access_token: string | null
+          google_calendar_connected: boolean
+          google_refresh_token: string | null
+          google_token_expires_at: string | null
           id: string
           notification_preferences: Json
           slack_channel_id: string | null
@@ -424,6 +428,10 @@ export type Database = {
           custom_welcome_message?: string | null
           email?: string | null
           full_name?: string | null
+          google_access_token?: string | null
+          google_calendar_connected?: boolean
+          google_refresh_token?: string | null
+          google_token_expires_at?: string | null
           id?: string
           notification_preferences?: Json
           slack_channel_id?: string | null
@@ -446,6 +454,10 @@ export type Database = {
           custom_welcome_message?: string | null
           email?: string | null
           full_name?: string | null
+          google_access_token?: string | null
+          google_calendar_connected?: boolean
+          google_refresh_token?: string | null
+          google_token_expires_at?: string | null
           id?: string
           notification_preferences?: Json
           slack_channel_id?: string | null

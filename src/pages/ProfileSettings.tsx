@@ -39,6 +39,7 @@ import NotificationPreferences from "@/components/settings/NotificationPreferenc
 import SlackSettings from "@/components/settings/SlackSettings";
 import ThemePicker from "@/components/settings/ThemePicker";
 import EmbedCodeGenerator from "@/components/settings/EmbedCodeGenerator";
+import GoogleCalendarSettings from "@/components/settings/GoogleCalendarSettings";
 import { SkeletonProfile } from "@/components/ui/skeleton-card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -400,6 +401,11 @@ const ProfileSettings = () => {
           {/* Embed Widget */}
           <div className="mt-4 sm:mt-6">
             <EmbedCodeGenerator />
+          </div>
+
+          {/* Google Calendar */}
+          <div className="mt-4 sm:mt-6">
+            <GoogleCalendarSettings />
           </div>
 
           {/* Slack Settings */}

@@ -105,6 +105,12 @@ const Dashboard = () => {
             <p className="text-sm sm:text-base text-muted-foreground">
               Here's what's happening with your schedule today
             </p>
+            {profile?.google_calendar_connected && (
+              <p className="text-xs text-primary flex items-center gap-1 mt-1">
+                <span className="w-2 h-2 rounded-full bg-primary inline-block" />
+                Google Calendar synced
+              </p>
+            )}
           </div>
         </div>
 
