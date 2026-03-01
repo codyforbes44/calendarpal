@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Calendar, Shield, Globe, Zap, Users, Clock } from "lucide-react";
+import HeroBackground from "@/components/HeroBackground";
 
 const steps = [
   {
@@ -59,7 +60,8 @@ const About = () => {
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
         {/* Hero */}
-        <section className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+        <section className="relative text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+          <HeroBackground page="about" opacity={0.15} />
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
             Scheduling, <span className="text-primary">simplified</span>.
           </h1>

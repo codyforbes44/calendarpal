@@ -15,6 +15,7 @@ import { pageSEO, siteConfig } from "@/lib/seo-config";
 import PasswordStrengthMeter from "@/components/auth/PasswordStrengthMeter";
 
 import ThemeLogo from "@/components/ThemeLogo";
+import HeroBackground from "@/components/HeroBackground";
 
 const authSchema = z.object({
   email: z.string().email("Invalid email address").max(255),
@@ -180,6 +181,7 @@ const Auth = () => {
       <div className="min-h-screen flex bg-gradient-subtle">
         {/* Left panel - marketing (desktop only) */}
         <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12 relative overflow-hidden">
+          <HeroBackground page="auth" opacity={0.22} />
           <div className="absolute inset-0 bg-gradient-primary opacity-5" />
           <div className="absolute top-20 left-20 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />

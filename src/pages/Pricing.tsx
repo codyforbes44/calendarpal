@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import HeroBackground from "@/components/HeroBackground";
 
 const plans = [
   {
@@ -198,7 +199,8 @@ const Pricing = () => {
       <main className="pt-24 sm:pt-32 pb-16 sm:pb-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="text-center max-w-3xl mx-auto mb-8">
+          <div className="relative text-center max-w-3xl mx-auto mb-8">
+            <HeroBackground page="pricing" opacity={0.15} />
             <h1 className="font-display text-4xl md:text-5xl font-bold mb-6">
               Simple, transparent pricing
             </h1>
