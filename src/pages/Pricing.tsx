@@ -199,12 +199,12 @@ const Pricing = () => {
       <main className="pt-24 sm:pt-32 pb-16 sm:pb-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="relative text-center max-w-3xl mx-auto mb-8">
+          <div className="relative text-center max-w-3xl mx-auto mb-8 py-10 sm:py-14 lg:py-16 overflow-hidden rounded-2xl">
             <HeroBackground page="pricing" opacity={0.3} />
-            <h1 className="font-display text-4xl md:text-5xl font-bold mb-6">
+            <h1 className="relative z-10 font-display text-4xl md:text-5xl font-bold mb-6">
               Simple, transparent pricing
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className="relative z-10 text-lg text-muted-foreground">
               Choose the plan that fits your needs. Start with a free trial and scale as you grow.
             </p>
           </div>
