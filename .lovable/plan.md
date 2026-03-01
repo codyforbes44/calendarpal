@@ -1,128 +1,48 @@
 
-# Refactor All Public Pages to Reflect Current Platform Capabilities
+# Upgrade Reminder Email Templates to Modern Design
 
-## Audit Summary
+## Overview
+Replace the plain `buildReminderHtml` function in `supabase/functions/send-reminders/index.ts` with the same modern design system used in `send-booking-email` -- gradient header, card-based layout, brand logo, and shared helper functions.
 
-After reviewing every public-facing page and component against the actual codebase, here are the gaps and inconsistencies found:
+## What Changes
 
----
+### File: `supabase/functions/send-reminders/index.ts`
 
-## Issues Found
+**1. Add shared design constants and helper functions** (after the existing utility functions, before `buildReminderHtml`):
+- `BRAND_COLOR`, `BRAND_GRADIENT`, `LOGO_URL` constants
+- `emailLayout()` -- the shared HTML wrapper with gradient header, logo, white body card, and branded footer
+- `detailRow()` -- icon + label + value table rows
+- `detailsCard()` -- the rounded card container with colored left border
+- `buildTimezoneBlock()` -- prominent primary timezone with secondary timezone line
+- `actionButton()` / `secondaryButton()` -- styled CTA buttons
+- `icsNote()` -- small attachment note
 
-### 1. Features Section -- Missing Recent Capabilities
-The homepage `Features.tsx` lists only 6 features. It omits several major capabilities that are already built:
-- **Paid bookings / Stripe payments** (booking payments, refunds, webhook handling)
-- **Slack notifications** (with test notification support)
-- **Google Calendar sync** (two-way sync, busy-time detection)
-- **Embeddable booking widget** (iframe and JS embed code generator)
-- **AI-powered assistant** (dashboard chatbot, AI event generation, AI search)
-- **Client directory** (CRM-style client tracking with aggregated stats)
-- **QR code sharing** (share modal with QR generation)
-- **Guest self-service** (reschedule/cancel via secure link)
+These are copied from the booking email function to maintain visual consistency.
 
-**Fix**: Restructure features into 4 core + 6 advanced cards covering all current capabilities.
+**2. Rewrite `buildReminderHtml`** to use `emailLayout()` internally:
+- Gradient header with amber/warm tone (distinguishes reminders from confirmations) using icon "⏰" and title "Meeting in 24 Hours"
+- Card body with `detailsCard` containing: date row, timezone block (primary = recipient's local time, secondary = other party's time), duration row, and guest/host row
+- "Join Meeting" action button when a meeting link exists
+- "Reschedule or Cancel" secondary button for guest emails
+- ICS attachment note at the bottom
+- Hidden preheader text for better inbox previews
 
-### 2. Pricing Page -- Feature Lists Are Incomplete
-The Free and Pro plan feature lists are generic and don't mention:
-- Slack notifications (Pro)
-- Embeddable widget (Pro)
-- AI event generation (Pro)
-- Paid bookings / payment collection (Pro)
-- Client directory / CRM (Pro)
-- Conversion funnel and Popular Times analytics (Pro)
+**3. Update email subjects** to include the checkmark/clock emoji consistent with the booking email style.
 
-The feature comparison table is also missing rows for these capabilities.
+### No other files change. All existing logic (timezone conversion, ICS generation, window scanning, host preference checks, retry logic) remains untouched.
 
-**Fix**: Update plan feature bullets and comparison table rows.
+## Design Details
 
-### 3. About Page -- Generic, Missing Key Differentiators
-The About page is very basic with generic steps. It doesn't mention:
-- AI capabilities
-- Payment collection
-- Slack/Google Calendar integrations
-- Embeddable widgets
-- Client management
-
-**Fix**: Add an "Integrations and AI" values card, update step descriptions to mention automation and payments.
-
-### 4. FAQ Section -- Outdated and Missing Topics
-- The "Free vs Pro" FAQ answer says Free has "up to 5 active event types" -- the pricing page says "1 event type". These are inconsistent.
-- No FAQ about Slack integration, embeddable widgets, paid bookings, or AI features.
-- No FAQ about Google Calendar sync.
-
-**Fix**: Correct Free plan event type limit to match pricing, add FAQs for Slack, embed widget, paid bookings, Google Calendar, and AI assistant.
-
-### 5. Documentation Section -- Missing Guides for Recent Features
-No documentation guides for:
-- Setting up Slack notifications (with test button)
-- Collecting payments for bookings
-- Using the embeddable booking widget
-- Google Calendar sync setup
-- Client directory usage
-
-**Fix**: Add guides under "Advanced Features" and a new "Integrations" category.
-
-### 6. LogoCloud -- Missing Stripe Integration Logo
-Stripe is a core integration (payment processing) but isn't shown in the integrations bar.
-
-**Fix**: Add Stripe logo/icon to the LogoCloud.
-
-### 7. Homepage CTA Benefits -- Underselling
-The CTA lists generic benefits: "Free forever plan", "No credit card required", "Live in 2 minutes", "Cancel anytime". These don't differentiate the platform.
-
-**Fix**: Replace with value-driven benefits: "AI-powered scheduling", "Collect payments automatically", "Slack and Google Calendar sync", "Free forever plan".
-
-### 8. Homepage Stats -- Inconsistent Numbers
-Stats show "50,000+ Bookings Automated" but the hero says "5,000+ bookings automated" and testimonials say "5,000+ professionals". These should be consistent.
-
-**Fix**: Align the stats numbers across all sections.
-
----
-
-## Implementation Plan
-
-### File 1: `src/components/Features.tsx`
-- Expand `coreFeatures` to 4 items: Smart Scheduling, Automated Reminders, Branded Booking Pages, **Payment Collection**
-- Expand `advancedFeatures` to 6 items: Recurring Meetings, **Slack and Calendar Sync**, Analytics Dashboard, **AI Assistant**, **Embeddable Widget**, **Client Directory**
-
-### File 2: `src/components/LogoCloud.tsx`
-- Add Stripe SVG icon to integrations array
-
-### File 3: `src/components/CTA.tsx`
-- Update benefits array to highlight differentiating capabilities
-
-### File 4: `src/components/Stats.tsx`
-- Change "5,000+ bookings automated" in hero to align with stats, or adjust stats value. Will standardize to "50,000+" across the board.
-
-### File 5: `src/components/Hero.tsx`
-- Update trust indicator from "5,000+ bookings automated" to "50,000+ bookings automated" for consistency with Stats section
-
-### File 6: `src/components/Testimonials.tsx`
-- Update social proof bar from "5,000+ professionals" to a consistent figure
-
-### File 7: `src/pages/Pricing.tsx`
-- Add Slack notifications, embed widget, AI generation, paid bookings, and client directory to Pro plan features
-- Add corresponding rows to the comparison table
-
-### File 8: `src/pages/About.tsx`
-- Add an integrations/AI values card
-- Update step descriptions to mention payments and AI
-
-### File 9: `src/components/support/FAQSection.tsx`
-- Fix Free plan event type count to "1"
-- Add FAQs for: Slack integration, embeddable widgets, paid bookings, Google Calendar sync, AI assistant
-
-### File 10: `src/components/support/DocumentationSection.tsx`
-- Add new "Integrations" category with guides for: Google Calendar sync, Slack notifications, payment collection, embeddable widget
-- Add AI assistant guide under "Advanced Features"
-
-### File 11: `src/components/Footer.tsx`
-- Add "Blog" placeholder and "API" link under Resources for better footer completeness
-
----
+| Element | Value |
+|---------|-------|
+| Header gradient | Amber: `#f59e0b` to `#d97706` to `#b45309` |
+| Header icon | ⏰ |
+| Header title | "Meeting in 24 Hours" |
+| Card border color | `#f59e0b` (amber) |
+| Logo | `https://calendarpal.lovable.app/bookme-logo.png` |
+| Body background | `#f0f0f5` (matches booking emails) |
+| Card background | `#ffffff` |
 
 ## Technical Notes
-
-- All changes are purely presentational / static content updates -- no database migrations or backend changes needed
-- SEO keywords in `seo-config.ts` should be updated to include "payment collection", "Slack integration", "AI scheduling" for the home and pricing pages
-- Structured data in `webApplicationSchema` already has correct category ("BusinessApplication") so no change needed there
+- The helper functions are duplicated (not shared across functions) because edge functions are isolated -- each function must be self-contained in a single `index.ts`.
+- The function will be automatically deployed after editing.
