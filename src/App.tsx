@@ -11,6 +11,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRouteGuard from "@/components/admin/AdminRouteGuard";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import GeoAccessGuard from "@/components/GeoAccessGuard";
+import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import GetStarted from "./pages/GetStarted";
 import Auth from "./pages/Auth";
@@ -70,6 +71,7 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <BrowserRouter>
+                  <ScrollToTop />
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/get-started" element={<GetStarted />} />

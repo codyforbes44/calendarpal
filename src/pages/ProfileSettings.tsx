@@ -154,7 +154,7 @@ const ProfileSettings = () => {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
-        <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-bottom-nav">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav">
           <div className="max-w-2xl mx-auto">
             <div className="mb-6 sm:mb-8">
               <h1 className="text-2xl sm:text-3xl font-bold mb-2">Profile Settings</h1>
@@ -177,7 +177,7 @@ const ProfileSettings = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
 
-      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-bottom-nav">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav">
         <div className="max-w-2xl mx-auto">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold mb-2">Profile Settings</h1>
