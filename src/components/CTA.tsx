@@ -24,7 +24,7 @@ const CTA = () => {
           </h2>
           
           <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Join 5,000+ professionals who've eliminated scheduling busywork forever.
+            Join 50,000+ professionals who've eliminated scheduling busywork forever.
           </p>
 
           <div className="flex justify-center pt-2 sm:pt-4">
