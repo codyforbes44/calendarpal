@@ -176,26 +176,76 @@ END:VEVENT
 END:VCALENDAR`;
 }
 
-// ─── Email template ─────────────────────────────────────────────────────────
+// ─── Shared design system (matches send-booking-email) ──────────────────────
 
-function buildReminderHtml(params: {
-  recipientName: string;
-  otherPartyName: string;
-  otherPartyEmail: string;
-  eventTitle: string;
-  formattedDate: string;
-  /** Time displayed prominently — in the RECIPIENT'S own timezone */
+const BRAND_COLOR = "#6366f1";
+const AMBER_GRADIENT = "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)";
+const LOGO_URL = "https://calendarpal.lovable.app/bookme-logo.png";
+
+function emailLayout(options: {
+  preheader: string;
+  headerIcon: string;
+  headerTitle: string;
+  headerGradient: string;
+  greeting: string;
+  introParagraph: string;
+  bodyHtml: string;
+  footerHtml?: string;
+}): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${options.headerTitle}</title></head>
+<body style="margin:0;padding:0;background-color:#f0f0f5;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<div style="display:none;max-height:0;overflow:hidden;">${options.preheader}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f0f0f5;">
+<tr><td align="center" style="padding:32px 16px;">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+    <tr><td style="background:${options.headerGradient};border-radius:16px 16px 0 0;padding:36px 32px 28px;text-align:center;">
+      <img src="${LOGO_URL}" alt="Bᴏᴏᴋᴍᴇ.ʙᴇᴛ" width="120" height="auto" style="display:block;margin:0 auto 20px;max-width:120px;">
+      <div style="font-size:36px;line-height:1;">${options.headerIcon}</div>
+      <h1 style="margin:12px 0 0;font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">${options.headerTitle}</h1>
+    </td></tr>
+    <tr><td style="background:#ffffff;padding:36px 32px 32px;border-radius:0 0 16px 16px;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
+      <p style="margin:0 0 6px;font-size:17px;font-weight:600;color:#1f2937;">${options.greeting}</p>
+      <p style="margin:0 0 24px;font-size:15px;color:#6b7280;line-height:1.6;">${options.introParagraph}</p>
+      ${options.bodyHtml}
+      ${options.footerHtml || ""}
+    </td></tr>
+    <tr><td style="padding:24px 32px;text-align:center;">
+      <p style="margin:0 0 6px;font-size:12px;color:#9ca3af;">Powered by <a href="https://bookme.bet" style="color:${BRAND_COLOR};text-decoration:none;font-weight:600;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a></p>
+      <p style="margin:0;font-size:11px;color:#c4c7cc;">Scheduling Made Simple</p>
+    </td></tr>
+  </table>
+</td></tr>
+</table>
+</body>
+</html>`;
+}
+
+function detailRow(icon: string, label: string, value: string): string {
+  return `<tr>
+    <td style="padding:10px 16px;vertical-align:top;width:28px;font-size:18px;">${icon}</td>
+    <td style="padding:10px 16px;">
+      <p style="margin:0;font-size:12px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">${label}</p>
+      <p style="margin:3px 0 0;font-size:15px;font-weight:600;color:#1f2937;">${value}</p>
+    </td>
+  </tr>`;
+}
+
+function detailsCard(rows: string, borderColor: string = "#f59e0b"): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;border-left:4px solid ${borderColor};margin:0 0 24px;">
+    ${rows}
+  </table>`;
+}
+
+function buildTimezoneBlock(params: {
   primaryTime: string;
   primaryTzAbbr: string;
-  /** Time shown as secondary context — the OTHER party's timezone */
   secondaryTime: string;
   secondaryTzAbbr: string;
-  secondaryLabel: string; // "Host's time" or "Guest's time"
-  dateDiff: number;       // +1 = next day in secondaryTz, -1 = prev day
-  duration: number;
-  meetingLink?: string;
-  manageUrl?: string;
-  isGuest: boolean;
+  secondaryLabel: string;
+  dateDiff: number;
 }): string {
   const crossDayWarning =
     params.dateDiff > 0
@@ -204,67 +254,90 @@ function buildReminderHtml(params: {
       ? ` <span style="color:#ef4444;font-weight:600;">(previous day ⚠️)</span>`
       : "";
 
-  return `
-<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-  <div style="text-align:center;margin-bottom:30px;">
-    <h1 style="color:#6366f1;margin:0;">⏰ Meeting in 24 Hours</h1>
-  </div>
-
-  <p style="font-size:16px;color:#374151;">Hi ${params.recipientName},</p>
-  <p style="font-size:16px;color:#374151;">
-    This is your 24-hour reminder for your upcoming meeting
-    ${params.isGuest
-      ? `with <strong>${params.otherPartyName}</strong>`
-      : `with <strong>${params.otherPartyName}</strong> (${params.otherPartyEmail})`}.
-  </p>
-
-  <div style="background:#f3f4f6;border-radius:12px;padding:24px;margin:24px 0;border-left:4px solid #6366f1;">
-    <h2 style="margin:0 0 16px 0;color:#111827;">${params.eventTitle}</h2>
-
-    <p style="margin:8px 0;color:#4b5563;"><strong>📅 Date:</strong> ${params.formattedDate}</p>
-
-    <!-- Primary: recipient's own timezone, large and prominent -->
-    <div style="margin:14px 0 6px;padding:14px 18px;background:white;border-radius:10px;border:1px solid #e5e7eb;">
-      <p style="margin:0 0 4px;font-size:11px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">Your local time</p>
-      <p style="margin:0;font-size:24px;font-weight:700;color:#111827;line-height:1.2;">
+  return `<tr>
+    <td style="padding:10px 16px;vertical-align:top;width:28px;font-size:18px;">🕐</td>
+    <td style="padding:10px 16px;">
+      <p style="margin:0;font-size:12px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">YOUR LOCAL TIME</p>
+      <p style="margin:4px 0 0;font-size:22px;font-weight:700;color:#1f2937;line-height:1.2;">
         ${params.primaryTime}
-        <span style="display:inline-block;font-size:12px;font-weight:700;background:#6366f1;color:white;padding:3px 9px;border-radius:5px;margin-left:10px;vertical-align:middle;">${params.primaryTzAbbr}</span>
+        <span style="display:inline-block;font-size:11px;font-weight:700;background:${BRAND_COLOR};color:white;padding:3px 8px;border-radius:5px;margin-left:8px;vertical-align:middle;">${params.primaryTzAbbr}</span>
       </p>
-    </div>
+      <p style="margin:6px 0 0;font-size:13px;color:#6b7280;">
+        ${params.secondaryLabel}: <strong style="color:#374151;">${params.secondaryTime}</strong>
+        <span style="color:#9ca3af;"> (${params.secondaryTzAbbr})</span>${crossDayWarning}
+      </p>
+    </td>
+  </tr>`;
+}
 
-    <!-- Secondary: other party's timezone, smaller -->
-    <p style="margin:6px 0 14px 4px;font-size:14px;color:#6b7280;">
-      ${params.secondaryLabel}:
-      <strong style="color:#374151;">${params.secondaryTime}</strong>
-      <span style="color:#9ca3af;">&nbsp;(${params.secondaryTzAbbr})</span>${crossDayWarning}
-    </p>
+function actionButton(text: string, url: string, bgColor: string = BRAND_COLOR): string {
+  return `<div style="text-align:center;margin:24px 0;">
+    <a href="${url}" style="display:inline-block;background:${bgColor};color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;letter-spacing:0.2px;box-shadow:0 2px 8px rgba(99,102,241,0.3);">${text}</a>
+  </div>`;
+}
 
-    <p style="margin:8px 0;color:#4b5563;"><strong>⏱️ Duration:</strong> ${params.duration} minutes</p>
-    <p style="margin:8px 0;color:#4b5563;"><strong>${params.isGuest ? "👤 Host" : "👤 Guest"}:</strong> ${params.otherPartyName}</p>
+function secondaryButton(text: string, url: string): string {
+  return `<div style="text-align:center;margin:16px 0;">
+    <a href="${url}" style="display:inline-block;background:#f3f4f6;color:#374151;padding:11px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;border:1px solid #e5e7eb;">${text}</a>
+  </div>`;
+}
 
-    ${params.meetingLink ? `
-    <p style="margin:16px 0 8px;color:#4b5563;"><strong>🔗 Meeting Link:</strong></p>
-    <a href="${params.meetingLink}" style="display:inline-block;background:#6366f1;color:white;padding:10px 22px;border-radius:8px;text-decoration:none;font-weight:600;">
-      Join Meeting
-    </a>
-    ` : ""}
-  </div>
+function icsNote(text: string): string {
+  return `<p style="margin:24px 0 0;font-size:13px;color:#9ca3af;text-align:center;">📎 ${text}</p>`;
+}
 
-  ${params.manageUrl && params.isGuest ? `
-  <div style="text-align:center;margin:20px 0;">
-    <a href="${params.manageUrl}" style="display:inline-block;background:#f3f4f6;color:#374151;padding:10px 20px;border-radius:8px;text-decoration:none;font-size:14px;border:1px solid #e5e7eb;">
-      Reschedule or Cancel
-    </a>
-  </div>
-  ` : ""}
+// ─── Email template ─────────────────────────────────────────────────────────
 
-  <p style="font-size:14px;color:#6b7280;margin-top:20px;">The attached .ics file can be used to update your calendar event.</p>
+function buildReminderHtml(params: {
+  recipientName: string;
+  otherPartyName: string;
+  otherPartyEmail: string;
+  eventTitle: string;
+  formattedDate: string;
+  primaryTime: string;
+  primaryTzAbbr: string;
+  secondaryTime: string;
+  secondaryTzAbbr: string;
+  secondaryLabel: string;
+  dateDiff: number;
+  duration: number;
+  meetingLink?: string;
+  manageUrl?: string;
+  isGuest: boolean;
+}): string {
+  const bodyRows = detailRow("📅", "Date", params.formattedDate)
+    + buildTimezoneBlock({
+        primaryTime: params.primaryTime,
+        primaryTzAbbr: params.primaryTzAbbr,
+        secondaryTime: params.secondaryTime,
+        secondaryTzAbbr: params.secondaryTzAbbr,
+        secondaryLabel: params.secondaryLabel,
+        dateDiff: params.dateDiff,
+      })
+    + detailRow("⏱️", "Duration", `${params.duration} minutes`)
+    + detailRow(params.isGuest ? "👤" : "👤", params.isGuest ? "Host" : "Guest",
+        params.isGuest ? params.otherPartyName : `${params.otherPartyName} (${params.otherPartyEmail})`);
 
-  <hr style="border:none;border-top:1px solid #e5e7eb;margin:30px 0;">
-  <p style="font-size:12px;color:#9ca3af;text-align:center;">
-    Powered by <a href="https://bookme.bet" style="color:#6366f1;text-decoration:none;">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</a> — Scheduling Made Simple
-  </p>
-</div>`;
+  const meetingBtn = params.meetingLink ? actionButton("Join Meeting →", params.meetingLink) : "";
+  const manageBtn = params.manageUrl && params.isGuest ? secondaryButton("Reschedule or Cancel", params.manageUrl) : "";
+
+  return emailLayout({
+    preheader: `Reminder: Your meeting with ${params.otherPartyName} is tomorrow, ${params.formattedDate}.`,
+    headerIcon: "⏰",
+    headerTitle: "Meeting in 24 Hours",
+    headerGradient: AMBER_GRADIENT,
+    greeting: `Hi ${params.recipientName},`,
+    introParagraph: params.isGuest
+      ? `This is your 24-hour reminder for your upcoming meeting with <strong>${params.otherPartyName}</strong>.`
+      : `This is your 24-hour reminder for your upcoming meeting with <strong>${params.otherPartyName}</strong> (${params.otherPartyEmail}).`,
+    bodyHtml: `
+      <h2 style="margin:0 0 16px;font-size:20px;color:#1f2937;font-weight:700;">${params.eventTitle}</h2>
+      ${detailsCard(bodyRows)}
+      ${meetingBtn}
+      ${manageBtn}
+      ${icsNote("The attached .ics file can be used to update your calendar event.")}
+    `,
+  });
 }
 
 // ─── Resend helper ───────────────────────────────────────────────────────────
@@ -429,7 +502,7 @@ serve(async (req) => {
             from: RESEND_FROM_EMAIL,
             to: [booking.guest_email],
             replyTo: hostEmail || undefined,
-            subject: `Reminder: Your meeting tomorrow — ${formattedDate}`,
+            subject: `⏰ Reminder: Your meeting tomorrow — ${formattedDate}`,
             html: buildReminderHtml({
               recipientName: booking.guest_name,
               otherPartyName: hostName,
@@ -462,7 +535,7 @@ serve(async (req) => {
               from: RESEND_FROM_EMAIL,
               to: [hostEmail],
               replyTo: booking.guest_email,
-              subject: `Reminder: ${booking.guest_name}'s meeting tomorrow — ${formattedDate}`,
+              subject: `⏰ Reminder: ${booking.guest_name}'s meeting tomorrow — ${formattedDate}`,
               html: buildReminderHtml({
                 recipientName: hostName,
                 otherPartyName: booking.guest_name,
