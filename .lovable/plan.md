@@ -1,79 +1,56 @@
 
+# Hero Sections UX Refactor Plan
 
-## AI-Generated Hero Background Images for All Public Pages
+## Problems Identified
 
-### Overview
-Create a new edge function that uses the Gemini image generation model to produce unique, high-quality hero background images for each public page. The images will be stored in a storage bucket and loaded as subtle background images behind each page's hero section.
+1. **About, Pricing, Support hero sections are too short** -- the background images have no room to display because the hero wrappers lack vertical padding. The `HeroBackground` fills absolute-positioned space, but the parent containers are only as tall as the text content.
 
-### Pages Receiving Hero Backgrounds (5 total)
-1. **Home** (Hero component) -- scheduling automation theme
-2. **About** -- team/mission abstract theme
-3. **Pricing** -- plans/value abstract theme
-4. **Support** -- help/community theme
-5. **Auth** -- left panel background (desktop)
+2. **Text readability over backgrounds** -- text content on About, Pricing, and Support pages lacks `relative z-10`, meaning the gradient overlay can interfere with text layering.
 
-### Implementation Steps
+3. **HeroBackground gradient is not responsive** -- mobile screens need a stronger overlay for text readability on smaller text, but desktop can afford a lighter overlay to show more of the image.
 
-**1. Create a storage bucket for hero images**
-- SQL migration to create a `hero-images` public storage bucket (or reuse `og-images`)
-- Allow public read access via RLS policy
+4. **Home hero mobile height** -- `min-h-screen` pushes automation cards far below the fold with no scroll cue; should be `min-h-[85vh]` on mobile.
 
-**2. Create `generate-hero-images` edge function**
-- Accepts `{ page: string }` with valid values: `home`, `about`, `pricing`, `support`, `auth`
-- Uses `google/gemini-3-pro-image-preview` model for high-quality generation
-- Each page gets a carefully crafted prompt for a 1920x1080 abstract background that complements the brand (deep indigo + coral palette, subtle gradients)
-- Uploads result to `hero-images` storage bucket
-- Returns the public URL
+5. **Home hero floating card clips** -- the `absolute -bottom-4 -left-4` card overflows its container on some screens.
 
-**3. Create a reusable `HeroBackground` component**
-- New component: `src/components/HeroBackground.tsx`
-- Accepts `page` prop, constructs the storage URL for the matching image
-- Renders an absolutely positioned `<img>` with `object-cover`, low opacity (15-25%), and a gradient overlay to ensure text readability
-- Gracefully falls back to the current CSS gradient background if image fails to load
+6. **Missing LCP optimization** -- `fetchpriority="high"` missing from hero image.
 
-**4. Integrate `HeroBackground` into each page's hero section**
-- **`src/components/Hero.tsx`** (Home): Add `<HeroBackground page="home" />` inside the existing hero section, behind the animated blobs
-- **`src/pages/About.tsx`**: Wrap hero section with relative positioning, add background
-- **`src/pages/Pricing.tsx`**: Add to the header area
-- **`src/pages/Support.tsx`**: Add to the header area
-- **`src/pages/Auth.tsx`**: Add to the left marketing panel
+---
 
-**5. Admin trigger or manual invocation**
-- Add a simple way to generate/regenerate images (could be invoked via the existing admin panel or manually via edge function call)
+## Changes by File
 
-### Technical Details
+### 1. `src/components/HeroBackground.tsx`
+- Add `fetchpriority="high"` and `sizes="100vw"` to the `<img>` tag for performance.
+- Make the gradient overlay responsive: stronger on mobile (`from-background/60 via-background/40 to-background/70`) and lighter on desktop (`sm:from-background/30 sm:via-background/15 sm:to-background/50`).
 
-```text
-Edge function: supabase/functions/generate-hero-images/index.ts
-  - Model: google/gemini-3-pro-image-preview
-  - Resolution requested: 1920x1080 per prompt
-  - Storage: hero-images bucket, files named hero-{page}.png
-  - Auth: LOVABLE_API_KEY (auto-provisioned)
+### 2. `src/components/Hero.tsx` (Home page)
+- Change `min-h-screen` to `min-h-[85vh] sm:min-h-screen` so mobile doesn't push everything too far down.
+- Fix floating card positioning from `-bottom-4 -left-4` to `-bottom-6 -left-2` to avoid clipping.
+- Improve trust indicator gap for better wrapping: `gap-x-4 gap-y-2`.
 
-HeroBackground component:
-  Props: { page: string; opacity?: number; className?: string }
-  - Constructs URL: {SUPABASE_URL}/storage/v1/object/public/hero-images/hero-{page}.png
-  - Renders: absolute positioned img with object-cover + gradient overlay
-  - Handles: onError fallback (hides image, keeps CSS gradient)
+### 3. `src/pages/About.tsx`
+- Add vertical padding and overflow handling to the hero section wrapper: `py-12 sm:py-16 lg:py-20 overflow-hidden rounded-2xl`.
+- Add `relative z-10` to the text content (h1 and p) so they layer above the gradient overlay.
 
-Prompt strategy per page:
-  - home: Abstract flowing calendar/time shapes, deep indigo-to-purple gradient, subtle coral highlights
-  - about: Soft interconnected nodes/people silhouettes, indigo tones, warm light
-  - pricing: Abstract geometric tiers/steps, indigo gradient, coral accent glow
-  - support: Soft chat bubble/help shapes, warm indigo, friendly light rays
-  - auth: Professional abstract pattern, deep indigo, subtle depth/parallax feel
-```
+### 4. `src/pages/Pricing.tsx`
+- Add vertical padding to the hero header wrapper: `py-10 sm:py-14 lg:py-16 overflow-hidden rounded-2xl`.
+- Add `relative z-10` to heading and description text.
 
-### Files Created
-- `supabase/functions/generate-hero-images/index.ts` (new edge function)
-- `src/components/HeroBackground.tsx` (new reusable component)
+### 5. `src/pages/Support.tsx`
+- Add vertical padding to the hero wrapper: `py-10 sm:py-14 lg:py-16 overflow-hidden rounded-2xl`.
+- Add `relative z-10` to heading and description text.
 
-### Files Modified
-- `src/components/Hero.tsx` -- add HeroBackground behind existing content
-- `src/pages/About.tsx` -- add HeroBackground to hero section
-- `src/pages/Pricing.tsx` -- add HeroBackground to header
-- `src/pages/Support.tsx` -- add HeroBackground to header
-- `src/pages/Auth.tsx` -- add HeroBackground to left panel
+### 6. `src/pages/Auth.tsx`
+- Add `relative z-10` to the marketing content wrapper to ensure proper layering over the hero background.
 
-### Database Migration
-- Create `hero-images` storage bucket with public read access
+---
+
+## Summary
+
+These changes ensure:
+- Hero background images have sufficient height to be visible and impactful across all devices
+- Text always remains readable with responsive gradient overlays (stronger on mobile, lighter on desktop)
+- Proper z-index layering so text sits above overlays
+- Better mobile viewport usage without pushing content too far below the fold
+- Improved LCP performance with `fetchpriority`
+- No clipping issues with floating elements
