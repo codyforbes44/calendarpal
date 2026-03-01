@@ -65,7 +65,7 @@ const About = () => {
           <h1 className="relative z-10 font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
             Scheduling, <span className="text-primary">simplified</span>.
           </h1>
-          <p className="relative z-10 text-lg sm:text-xl text-muted-foreground leading-relaxed px-4">
+          <p className="relative z-10 text-lg sm:text-xl text-foreground/80 leading-relaxed px-4">
             Bᴏᴏᴋᴍᴇ.ʙᴇᴛ removes the back-and-forth from meeting coordination. 
             Set your availability once, share a link, and let others book time with you effortlessly.
           </p>
