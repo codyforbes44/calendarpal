@@ -119,6 +119,9 @@ const AdminOGImages = () => {
                     <img
                       src={state.publicUrl}
                       alt={`Generated ${config.label} OG image`}
+                      width={1200}
+                      height={630}
+                      loading="lazy"
                       className="w-full h-full object-cover"
                     />
                   ) : (
