@@ -28,7 +28,7 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Action: get_auth_url - Generate the Google OAuth URL
+    // Action: get_auth_url
     if (action === "get_auth_url") {
       const authHeader = req.headers.get("Authorization");
       if (!authHeader) {
@@ -45,9 +45,7 @@ serve(async (req) => {
         });
       }
 
-      // Build the redirect URI — use the edge function URL itself for callback
       const redirectUri = `${SUPABASE_URL}/functions/v1/google-calendar-auth`;
-      
       const params = new URLSearchParams({
         client_id: GOOGLE_CLIENT_ID,
         redirect_uri: redirectUri,
@@ -55,18 +53,16 @@ serve(async (req) => {
         scope: "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events",
         access_type: "offline",
         prompt: "consent",
-        state: claims.user.id, // Pass user ID in state for callback
+        state: claims.user.id,
       });
 
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-      
       return new Response(
-        JSON.stringify({ url: authUrl }),
+        JSON.stringify({ url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Action: callback - Handle the OAuth callback (exchange code for tokens)
+    // Action: callback - Exchange code for tokens
     if (action === "callback" && code && userId) {
       const redirectUri = `${SUPABASE_URL}/functions/v1/google-calendar-auth`;
 
@@ -83,7 +79,6 @@ serve(async (req) => {
       });
 
       const tokenData = await tokenResponse.json();
-
       if (!tokenResponse.ok) {
         console.error("Token exchange error:", tokenData);
         return new Response(
@@ -92,25 +87,29 @@ serve(async (req) => {
         );
       }
 
-      // Store tokens in profile
       const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({
-          google_access_token: tokenData.access_token,
-          google_refresh_token: tokenData.refresh_token,
-          google_token_expires_at: expiresAt,
-          google_calendar_connected: true,
-        })
-        .eq("user_id", userId);
 
-      if (updateError) {
-        console.error("Profile update error:", updateError);
+      // Upsert into secure token table
+      const { error: upsertError } = await supabase
+        .from("google_calendar_tokens")
+        .upsert({
+          user_id: userId,
+          access_token: tokenData.access_token,
+          refresh_token: tokenData.refresh_token,
+          token_expires_at: expiresAt,
+          connected: true,
+        }, { onConflict: "user_id" });
+
+      if (upsertError) {
+        console.error("Token upsert error:", upsertError);
         return new Response(
           JSON.stringify({ error: "Failed to save tokens" }),
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+
+      // Update the non-sensitive flag on profiles
+      await supabase.from("profiles").update({ google_calendar_connected: true }).eq("user_id", userId);
 
       return new Response(
         JSON.stringify({ success: true }),
@@ -118,7 +117,7 @@ serve(async (req) => {
       );
     }
 
-    // Action: disconnect - Remove Google Calendar connection
+    // Action: disconnect
     if (action === "disconnect") {
       const authHeader = req.headers.get("Authorization");
       if (!authHeader) {
@@ -135,35 +134,22 @@ serve(async (req) => {
         });
       }
 
-      // Revoke Google token if possible
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("google_access_token")
+      // Revoke token if possible
+      const { data: tokenRow } = await supabase
+        .from("google_calendar_tokens")
+        .select("access_token")
         .eq("user_id", claims.user.id)
         .single();
 
-      if (profile?.google_access_token) {
-        fetch(`https://oauth2.googleapis.com/revoke?token=${profile.google_access_token}`, {
-          method: "POST",
-        }).catch(() => {}); // fire-and-forget
+      if (tokenRow?.access_token) {
+        fetch(`https://oauth2.googleapis.com/revoke?token=${tokenRow.access_token}`, { method: "POST" }).catch(() => {});
       }
 
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({
-          google_access_token: null,
-          google_refresh_token: null,
-          google_token_expires_at: null,
-          google_calendar_connected: false,
-        })
-        .eq("user_id", claims.user.id);
+      // Delete from secure table
+      await supabase.from("google_calendar_tokens").delete().eq("user_id", claims.user.id);
 
-      if (updateError) {
-        return new Response(
-          JSON.stringify({ error: "Failed to disconnect" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      // Update profile flag
+      await supabase.from("profiles").update({ google_calendar_connected: false }).eq("user_id", claims.user.id);
 
       return new Response(
         JSON.stringify({ success: true }),
@@ -171,15 +157,15 @@ serve(async (req) => {
       );
     }
 
-    // Action: refresh - Refresh access token
+    // Action: refresh
     if (action === "refresh" && userId) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("google_refresh_token")
+      const { data: tokenRow } = await supabase
+        .from("google_calendar_tokens")
+        .select("refresh_token")
         .eq("user_id", userId)
         .single();
 
-      if (!profile?.google_refresh_token) {
+      if (!tokenRow?.refresh_token) {
         return new Response(
           JSON.stringify({ error: "No refresh token available" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -192,21 +178,15 @@ serve(async (req) => {
         body: new URLSearchParams({
           client_id: GOOGLE_CLIENT_ID,
           client_secret: GOOGLE_CLIENT_SECRET,
-          refresh_token: profile.google_refresh_token,
+          refresh_token: tokenRow.refresh_token,
           grant_type: "refresh_token",
         }),
       });
 
       const tokenData = await tokenResponse.json();
-
       if (!tokenResponse.ok) {
-        // Token refresh failed — disconnect
-        await supabase.from("profiles").update({
-          google_access_token: null,
-          google_token_expires_at: null,
-          google_calendar_connected: false,
-        }).eq("user_id", userId);
-
+        await supabase.from("google_calendar_tokens").update({ access_token: null, token_expires_at: null, connected: false }).eq("user_id", userId);
+        await supabase.from("profiles").update({ google_calendar_connected: false }).eq("user_id", userId);
         return new Response(
           JSON.stringify({ error: "Token refresh failed, calendar disconnected" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -214,9 +194,9 @@ serve(async (req) => {
       }
 
       const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
-      await supabase.from("profiles").update({
-        google_access_token: tokenData.access_token,
-        google_token_expires_at: expiresAt,
+      await supabase.from("google_calendar_tokens").update({
+        access_token: tokenData.access_token,
+        token_expires_at: expiresAt,
       }).eq("user_id", userId);
 
       return new Response(
@@ -225,7 +205,6 @@ serve(async (req) => {
       );
     }
 
-    // Handle GET redirect from Google OAuth (the actual callback URL)
     return new Response(
       JSON.stringify({ error: "Invalid action" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
