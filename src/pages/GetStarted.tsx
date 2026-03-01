@@ -81,12 +81,6 @@ const GetStarted = () => {
     [onboarding, navigate]
   );
 
-  // OAuth callback: if user lands on step 4 already authenticated, persist automatically
-  useEffect(() => {
-    if (user && step === 4 && !registeredViaForm) {
-      persistAndRedirect(user.id);
-    }
-  }, [user, step, registeredViaForm, persistAndRedirect]);
 
   // --- Username check ---
 
