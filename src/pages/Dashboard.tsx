@@ -14,6 +14,7 @@ import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import ShareModal from "@/components/ShareModal";
 import QuickActions from "@/components/dashboard/QuickActions";
 import BookingStatsChart from "@/components/dashboard/BookingStatsChart";
+import BookingAnalytics from "@/components/dashboard/BookingAnalytics";
 import CalendarHeatmap from "@/components/dashboard/CalendarHeatmap";
 import ConversionFunnel from "@/components/dashboard/ConversionFunnel";
 import PopularTimesChart from "@/components/dashboard/PopularTimesChart";
@@ -148,6 +149,10 @@ const Dashboard = () => {
 
         <div className="mt-4 sm:mt-6">
           <EventTypesList />
+        </div>
+
+        <div className="mt-4 sm:mt-6">
+          <BookingAnalytics />
         </div>
 
         {isPro && (
