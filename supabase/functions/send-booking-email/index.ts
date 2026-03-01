@@ -814,6 +814,50 @@ const handler = async (req: Request): Promise<Response> => {
       console.warn(`[${requestId}] Slack notify skipped: ${slackErr.message}`);
     }
 
+    // Trigger Google Calendar sync (fire-and-forget)
+    try {
+      if (bookingForSlack?.host_user_id) {
+        const supabaseGcal = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const { data: hostProfile } = await supabaseGcal
+          .from("profiles")
+          .select("google_calendar_connected")
+          .eq("user_id", bookingForSlack.host_user_id)
+          .single();
+
+        if (hostProfile?.google_calendar_connected) {
+          const gcalAction = type === "booking_cancelled" ? "delete" : type === "booking_rescheduled" ? "update" : "create";
+          
+          fetch(`${SUPABASE_URL}/functions/v1/google-calendar-sync`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify({
+              action: gcalAction,
+              userId: bookingForSlack.host_user_id,
+              booking: {
+                id: booking.id,
+                scheduledDate: booking.scheduledDate,
+                startTime: booking.startTime,
+                endTime: booking.endTime,
+                guestName: booking.guestName,
+                guestEmail: booking.guestEmail,
+                eventTitle: booking.eventTitle,
+                meetingLink: booking.meetingLink,
+                hostTimezone: booking.hostTimezone,
+              },
+            }),
+          }).catch((err) =>
+            console.warn(`[${requestId}] Google Calendar sync fire-and-forget error: ${err.message}`)
+          );
+          console.log(`[${requestId}] Google Calendar sync triggered (${gcalAction})`);
+        }
+      }
+    } catch (gcalErr: any) {
+      console.warn(`[${requestId}] Google Calendar sync skipped: ${gcalErr.message}`);
+    }
+
     // Update booking record with email status
     try {
       const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
