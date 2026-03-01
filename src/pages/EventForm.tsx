@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEventType, useCreateEventType, useUpdateEventType, useDeleteEventType } from "@/hooks/useEventTypes";
 import Navigation from "@/components/Navigation";
+import BottomNavigation from "@/components/BottomNavigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
@@ -72,7 +73,7 @@ const EventForm = () => {
       } else {
         await createEventType.mutateAsync(payload);
       }
-      navigate("/dashboard");
+      navigate("/events");
     } catch {
       // Error is handled by the mutation
     }
@@ -82,7 +83,7 @@ const EventForm = () => {
     if (!id || !confirm("Are you sure you want to delete this event type?")) return;
     try {
       await deleteEventType.mutateAsync(id);
-      navigate("/dashboard");
+      navigate("/events");
     } catch {
       // Error is handled by the mutation
     }
@@ -120,16 +121,16 @@ const EventForm = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
 
-      <div className="container mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-8 sm:pb-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav">
         <div className="max-w-2xl mx-auto">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/events")}
             className="mb-4 sm:mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Back to Dashboard</span>
+            <span className="hidden sm:inline">Back to Events</span>
             <span className="sm:hidden">Back</span>
           </Button>
 
@@ -177,6 +178,8 @@ const EventForm = () => {
           </Card>
         </div>
       </div>
+
+      <BottomNavigation />
     </div>
   );
 };

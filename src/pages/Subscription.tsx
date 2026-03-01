@@ -30,6 +30,7 @@ import {
 import { toast } from "sonner";
 import { useNavigate, Link } from "react-router-dom";
 import { format } from "date-fns";
+import BottomNavigation from "@/components/BottomNavigation";
 
 interface SubscriptionData {
   subscribed: boolean;
@@ -148,7 +149,7 @@ const Subscription = () => {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <Navigation />
-        <div className="container mx-auto px-6 pt-24 pb-12 max-w-4xl">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav max-w-4xl">
           <Skeleton className="h-10 w-64 mb-2" />
           <Skeleton className="h-5 w-96 mb-8" />
           <div className="grid gap-6">
@@ -156,6 +157,7 @@ const Subscription = () => {
             <Skeleton className="h-32 w-full" />
           </div>
         </div>
+        <BottomNavigation />
       </div>
     );
   }
@@ -166,10 +168,10 @@ const Subscription = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Navigation />
       
-      <div className="container mx-auto px-6 pt-24 pb-12 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Subscription</h1>
-          <p className="text-muted-foreground">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav max-w-4xl">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Subscription</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Manage your subscription and billing details
           </p>
         </div>
@@ -438,6 +440,8 @@ const Subscription = () => {
           </CardContent>
         </Card>
       </div>
+
+      <BottomNavigation />
     </div>
   );
 };

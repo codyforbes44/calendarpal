@@ -188,7 +188,7 @@ const AIChatbot = () => {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-3 shadow-lg hover:bg-primary/90 active:scale-95 transition-all duration-200"
+          className="fixed bottom-36 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-4 py-3 shadow-lg hover:bg-primary/90 active:scale-95 transition-all duration-200"
           aria-label="Open AI assistant"
         >
           <Sparkles className="h-5 w-5" />
@@ -197,7 +197,7 @@ const AIChatbot = () => {
       )}
 
       {open && (
-        <div className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-96 max-h-[70vh] flex flex-col rounded-xl border bg-card shadow-lg overflow-hidden">
+        <div className="fixed bottom-36 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-96 max-h-[60vh] sm:max-h-[70vh] flex flex-col rounded-xl border bg-card shadow-lg overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b bg-primary/5">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
