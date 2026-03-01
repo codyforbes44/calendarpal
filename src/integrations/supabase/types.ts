@@ -141,6 +141,7 @@ export type Database = {
           cancellation_token: string | null
           confirmation_email_sent: boolean | null
           created_at: string
+          email_opened_at: string | null
           email_sent_at: string | null
           email_status: string | null
           end_time: string
@@ -171,6 +172,7 @@ export type Database = {
           cancellation_token?: string | null
           confirmation_email_sent?: boolean | null
           created_at?: string
+          email_opened_at?: string | null
           email_sent_at?: string | null
           email_status?: string | null
           end_time: string
@@ -201,6 +203,7 @@ export type Database = {
           cancellation_token?: string | null
           confirmation_email_sent?: boolean | null
           created_at?: string
+          email_opened_at?: string | null
           email_sent_at?: string | null
           email_status?: string | null
           end_time?: string

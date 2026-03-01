@@ -285,8 +285,13 @@ function emailLayout(options: {
   introParagraph: string;
   bodyHtml: string;
   footerHtml?: string;
+  bookingId?: string;
 }): string {
   const gradient = options.headerGradient || BRAND_GRADIENT;
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+  const trackingPixel = options.bookingId
+    ? `<img src="${supabaseUrl}/functions/v1/track-email-open?bid=${options.bookingId}" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;" />`
+    : "";
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
@@ -318,6 +323,7 @@ function emailLayout(options: {
   </table>
 </td></tr>
 </table>
+${trackingPixel}
 </body>
 </html>`;
 }
@@ -512,6 +518,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
           ${icsNote("Add this event to your calendar using the attached .ics file.")}
           ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
         `,
+        bookingId: booking.id,
       }),
       attachments: [{ filename: "meeting.ics", content: icsBase64, content_type: "text/calendar" }],
     });
@@ -558,6 +565,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
             ${icsNote("Add this event to your calendar using the attached .ics file.")}
             ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
           `,
+          bookingId: booking.id,
         }),
         attachments: [{ filename: "meeting.ics", content: icsBase64, content_type: "text/calendar" }],
       });
@@ -613,6 +621,7 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
           ${detailsCard(bodyRows, "#ef4444")}
           ${icsNote("The attached .ics file will remove this event from your calendar.")}
         `,
+        bookingId: booking.id,
       }),
       attachments: [{ filename: "meeting-cancelled.ics", content: icsBase64, content_type: "text/calendar" }],
     });
@@ -646,6 +655,7 @@ async function sendCancellationEmail(booking: EmailRequest["booking"]): Promise<
             <h2 style="margin:0 0 16px;font-size:20px;color:#9ca3af;font-weight:700;text-decoration:line-through;">${booking.eventTitle}</h2>
             ${detailsCard(bodyRows, "#ef4444")}
           `,
+          bookingId: booking.id,
         }),
         attachments: [{ filename: "meeting-cancelled.ics", content: icsBase64, content_type: "text/calendar" }],
       });
@@ -723,6 +733,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
           ${icsNote("The attached .ics file will update this event in your calendar.")}
           ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
         `,
+        bookingId: booking.id,
       }),
       attachments: [{ filename: "meeting-updated.ics", content: icsBase64, content_type: "text/calendar" }],
     });
@@ -769,6 +780,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
             ${icsNote("The attached .ics file will update this event in your calendar.")}
             ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
           `,
+          bookingId: booking.id,
         }),
         attachments: [{ filename: "meeting-updated.ics", content: icsBase64, content_type: "text/calendar" }],
       });

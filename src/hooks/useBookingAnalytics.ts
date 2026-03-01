@@ -9,8 +9,10 @@ interface EmailStats {
   sent: number;
   pending: number;
   failed: number;
+  opened: number;
   total: number;
   deliveryRate: number;
+  openRate: number;
 }
 
 interface DailyTrend {
@@ -59,7 +61,7 @@ export function useBookingAnalytics(range: TimeRange, isAdmin = false) {
       // Build query
       let query = supabase
         .from("bookings")
-        .select("status, email_status, created_at, scheduled_date");
+        .select("status, email_status, email_opened_at, created_at, scheduled_date");
 
       if (!isAdmin && user?.id) {
         query = query.eq("host_user_id", user.id);
@@ -75,13 +77,15 @@ export function useBookingAnalytics(range: TimeRange, isAdmin = false) {
       const allBookings = bookings || [];
 
       // Email stats
-      const emailStats: EmailStats = { sent: 0, pending: 0, failed: 0, total: allBookings.length, deliveryRate: 0 };
+      const emailStats: EmailStats = { sent: 0, pending: 0, failed: 0, opened: 0, total: allBookings.length, deliveryRate: 0, openRate: 0 };
       for (const b of allBookings) {
         if (b.email_status === "sent") emailStats.sent++;
         else if (b.email_status === "failed") emailStats.failed++;
         else emailStats.pending++;
+        if (b.email_opened_at) emailStats.opened++;
       }
       emailStats.deliveryRate = emailStats.total > 0 ? Math.round((emailStats.sent / emailStats.total) * 100) : 0;
+      emailStats.openRate = emailStats.sent > 0 ? Math.round((emailStats.opened / emailStats.sent) * 100) : 0;
 
       // Status breakdown
       const statusCounts: Record<string, number> = {};
