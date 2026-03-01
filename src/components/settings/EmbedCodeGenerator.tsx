@@ -47,7 +47,7 @@ const EmbedCodeGenerator = () => {
   document.getElementById('bookme-widget').appendChild(iframe);
 
   window.addEventListener('message', function(e) {
-    if (e.data && e.data.type === 'bookme-booking-confirmed') {
+    if (e.data && e.data.type === 'calendarpal-booking-confirmed') {
       console.log('Booking confirmed:', e.data.booking);
     }
   });
