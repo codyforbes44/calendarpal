@@ -1,58 +1,27 @@
 
 
-# Upgrade Admin to Maximum Platform Capabilities
+# Replace Letter Placeholders with Real Brand Logos in LogoCloud
 
-## Current State
-- User `c@3bi.io` (Cody Forbes) has `subscription_plan: 'free'` in the profiles table
-- The `useSubscription` hook checks Stripe directly for active subscriptions, so simply updating the profile field won't grant Pro features in the app
-- The user already has the `admin` role in `user_roles`
+## What Changes
+Replace the single-letter placeholders (G, Z, T, O, S) in the integrations bar with actual brand SVG logos for Google Calendar, Zoom, Microsoft Teams, Outlook, and Slack.
 
 ## Approach
-Since this is the platform owner/super admin, we need to ensure they get Pro capabilities without requiring an actual Stripe subscription. Two changes are needed:
+Use inline SVGs directly in the component for each brand. This avoids external dependencies, ensures crisp rendering at any size, and keeps the logos lightweight. Each integration entry will include a React component (JSX SVG) instead of a letter.
 
-### 1. Update the profile record
-Set `subscription_plan` to `'pro'` in the database so admin dashboards and user management views reflect the correct plan.
-
-### 2. Update the `check-subscription` edge function
-Add a check: if the authenticated user has the `admin` role, automatically return `subscribed: true` with Pro status, bypassing the Stripe lookup. This ensures the admin always has full platform access regardless of Stripe subscription state.
+## Visual Result
+Each integration item will show the recognizable brand icon (in brand colors) next to the tool name, replacing the current bordered letter squares. The container styling will be adjusted slightly to accommodate the SVG icons cleanly.
 
 ## Technical Details
 
-### Database update
-```sql
-UPDATE profiles SET subscription_plan = 'pro' WHERE email = 'c@3bi.io';
-```
+### File: `src/components/LogoCloud.tsx`
+- Replace the `integrations` array (which currently has `letter` strings) with an array that includes an `icon` field containing inline SVG JSX for each brand:
+  - **Google Calendar**: Multi-color calendar icon (blue/green/yellow/red)
+  - **Zoom**: Blue video camera icon
+  - **Microsoft Teams**: Purple Teams icon
+  - **Outlook**: Blue envelope icon
+  - **Slack**: Multi-color hashtag-style icon
+- Remove the bordered square `div` wrapper and render the SVG icon directly at 24-28px size
+- Keep the hover transition and text label as-is
 
-### Edge function change (`supabase/functions/check-subscription/index.ts`)
-After authenticating the user, check if they have the admin role using the `has_role` database function. If true, return a Pro subscription response immediately without querying Stripe.
+No new files or dependencies needed -- everything stays self-contained in the single component file.
 
-```typescript
-// After user authentication, before Stripe lookup:
-const { data: isAdmin } = await supabaseClient.rpc('has_role', {
-  _user_id: user.id,
-  _role: 'admin'
-});
-
-if (isAdmin) {
-  logStep("Admin user detected, granting Pro access", { userId: user.id });
-  return new Response(JSON.stringify({
-    subscribed: true,
-    plan: "pro",
-    product_id: null,
-    subscription_end: null,
-    current_period_start: null,
-    cancel_at_period_end: false,
-    price_amount: null,
-    interval: null
-  }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-    status: 200,
-  });
-}
-```
-
-This ensures:
-- All admin users automatically get Pro features
-- No Stripe subscription is required for admins
-- The admin portal stats still show the correct plan
-- The approach is secure (server-side role check via RLS-protected `has_role` function)
