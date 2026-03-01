@@ -1,107 +1,111 @@
-# Best Practices Refactor: AI Backend Architecture
 
-## Current State
+# UX Refactor: Mobile-First Polish and Consistency Pass
 
-The project has **3 AI use cases** all funneled through a single `ai-search` edge function that calls Perplexity's `sonar` model:
+## Issues Found
 
-1. **Support page search** (AISearchBox) -- web-grounded Q&A with citations
-2. **Dashboard chatbot** (AIChatbot) -- multi-turn conversational assistant
-3. **Event form generation** (AIGenerateButton) -- title/description suggestions
+### 1. Missing BottomNavigation on Key Pages
+The **Subscription**, **EventForm**, and **Booking** pages are missing the mobile bottom navigation bar, stranding mobile users with no way to navigate without going back to the browser URL bar.
 
-A separate `generate-og-images` function uses Lovable AI Gateway (Gemini) for image generation.
+**Affected pages:**
+- `src/pages/Subscription.tsx` -- no `BottomNavigation`, no `pb-bottom-nav`, uses hardcoded `px-6` instead of responsive padding
+- `src/pages/EventForm.tsx` -- no `BottomNavigation`, no `pb-bottom-nav`
+- `src/pages/Booking.tsx` -- no `BottomNavigation`, no `pb-bottom-nav`, uses hardcoded `px-6`
 
-The `GEMINI_API_KEY` secret exists but is unused. The `LOVABLE_API_KEY` is already available.
+### 2. Inconsistent Page Padding
+Several pages use hardcoded `px-6` instead of the design system's responsive `px-4 sm:px-6 lg:px-8` pattern. This causes content to be too far from edges on small phones (320px).
 
-## Problems Identified
+**Affected pages:**
+- `src/pages/Subscription.tsx` -- `px-6` instead of responsive
+- `src/pages/Booking.tsx` -- `px-6` instead of responsive
+- `src/pages/Subscription.tsx` -- `pt-24 pb-12` instead of `pt-20 sm:pt-24 pb-bottom-nav`
 
-1. **Wrong model for the job**: Perplexity Sonar is a *search-grounded* model designed for web lookups. Using it for creative text generation (event titles/descriptions) is wasteful and slow -- it searches the web when no search is needed.
-2. **Single function bottleneck**: All 3 use cases share one function, making it harder to tune prompts, rate-limit independently, or evolve features.
-3. **No streaming**: The dashboard chatbot waits for the full response before displaying, causing perceived slowness.
-4. **Missing error handling on the client**: Rate limit (429) and credit (402) errors from Perplexity are not surfaced to users.
+### 3. Subscription Page Missing font-display and Mobile Polish
+- Page heading uses plain `text-3xl font-bold` instead of `font-display text-2xl sm:text-3xl font-bold` like every other protected page
+- Missing responsive text sizing on subheading
+- No `BottomNavigation` component
+- Features comparison table not optimized for mobile (horizontal scroll without visual hint)
 
-## Proposed Architecture
+### 4. DashboardStats Mislabeled Card
+The "Active Events" stat card displays `stats?.cancelled` data (cancelled count), not active event count. This is a data display bug.
 
-Split AI responsibilities by choosing the right model for each use case:
+### 5. EventForm "Back to Dashboard" Navigation
+After creating/editing an event, the form navigates to `/dashboard` instead of `/events` (the dedicated events management page). Same for the "Back" button.
 
-```text
-Use Case              Model                    Why
--------------------------------------------------------------------
-Support search        Perplexity sonar         Needs web-grounded citations
-Dashboard chatbot     Direct API AI (Gemini)      Conversational, no web search needed
-Event form generate   Direct API (Gemini)      Creative text, fast, no search needed
-OG image generation   Direct API (Gemini)      Already working -- no change
-```
+### 6. AI Chatbot FAB Overlaps with Share FAB on Mobile
+Both the AI chatbot button and the Share FAB are positioned at `bottom-20 right-4` on mobile, causing overlap. The chatbot panel also positions at `bottom-20` which conflicts with `BottomNavigation`.
 
-## Implementation Steps
+### 7. Booking Page Uses Mock Data
+`src/components/BookingFlow.tsx` uses `generateTimeSlots()` with random mock data instead of real availability. The `/booking` route appears to be an orphan page not connected to real data (the actual booking flow is at `/book/:username`).
 
-### 1. Create a new `ai-generate` edge function for event form suggestions
+### 8. Subscription Page Missing Responsive Table
+Invoice history table has tiny cells on mobile with no horizontal scroll indicator.
 
-- Uses Direct API (`google/gemini-3-flash-preview`) via `GEMINI_API_KEY`
-- Accepts a `prompt` string, returns `{ suggestion: string }`
-- Tailored system prompt for generating concise event titles and descriptions
-- Handles 429/402 errors with user-friendly messages
-- Add to `config.toml` with `verify_jwt = false`
+---
 
-### 2. Create a new `ai-chat` edge function for the dashboard chatbot
+## Implementation Plan
 
-- Uses Direct API (`google/gemini-3-flash-preview`) via `GEMINI_API_KEY`
-- Accepts `{ messages }` array, returns SSE stream for token-by-token rendering
-- CalendarPal system prompt stays on the backend
-- Handles 429/402 with proper status codes
+### Task 1: Add BottomNavigation and Fix Padding on Missing Pages
 
-### 3. Keep `ai-search` for Perplexity-only use (Support page)
+**Subscription.tsx:**
+- Import and add `BottomNavigation`
+- Change `px-6` to `px-4 sm:px-6 lg:px-8`
+- Change `pt-24 pb-12` to `pt-20 sm:pt-24 pb-bottom-nav`
+- Change heading to `font-display text-2xl sm:text-3xl font-bold`
+- Add responsive subheading text `text-sm sm:text-base`
 
-- Remove multi-turn chat support (no longer needed)
-- Keep single `query` mode for web-grounded search with citations
-- Add 429/402 error handling
+**EventForm.tsx:**
+- Import and add `BottomNavigation`
+- Add `pb-bottom-nav` to container
 
-### 4. Update frontend components
+**Booking.tsx:**
+- Import and add `BottomNavigation`
+- Change `px-6` to `px-4 sm:px-6 lg:px-8`
+- Change `pt-24 pb-12` to `pt-20 sm:pt-24 pb-bottom-nav`
 
-- **AIGenerateButton**: Call `ai-generate` instead of `ai-search`
-- **AIChatbot**: Call `ai-chat` with streaming; render tokens as they arrive using the SSE pattern
-- **AISearchBox**: No change (already uses `ai-search` correctly)
-- All 3 components: Surface rate-limit and credit errors via toast notifications
+### Task 2: Fix DashboardStats Mislabeled Card
 
-### 5. Disable unused `LOVABLE_API_KEY`
+In `src/components/dashboard/DashboardStats.tsx`, the 4th stat card shows `stats?.cancelled` but labels it "Active Events". Change to either:
+- Rename to "Cancelled" with correct semantic color, or
+- Use actual active event type count from a separate query
 
-Since `GEMINI_API_KEY` is the correct way to access Gemini, the`LOVABLE_API_KEY` is unnecessary and can be disabled to avoid confusion.
+The simpler fix: rename the label to "Cancelled" and change the icon/color to match destructive/warning semantics.
 
-## Technical Details
+### Task 3: Fix EventForm Navigation Target
 
-### New edge function: `supabase/functions/ai-generate/index.ts`
+Change `navigate("/dashboard")` calls in `src/pages/EventForm.tsx` to `navigate("/events")` so users return to the events list after creating/editing/deleting an event, which is the logical parent page.
 
-- Model: `google/gemini-3-flash-preview`
-- System prompt focused on generating professional scheduling-related text
-- `max_tokens: 150`, `temperature: 0.7` (creative but controlled)
+### Task 4: Fix AI Chatbot FAB Position Overlap
 
-### New edge function: `supabase/functions/ai-chat/index.ts`
+In `src/components/dashboard/AIChatbot.tsx`:
+- Move closed FAB to `bottom-36 right-4 sm:bottom-6 sm:right-6` to avoid colliding with the Share FAB (at `bottom-20`)
+- Move open panel to `bottom-36 right-4 sm:bottom-6 sm:right-6` to stack above the bottom nav
 
-- Streaming SSE call to Direct GEMINI_API_KEY
-- Model: `google/gemini-3-flash-preview`
-- Passes `stream: true`, returns `response.body` directly
-- CalendarPal system prompt baked in
+In `src/pages/Dashboard.tsx`:
+- Move the Share FAB to `bottom-20` (keep current, it's above bottom nav)
+- Ensure z-index layering is correct (chatbot at z-50, share at z-40)
 
-### Frontend streaming (AIChatbot)
+### Task 5: Remove Orphan Booking Route
 
-- Uses `fetch()` with the full function URL for streaming
-- Parses SSE line-by-line, updates assistant message progressively
-- Shows tokens as they arrive instead of a "Thinking..." spinner
+The `/booking` route renders `BookingFlow.tsx` which uses mock data. The real booking flow lives at `/book/:username`. Options:
+- Redirect `/booking` to `/dashboard` for logged-in users
+- Or remove the route entirely from `App.tsx`
 
-### Error handling (all components)
+The cleaner approach: redirect `/booking` to `/bookings` (the real bookings list page) since it's confusing to have a mock booking page.
 
-- 429 -> toast: "Too many requests. Please wait a moment."
-- 402 -> toast: "AI credits exhausted. Contact your admin."
-- Generic errors -> existing fallback messages
+### Task 6: Subscription Page Mobile Table Polish
+
+Add a horizontal scroll hint gradient on the invoice table for mobile, and ensure card padding is responsive (`p-4 sm:p-6`).
+
+---
 
 ## Files Changed
 
-
-| File                                             | Action                       |
-| ------------------------------------------------ | ---------------------------- |
-| `supabase/functions/ai-generate/index.ts`        | Create                       |
-| `supabase/functions/ai-chat/index.ts`            | Create                       |
-| `supabase/functions/ai-search/index.ts`          | Simplify (remove multi-turn) |
-| `supabase/config.toml`                           | Add 2 new function entries   |
-| `src/components/event-form/AIGenerateButton.tsx` | Point to `ai-generate`       |
-| `src/components/dashboard/AIChatbot.tsx`         | Stream from `ai-chat`        |
-| `src/components/support/AISearchBox.tsx`         | Add error handling           |
+| File | Change |
+|------|--------|
+| `src/pages/Subscription.tsx` | Add BottomNavigation, fix padding, fix heading, responsive polish |
+| `src/pages/EventForm.tsx` | Add BottomNavigation, fix nav target to `/events` |
+| `src/pages/Booking.tsx` | Add BottomNavigation, fix padding |
+| `src/components/dashboard/DashboardStats.tsx` | Fix mislabeled stat card |
+| `src/components/dashboard/AIChatbot.tsx` | Fix FAB position to avoid overlap |
+| `src/pages/Dashboard.tsx` | Adjust Share FAB z-index if needed |
+| `src/App.tsx` | Redirect `/booking` to `/bookings` |
