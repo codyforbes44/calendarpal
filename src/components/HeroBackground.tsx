@@ -6,7 +6,7 @@ interface HeroBackgroundProps {
   className?: string;
 }
 
-const HeroBackground = ({ page, opacity = 0.18, className = "" }: HeroBackgroundProps) => {
+const HeroBackground = ({ page, opacity = 0.3, className = "" }: HeroBackgroundProps) => {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
@@ -30,7 +30,7 @@ const HeroBackground = ({ page, opacity = 0.18, className = "" }: HeroBackground
       {/* Gradient overlay for text readability */}
       {loaded && (
         <div
-          className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/80"
+          className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/20 to-background/60"
           aria-hidden="true"
         />
       )}

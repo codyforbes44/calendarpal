@@ -61,7 +61,7 @@ const About = () => {
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
         {/* Hero */}
         <section className="relative text-center max-w-3xl mx-auto mb-16 sm:mb-20">
-          <HeroBackground page="about" opacity={0.15} />
+          <HeroBackground page="about" opacity={0.3} />
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
             Scheduling, <span className="text-primary">simplified</span>.
           </h1>
