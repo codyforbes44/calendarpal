@@ -20,27 +20,26 @@ const PopularTimesChart = () => {
 
   const loadData = async () => {
     try {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("start_time, scheduled_date")
-        .eq("host_user_id", user!.id)
-        .eq("status", "confirmed");
+      const { data, error } = await supabase.rpc("get_popular_times", {
+        p_user_id: user!.id,
+      });
 
       if (error) throw error;
 
-      // Build grid: days[0-6] x hours[8-19]
+      // Build grid from sparse RPC results
       const grid = DAYS.map(() => HOURS.map(() => 0));
-
-      data?.forEach((b) => {
-        const hour = parseInt(b.start_time.split(":")[0], 10);
-        const dayOfWeek = new Date(b.scheduled_date).getDay();
-        // Convert Sunday=0 to Monday-first index
-        const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        const hourIndex = hour - 8;
-        if (hourIndex >= 0 && hourIndex < HOURS.length && dayIndex >= 0 && dayIndex < 7) {
-          grid[dayIndex][hourIndex] += 1;
+      (data as { day_index: number; hour_index: number; booking_count: number }[])?.forEach(
+        (row) => {
+          if (
+            row.day_index >= 0 &&
+            row.day_index < 7 &&
+            row.hour_index >= 0 &&
+            row.hour_index < HOURS.length
+          ) {
+            grid[row.day_index][row.hour_index] = Number(row.booking_count);
+          }
         }
-      });
+      );
 
       const max = Math.max(...grid.flat(), 1);
       setHeatmap(grid);

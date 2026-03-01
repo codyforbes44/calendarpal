@@ -522,6 +522,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_client_directory: {
+        Args: { p_user_id: string }
+        Returns: {
+          email: string
+          first_meeting: string
+          last_meeting: string
+          name: string
+          total_meetings: number
+        }[]
+      }
+      get_popular_times: {
+        Args: { p_user_id: string }
+        Returns: {
+          booking_count: number
+          day_index: number
+          hour_index: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

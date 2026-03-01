@@ -1,7 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useBookings } from "@/hooks/useBookings";
 import { useSubscription } from "@/hooks/useSubscription";
+import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
 import BottomNavigation from "@/components/BottomNavigation";
 import SEO from "@/components/SEO";
@@ -24,46 +24,32 @@ import { Link } from "react-router-dom";
 interface ClientRecord {
   email: string;
   name: string;
-  totalMeetings: number;
-  lastMeeting: string;
-  firstMeeting: string;
+  total_meetings: number;
+  last_meeting: string;
+  first_meeting: string;
 }
 
-type SortField = "name" | "totalMeetings" | "lastMeeting";
+type SortField = "name" | "total_meetings" | "last_meeting";
 
 const Clients = () => {
   const { user } = useAuth();
   const { isPro } = useSubscription();
-  const { data: bookings, isLoading } = useBookings();
+  const [clients, setClients] = useState<ClientRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState<SortField>("lastMeeting");
+  const [sortField, setSortField] = useState<SortField>("last_meeting");
   const [sortAsc, setSortAsc] = useState(false);
 
-  const clients = useMemo(() => {
-    if (!bookings) return [];
-    const map = new Map<string, ClientRecord>();
-
-    bookings.forEach((b) => {
-      const key = b.guest_email.toLowerCase();
-      const existing = map.get(key);
-      if (existing) {
-        existing.totalMeetings += 1;
-        if (b.scheduled_date > existing.lastMeeting) existing.lastMeeting = b.scheduled_date;
-        if (b.scheduled_date < existing.firstMeeting) existing.firstMeeting = b.scheduled_date;
-        if (b.guest_name && b.guest_name.length > existing.name.length) existing.name = b.guest_name;
-      } else {
-        map.set(key, {
-          email: b.guest_email,
-          name: b.guest_name,
-          totalMeetings: 1,
-          lastMeeting: b.scheduled_date,
-          firstMeeting: b.scheduled_date,
+  useEffect(() => {
+    if (user && isPro) {
+      supabase
+        .rpc("get_client_directory", { p_user_id: user.id })
+        .then(({ data, error }) => {
+          if (!error && data) setClients(data as ClientRecord[]);
+          setIsLoading(false);
         });
-      }
-    });
-
-    return Array.from(map.values());
-  }, [bookings]);
+    }
+  }, [user, isPro]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -76,8 +62,8 @@ const Clients = () => {
     return list.sort((a, b) => {
       let cmp = 0;
       if (sortField === "name") cmp = a.name.localeCompare(b.name);
-      else if (sortField === "totalMeetings") cmp = a.totalMeetings - b.totalMeetings;
-      else cmp = a.lastMeeting.localeCompare(b.lastMeeting);
+      else if (sortField === "total_meetings") cmp = a.total_meetings - b.total_meetings;
+      else cmp = a.last_meeting.localeCompare(b.last_meeting);
       return sortAsc ? cmp : -cmp;
     });
   }, [clients, search, sortField, sortAsc]);
@@ -90,7 +76,7 @@ const Clients = () => {
     }
   };
 
-  const repeatClients = clients.filter((c) => c.totalMeetings > 1).length;
+  const repeatClients = clients.filter((c) => c.total_meetings > 1).length;
 
   if (!isPro) {
     return (
@@ -177,12 +163,12 @@ const Clients = () => {
                 </TableHead>
                 <TableHead className="hidden sm:table-cell">Email</TableHead>
                 <TableHead>
-                  <button className="flex items-center gap-1" onClick={() => toggleSort("totalMeetings")}>
+                  <button className="flex items-center gap-1" onClick={() => toggleSort("total_meetings")}>
                     Meetings <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </TableHead>
                 <TableHead>
-                  <button className="flex items-center gap-1" onClick={() => toggleSort("lastMeeting")}>
+                  <button className="flex items-center gap-1" onClick={() => toggleSort("last_meeting")}>
                     Last Meeting <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </TableHead>
@@ -219,12 +205,12 @@ const Clients = () => {
                       {client.email}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={client.totalMeetings > 1 ? "default" : "secondary"} className="text-xs">
-                        {client.totalMeetings}
+                      <Badge variant={client.total_meetings > 1 ? "default" : "secondary"} className="text-xs">
+                        {client.total_meetings}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {format(new Date(client.lastMeeting), "MMM d, yyyy")}
+                      {format(new Date(client.last_meeting), "MMM d, yyyy")}
                     </TableCell>
                   </TableRow>
                 ))
