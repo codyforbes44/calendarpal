@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Hash, ExternalLink } from "lucide-react";
+import { MessageSquare, Hash, ExternalLink, Send } from "lucide-react";
 import { toast } from "sonner";
 
 const SlackSettings = () => {
@@ -14,6 +14,7 @@ const SlackSettings = () => {
   const [enabled, setEnabled] = useState(false);
   const [channelId, setChannelId] = useState("");
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -49,6 +50,42 @@ const SlackSettings = () => {
       toast.error("Failed to save Slack settings");
     } else {
       toast.success("Slack settings saved");
+    }
+  };
+
+  const handleTestNotification = async () => {
+    if (!user || !channelId) return;
+    setTesting(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("slack-notify", {
+        body: {
+          type: "booking_confirmed",
+          booking: {
+            id: "test-notification",
+            guestName: "Test Guest",
+            guestEmail: "test@example.com",
+            hostName: "You",
+            eventTitle: "Test Notification",
+            scheduledDate: new Date().toISOString().split("T")[0],
+            startTime: "10:00",
+            duration: 30,
+          },
+          hostUserId: user.id,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast.success("Test notification sent! Check your Slack channel.");
+      } else {
+        toast.error(data?.reason || data?.error || "Failed to send test notification");
+      }
+    } catch (err) {
+      toast.error("Failed to send test notification");
+    } finally {
+      setTesting(false);
     }
   };
 
@@ -102,14 +139,25 @@ const SlackSettings = () => {
               </p>
             </div>
 
-            <Button
-              onClick={handleSave}
-              disabled={saving || !channelId}
-              variant="hero"
-              className="w-full sm:w-auto"
-            >
-              {saving ? "Saving..." : "Save Slack Settings"}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button
+                onClick={handleSave}
+                disabled={saving || !channelId}
+                variant="hero"
+                className="w-full sm:w-auto"
+              >
+                {saving ? "Saving..." : "Save Slack Settings"}
+              </Button>
+              <Button
+                onClick={handleTestNotification}
+                disabled={testing || !channelId}
+                variant="outline"
+                className="w-full sm:w-auto gap-1.5"
+              >
+                <Send className="w-3.5 h-3.5" />
+                {testing ? "Sending..." : "Send Test Notification"}
+              </Button>
+            </div>
           </div>
         )}
 
