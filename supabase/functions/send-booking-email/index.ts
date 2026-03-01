@@ -386,6 +386,76 @@ function icsNote(text: string): string {
   return `<p style="margin:24px 0 0;font-size:13px;color:#9ca3af;text-align:center;">📎 ${text}</p>`;
 }
 
+// Convert local date+time in a timezone to UTC, returning both Google (compact) and Outlook (ISO) formats
+function toUtcIso(dateStr: string, timeStr: string, timezone?: string): { google: string; outlook: string } {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const [hour, minute] = timeStr.split(":").map(Number);
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  const localIso = `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00`;
+
+  let utcMs = new Date(localIso).getTime();
+  if (timezone) {
+    try {
+      const fmt = new Intl.DateTimeFormat("en-US", {
+        timeZone: timezone,
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+        hour12: false,
+      });
+      for (let i = 0; i < 3; i++) {
+        const parts = fmt.formatToParts(new Date(utcMs));
+        const p: Record<string, number> = {};
+        for (const { type, value } of parts) p[type] = Number(value);
+        const rendered = Date.UTC(p.year, p.month - 1, p.day, p.hour === 24 ? 0 : p.hour, p.minute, p.second);
+        utcMs = new Date(localIso).getTime() - (rendered - utcMs);
+      }
+    } catch { /* fallback to naive parse */ }
+  }
+
+  const d = new Date(utcMs);
+  const google = `${d.getUTCFullYear()}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+  const outlook = `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:00Z`;
+  return { google, outlook };
+}
+
+function calendarLinks(params: {
+  eventTitle: string;
+  scheduledDate: string;
+  startTime: string;
+  endTime: string;
+  hostTimezone?: string;
+  meetingLink?: string;
+  description?: string;
+}): string {
+  const tz = params.hostTimezone || "UTC";
+  const start = toUtcIso(params.scheduledDate, params.startTime, tz);
+  const end = toUtcIso(params.scheduledDate, params.endTime, tz);
+
+  const details = params.description || `Meeting: ${params.eventTitle}${params.meetingLink ? `\n\nJoin: ${params.meetingLink}` : ""}`;
+
+  const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(params.eventTitle)}&dates=${start.google}/${end.google}&details=${encodeURIComponent(details)}`;
+  const outlookUrl = `https://outlook.live.com/calendar/0/action/compose?subject=${encodeURIComponent(params.eventTitle)}&startdt=${encodeURIComponent(start.outlook)}&enddt=${encodeURIComponent(end.outlook)}&body=${encodeURIComponent(details)}`;
+
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0 0;">
+    <tr><td align="center">
+      <table role="presentation" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding:0 6px;">
+            <a href="${googleUrl}" target="_blank" style="display:inline-block;background:#ffffff;color:#4285f4;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;border:1.5px solid #4285f4;line-height:1;">
+              <img src="https://www.google.com/favicon.ico" width="14" height="14" alt="" style="vertical-align:-2px;margin-right:6px;">Add to Google Calendar
+            </a>
+          </td>
+          <td style="padding:0 6px;">
+            <a href="${outlookUrl}" target="_blank" style="display:inline-block;background:#ffffff;color:#0078d4;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:600;border:1.5px solid #0078d4;line-height:1;">
+              <img src="https://outlook.live.com/favicon.ico" width="14" height="14" alt="" style="vertical-align:-2px;margin-right:6px;">Add to Outlook
+            </a>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>`;
+}
+
 // ─── Confirmation Emails ───
 
 async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise<{ guestSent: boolean; hostSent: boolean }> {
@@ -440,6 +510,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
           ${meetingBtn}
           ${manageBtn}
           ${icsNote("Add this event to your calendar using the attached .ics file.")}
+          ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
         `,
       }),
       attachments: [{ filename: "meeting.ics", content: icsBase64, content_type: "text/calendar" }],
@@ -485,6 +556,7 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
             <h2 style="margin:0 0 16px;font-size:20px;color:#1f2937;font-weight:700;">${booking.eventTitle}</h2>
             ${detailsCard(bodyRows + meetingRow)}
             ${icsNote("Add this event to your calendar using the attached .ics file.")}
+            ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
           `,
         }),
         attachments: [{ filename: "meeting.ics", content: icsBase64, content_type: "text/calendar" }],
@@ -649,6 +721,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
           ${detailsCard(newRows, "#22c55e")}
           ${manageBtn}
           ${icsNote("The attached .ics file will update this event in your calendar.")}
+          ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
         `,
       }),
       attachments: [{ filename: "meeting-updated.ics", content: icsBase64, content_type: "text/calendar" }],
@@ -694,6 +767,7 @@ async function sendRescheduleEmail(booking: EmailRequest["booking"], oldDateTime
             <h2 style="margin:0 0 16px;font-size:20px;color:#1f2937;font-weight:700;">${booking.eventTitle} <span style="display:inline-block;font-size:12px;font-weight:700;background:#22c55e;color:white;padding:2px 8px;border-radius:5px;vertical-align:middle;margin-left:8px;">NEW</span></h2>
             ${detailsCard(newRows, "#22c55e")}
             ${icsNote("The attached .ics file will update this event in your calendar.")}
+            ${calendarLinks({ eventTitle: booking.eventTitle, scheduledDate: booking.scheduledDate, startTime: booking.startTime, endTime: booking.endTime, hostTimezone: hostTz, meetingLink: booking.meetingLink })}
           `,
         }),
         attachments: [{ filename: "meeting-updated.ics", content: icsBase64, content_type: "text/calendar" }],
