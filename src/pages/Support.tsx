@@ -1,13 +1,16 @@
 import Navigation from "@/components/Navigation";
 import AISearchBox from "@/components/support/AISearchBox";
+import DocumentationSection from "@/components/support/DocumentationSection";
+import FAQSection, { getAllFAQs } from "@/components/support/FAQSection";
+import FeatureRequestSection from "@/components/support/FeatureRequestSection";
 import Footer from "@/components/Footer";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MessageSquare, FileText, Lightbulb } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Mail, FileText, MessageSquare, Lightbulb } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
@@ -26,45 +29,11 @@ const Support = () => {
     setMessage("");
   };
 
-  const faqs = [
-    {
-      question: "How do I create my first event type?",
-      answer: "After signing in, go to your Dashboard and click 'Create Event'. Fill in the event details like title, duration, and description, then save. Your event will be ready for guests to book."
-    },
-    {
-      question: "How do I set my availability?",
-      answer: "Navigate to the Availability page from your dashboard. You can set your working hours for each day of the week. Toggle days on or off and adjust start and end times as needed."
-    },
-    {
-      question: "How do I share my booking link?",
-      answer: "On your Dashboard or Profile Settings page, click the 'Share' button next to your booking link. You can copy the link, share via social media, email, or download a QR code."
-    },
-    {
-      question: "Can guests reschedule or cancel bookings?",
-      answer: "Yes! Guests receive a confirmation email with a secure link to manage their booking. They can use this link to reschedule or cancel. You can also manage all bookings from your dashboard."
-    },
-    {
-      question: "How does the Pro subscription work?",
-      answer: "Pro unlocks unlimited bookings, recurring meetings, buffer times, and priority support. You can subscribe monthly ($8/month) or annually ($84/year for ~13% savings). Manage your subscription anytime from the Subscription page."
-    },
-    {
-      question: "How do I cancel my subscription?",
-      answer: "Go to the Subscription page in your dashboard and click 'Manage Subscription'. This will open the billing portal where you can cancel, update payment methods, or view invoices."
-    },
-    {
-      question: "What timezone does Bᴏᴏᴋᴍᴇ.ʙᴇᴛ use?",
-      answer: "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ automatically detects and displays times in each user's local timezone. When a guest books, they see times in their timezone while you see them in yours. All conversions are handled automatically."
-    },
-    {
-      question: "Is my data secure?",
-      answer: "Yes! We use industry-standard encryption and security practices. Payment information is processed securely through Stripe. We never sell your data to third parties."
-    }
-  ];
-
+  const allFaqs = getAllFAQs();
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": faqs.map(faq => ({
+    "mainEntity": allFaqs.map(faq => ({
       "@type": "Question",
       "name": faq.question,
       "acceptedAnswer": {
@@ -90,73 +59,46 @@ const Support = () => {
         <div className="text-center mb-10 sm:mb-16">
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">How can we help?</h1>
           <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Find answers to common questions or reach out to our team for personalized support.
+            Browse our documentation, find answers to common questions, or suggest new features.
           </p>
         </div>
 
         <AISearchBox />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 mb-12 sm:mb-16">
-          <Card className="text-center hover:shadow-lg transition-shadow min-h-[130px] flex flex-col">
-            <CardHeader>
-              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 touch-target">
-                <FileText className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle className="text-lg">Documentation</CardTitle>
-              <CardDescription>Browse our guides and tutorials</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <p className="text-sm text-muted-foreground">
-                Learn how to get the most out of Bᴏᴏᴋᴍᴇ.ʙᴇᴛ with step-by-step guides.
-              </p>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="docs" className="mb-12 sm:mb-16">
+          <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto mb-8">
+            <TabsTrigger value="docs" className="gap-1.5">
+              <FileText className="h-4 w-4 hidden sm:block" />
+              Docs
+            </TabsTrigger>
+            <TabsTrigger value="faq" className="gap-1.5">
+              <MessageSquare className="h-4 w-4 hidden sm:block" />
+              FAQ
+            </TabsTrigger>
+            <TabsTrigger value="requests" className="gap-1.5">
+              <Lightbulb className="h-4 w-4 hidden sm:block" />
+              Requests
+            </TabsTrigger>
+          </TabsList>
 
-          <Card className="text-center hover:shadow-lg transition-shadow min-h-[130px] flex flex-col">
-            <CardHeader>
-              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 touch-target">
-                <MessageSquare className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle className="text-lg">FAQ</CardTitle>
-              <CardDescription>Quick answers to common questions</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <p className="text-sm text-muted-foreground">
-                Find instant answers to frequently asked questions below.
-              </p>
-            </CardContent>
-          </Card>
+          <TabsContent value="docs">
+            <DocumentationSection />
+          </TabsContent>
 
-          <Card className="text-center hover:shadow-lg transition-shadow min-h-[130px] flex flex-col sm:col-span-2 lg:col-span-1">
-            <CardHeader>
-              <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 touch-target">
-                <Lightbulb className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle className="text-lg">Feature Requests</CardTitle>
-              <CardDescription>Share your ideas with us</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <p className="text-sm text-muted-foreground">
-                Have a suggestion? We'd love to hear how we can improve Bᴏᴏᴋᴍᴇ.ʙᴇᴛ.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+          <TabsContent value="faq">
+            <div className="max-w-3xl mx-auto">
+              <FAQSection />
+            </div>
+          </TabsContent>
 
-        <div className="max-w-3xl mx-auto mb-16">
-          <h2 className="text-2xl font-semibold mb-6 text-center">Frequently Asked Questions</h2>
-          <Accordion type="single" collapsible className="w-full">
-            {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
+          <TabsContent value="requests">
+            <div className="max-w-4xl mx-auto">
+              <FeatureRequestSection />
+            </div>
+          </TabsContent>
+        </Tabs>
 
+        {/* Contact Form */}
         <div className="max-w-xl mx-auto">
           <Card>
             <CardHeader className="text-center">
