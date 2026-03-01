@@ -200,7 +200,7 @@ const Pricing = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="relative text-center max-w-3xl mx-auto mb-8">
-            <HeroBackground page="pricing" opacity={0.15} />
+            <HeroBackground page="pricing" opacity={0.3} />
             <h1 className="font-display text-4xl md:text-5xl font-bold mb-6">
               Simple, transparent pricing
             </h1>
