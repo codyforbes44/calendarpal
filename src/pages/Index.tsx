@@ -35,7 +35,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen scroll-smooth">
       <SEO
         title={pageSEO.home.title}
         description={pageSEO.home.description}
@@ -45,14 +45,14 @@ const Index = () => {
         structuredData={[organizationSchema, webApplicationSchema, breadcrumbSchema, speakableSchema]}
       />
       <Navigation />
-      <Hero />
-      <LogoCloud />
-      <HowItWorks />
-      <Features />
-      <Stats />
-      <Testimonials />
-      <BookingPreview />
-      <CTA />
+      <section id="hero"><Hero /></section>
+      <section id="integrations"><LogoCloud /></section>
+      <section id="how-it-works"><HowItWorks /></section>
+      <section id="features"><Features /></section>
+      <section id="stats"><Stats /></section>
+      <section id="testimonials"><Testimonials /></section>
+      <section id="preview"><BookingPreview /></section>
+      <section id="cta"><CTA /></section>
       <Footer />
     </div>
   );
