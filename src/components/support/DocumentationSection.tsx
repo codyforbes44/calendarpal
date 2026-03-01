@@ -6,7 +6,8 @@ import {
   UserPlus, UserCog, CalendarPlus, Clock,
   LayoutDashboard, Settings2, Share2, MailOpen,
   Timer, Sparkles, Globe, BarChart3,
-  CreditCard, Receipt, Trash2
+  CreditCard, Receipt, Trash2,
+  MessageSquare, Code, UserCheck, Calendar
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -58,9 +59,10 @@ const categories: GuideCategory[] = [
         description: "Define the title, duration, location, and description for an event.",
         steps: [
           "From your dashboard, click \"Create Event\" in the Quick Actions section.",
-          "Enter a descriptive title (e.g., \"30-Minute Discovery Call\").",
+          "Enter a descriptive title (e.g., \"30-Minute Discovery Call\") or use the AI Generate button for suggestions.",
           "Select a duration — common options are 15, 30, 45, or 60 minutes.",
           "Choose a location type: Video Call (auto-generates a meeting link), Phone, or In Person.",
+          "Optionally set a price to collect payment at booking (Pro feature).",
           "Add an optional description to let guests know what to expect.",
           "Pick a color label to visually distinguish this event type on your calendar.",
           "Click \"Create Event Type\" to save. The event is now live on your booking page."
@@ -138,6 +140,67 @@ const categories: GuideCategory[] = [
     ]
   },
   {
+    label: "Integrations",
+    guides: [
+      {
+        icon: Calendar,
+        title: "Google Calendar Sync",
+        description: "Connect your Google Calendar for two-way sync and busy-time detection.",
+        pro: true,
+        steps: [
+          "Navigate to Settings from your dashboard.",
+          "In the Google Calendar section, click \"Connect Google Calendar\".",
+          "A popup will open asking you to sign in with your Google account and grant calendar permissions.",
+          "Once connected, your Google Calendar events are checked for conflicts — guests can't double-book you.",
+          "New bookings are automatically added to your Google Calendar with full meeting details.",
+          "To disconnect, click \"Disconnect\" in the same settings section."
+        ]
+      },
+      {
+        icon: MessageSquare,
+        title: "Slack Notifications",
+        description: "Receive instant booking alerts in your Slack workspace.",
+        pro: true,
+        steps: [
+          "Navigate to Settings from your dashboard.",
+          "In the Slack section, toggle \"Enable Slack Notifications\" on.",
+          "Enter your Slack channel ID (find it in Slack by right-clicking the channel → View channel details → copy the ID at the bottom).",
+          "Click \"Save Slack Settings\" to activate.",
+          "Use the \"Send Test Notification\" button to verify the setup works.",
+          "You'll now receive alerts for new bookings, reschedules, and cancellations in your chosen Slack channel."
+        ]
+      },
+      {
+        icon: CreditCard,
+        title: "Payment Collection with Stripe",
+        description: "Accept payments when guests book meetings.",
+        pro: true,
+        steps: [
+          "When creating or editing an event type, scroll to the pricing section.",
+          "Enter a price amount and choose a currency (USD, EUR, GBP, etc.).",
+          "Save the event type — guests will now see the price on your booking page.",
+          "When a guest books, they're prompted to pay via Stripe's secure checkout.",
+          "Payment status is tracked on your Bookings page (paid, pending, refunded).",
+          "You can manage payouts and refunds from your Stripe dashboard."
+        ]
+      },
+      {
+        icon: Code,
+        title: "Embeddable Booking Widget",
+        description: "Add your booking page to any website with a code snippet.",
+        pro: true,
+        steps: [
+          "Navigate to Settings → Embed from your dashboard.",
+          "Choose between iframe embed or JavaScript widget.",
+          "Customize the width and height to fit your website layout.",
+          "Copy the generated code and paste it into your website's HTML.",
+          "The widget is responsive and shows all your active event types.",
+          "When a guest completes a booking, the widget sends a browser event you can listen for."
+        ]
+      }
+    ]
+  },
+  {
     label: "Advanced Features",
     guides: [
       {
@@ -157,12 +220,12 @@ const categories: GuideCategory[] = [
       {
         icon: Sparkles,
         title: "Using the AI Assistant",
-        description: "Let AI generate event titles, descriptions, and more.",
+        description: "Let AI generate event titles, descriptions, and answer your questions.",
         steps: [
           "When creating or editing an event type, look for the \"AI Generate\" button.",
           "Click it to have AI suggest a professional title and description based on your input.",
-          "Review the generated content and edit as needed before saving.",
-          "The AI assistant is also available on the dashboard for quick help and suggestions.",
+          "Use the \"Regenerate\" button for alternatives or \"Undo\" to revert.",
+          "The AI chatbot on your dashboard can answer questions about your schedule, suggest optimizations, and help with common tasks.",
           "Use the AI search on the Support page to get instant answers to your questions."
         ]
       },
@@ -180,14 +243,30 @@ const categories: GuideCategory[] = [
       },
       {
         icon: BarChart3,
-        title: "Booking Analytics & Calendar Heatmap",
-        description: "Track booking trends and visualize your schedule density.",
+        title: "Analytics & Popular Times",
+        description: "Track booking trends, popular times, and conversion funnels.",
+        pro: true,
         steps: [
           "View the booking statistics chart on your dashboard for weekly and monthly trends.",
           "The calendar heatmap shows booking density — hover over any day to see the count.",
+          "The Popular Times chart shows a heatmap of your busiest hours and days.",
+          "The Conversion Funnel tracks how many visitors view your page vs. complete bookings.",
           "Dashboard stats cards show total bookings, upcoming meetings, and completion rates.",
-          "Use the \"Today's Schedule\" section for a quick view of your day's appointments.",
           "Analytics data updates in real-time as new bookings come in."
+        ]
+      },
+      {
+        icon: UserCheck,
+        title: "Client Directory",
+        description: "View and manage all guests who've booked with you.",
+        pro: true,
+        steps: [
+          "Navigate to the Clients page from your dashboard sidebar.",
+          "The directory automatically aggregates all guests from your booking history.",
+          "Each client entry shows their name, email, total meetings, and first/last meeting dates.",
+          "Use the search bar to find specific clients by name or email.",
+          "Click column headers to sort by name, meeting count, or last activity.",
+          "No manual data entry needed — the directory builds itself from your bookings."
         ]
       }
     ]

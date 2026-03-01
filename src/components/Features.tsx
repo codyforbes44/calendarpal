@@ -1,4 +1,4 @@
-import { Brain, Bell, Palette, RefreshCw, Users, BarChart3 } from "lucide-react";
+import { Brain, Bell, Palette, RefreshCw, Users, BarChart3, CreditCard, MessageSquare, Sparkles, Code, UserCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import AnimatedSection from "@/components/ui/animated-section";
 
@@ -18,6 +18,11 @@ const coreFeatures = [
     title: "Branded Booking Pages",
     description: "Custom pages with your colors, logo, and domain. Look professional from day one.",
   },
+  {
+    icon: CreditCard,
+    title: "Payment Collection",
+    description: "Accept payments at booking via Stripe. Automate invoicing, refunds, and payment confirmations.",
+  },
 ];
 
 const advancedFeatures = [
@@ -27,14 +32,29 @@ const advancedFeatures = [
     description: "Set it once, let it repeat automatically.",
   },
   {
-    icon: Users,
-    title: "Team Scheduling",
-    description: "Round-robin, collective, and managed events.",
+    icon: MessageSquare,
+    title: "Slack & Calendar Sync",
+    description: "Two-way Google Calendar sync and Slack booking alerts.",
   },
   {
     icon: BarChart3,
     title: "Analytics Dashboard",
-    description: "Track booking rates, popular times, and conversions.",
+    description: "Track booking rates, popular times, and conversion funnels.",
+  },
+  {
+    icon: Sparkles,
+    title: "AI Assistant",
+    description: "AI-powered event creation, search, and dashboard chatbot.",
+  },
+  {
+    icon: Code,
+    title: "Embeddable Widget",
+    description: "Embed your booking page on any website with iframe or JS snippet.",
+  },
+  {
+    icon: UserCheck,
+    title: "Client Directory",
+    description: "CRM-style client tracking with meeting history and stats.",
   },
 ];
 
@@ -57,7 +77,7 @@ const Features = () => {
         </AnimatedSection>
 
         {/* Core features - large cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8 mb-8 sm:mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8 mb-8 sm:mb-12">
           {coreFeatures.map((feature, index) => (
             <AnimatedSection key={index} delay={index * 120} animation="fade-up">
               <Card className="p-6 sm:p-8 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border bg-card group h-full">
@@ -74,7 +94,7 @@ const Features = () => {
         </div>
 
         {/* Advanced features - compact cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {advancedFeatures.map((feature, index) => (
             <AnimatedSection key={index} delay={index * 100 + 300} animation="fade-up">
               <Card className="p-4 sm:p-5 border-border bg-muted/30 hover:bg-muted/50 transition-all duration-300 group h-full flex items-start gap-4">

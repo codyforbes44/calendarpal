@@ -148,7 +148,7 @@ const Testimonials = () => {
                 </div>
               ))}
             </div>
-            <span>5,000+ professionals</span>
+            <span>50,000+ professionals</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="flex gap-0.5">

@@ -40,12 +40,16 @@ const plans = [
     features: [
       "Unlimited event types",
       "Unlimited bookings",
-      "Google Calendar sync",
+      "Google Calendar two-way sync",
+      "Slack booking notifications",
+      "Payment collection via Stripe",
+      "Embeddable booking widget",
+      "AI event generation & chatbot",
+      "Client directory / CRM",
       "Custom branding",
+      "Popular times & conversion analytics",
       "Priority support",
-      "Unlimited scheduling window",
       "Team scheduling",
-      "Analytics dashboard",
     ],
     cta: "Start Free Trial",
     popular: true,
@@ -417,6 +421,24 @@ const Pricing = () => {
                     <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
                   </TableRow>
                   <TableRow>
+                    <TableCell>Slack notifications</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Stripe payment collection</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Embeddable booking widget</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
                     <TableCell>API access</TableCell>
                     <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
                     <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
@@ -475,6 +497,24 @@ const Pricing = () => {
                   </TableRow>
                   <TableRow>
                     <TableCell>Basic analytics</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Popular times & conversion funnel</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>AI assistant & event generation</TableCell>
+                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
+                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>Client directory / CRM</TableCell>
                     <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
                     <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
                     <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>

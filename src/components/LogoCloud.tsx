@@ -56,12 +56,20 @@ const SlackIcon = () => (
   </svg>
 );
 
+const StripeIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <rect width="24" height="24" rx="5" fill="#635BFF" />
+    <path d="M11.2 9.6c0-.7.6-1 1.5-1 1.3 0 3 .4 4.3 1.1V6.1c-1.4-.6-2.9-.8-4.3-.8C9.8 5.3 8 6.8 8 9.1c0 3.6 5 3 5 4.6 0 .8-.7 1.1-1.7 1.1-1.5 0-3.4-.6-4.9-1.4v3.7c1.7.7 3.3 1 4.9 1 3 0 5-1.5 5-3.8 0-3.9-5-3.2-5-4.7z" fill="#fff" />
+  </svg>
+);
+
 const integrations = [
   { name: "Google Calendar", icon: <GoogleCalendarIcon /> },
   { name: "Zoom", icon: <ZoomIcon /> },
   { name: "Microsoft Teams", icon: <TeamsIcon /> },
   { name: "Outlook", icon: <OutlookIcon /> },
   { name: "Slack", icon: <SlackIcon /> },
+  { name: "Stripe", icon: <StripeIcon /> },
 ];
 
 const LogoCloud = () => {

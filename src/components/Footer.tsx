@@ -37,6 +37,16 @@ const Footer = () => {
                   Support
                 </Link>
               </li>
+              <li>
+                <span className="text-muted-foreground/50 cursor-default">
+                  Blog (Coming Soon)
+                </span>
+              </li>
+              <li>
+                <span className="text-muted-foreground/50 cursor-default">
+                  API (Coming Soon)
+                </span>
+              </li>
             </ul>
           </div>
 
