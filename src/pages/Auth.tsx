@@ -377,6 +377,25 @@ const Auth = () => {
               {!isLogin && password && <PasswordStrengthMeter password={password} />}
 
               {!isLogin && (
+                <div className="space-y-1.5 sm:space-y-2 animate-fade-in">
+                  <Label htmlFor="inviteCode" className="text-sm">Invitation Code</Label>
+                  <Input
+                    id="inviteCode"
+                    type="text"
+                    placeholder="Enter your invite code"
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                    required
+                    className="h-11 sm:h-12 font-mono tracking-widest"
+                    maxLength={20}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Don't have a code? <a href="mailto:support@bookme.bet" className="text-primary hover:underline">Request one</a>
+                  </p>
+                </div>
+              )}
+
+              {!isLogin && (
                 <div className="flex items-start space-x-3 animate-fade-in py-1">
                   <Checkbox
                     id="terms"
