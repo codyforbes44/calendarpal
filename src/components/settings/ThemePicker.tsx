@@ -4,11 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Check, Palette, Crown, Upload } from "lucide-react";
-import { BOOKING_THEMES, type BookingTheme } from "@/lib/booking-themes";
-import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
-import { useSubscription } from "@/hooks/useSubscription";
+import { Check, Palette, Upload } from "lucide-react";
+import { BOOKING_THEMES } from "@/lib/booking-themes";
+import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,8 +14,6 @@ import { useAuth } from "@/contexts/AuthContext";
 const ThemePicker = () => {
   const { user } = useAuth();
   const { data: profile } = useProfile();
-  const updateProfile = useUpdateProfile();
-  const { isPro } = useSubscription();
 
   const [selectedTheme, setSelectedTheme] = useState("default");
   const [customColor, setCustomColor] = useState("");
@@ -37,12 +33,10 @@ const ThemePicker = () => {
   const handleSaveTheme = async () => {
     const updates: Record<string, any> = {
       booking_theme: selectedTheme,
+      custom_brand_color: customColor || null,
+      custom_welcome_message: customWelcome || null,
+      custom_brand_logo: customLogo || null,
     };
-    if (isPro) {
-      updates.custom_brand_color = customColor || null;
-      updates.custom_welcome_message = customWelcome || null;
-      updates.custom_brand_logo = customLogo || null;
-    }
 
     const { error } = await supabase
       .from("profiles")
@@ -117,7 +111,6 @@ const ThemePicker = () => {
                 <Check className="w-3 h-3 text-primary-foreground" />
               </div>
             )}
-            {/* Color preview dots */}
             <div className="flex gap-1.5 mb-2">
               <div
                 className="w-5 h-5 rounded-full border border-border/50"
@@ -138,16 +131,9 @@ const ThemePicker = () => {
         ))}
       </div>
 
-      {/* Pro-only custom branding */}
-      <div className={`space-y-4 ${!isPro ? "opacity-50 pointer-events-none" : ""}`}>
-        <div className="flex items-center gap-2 mb-2">
-          <h3 className="text-sm font-semibold">Custom Branding</h3>
-          {!isPro && (
-            <Badge variant="secondary" className="text-xs gap-1">
-              <Crown className="w-3 h-3" /> Pro
-            </Badge>
-          )}
-        </div>
+      {/* Custom branding - available to all users */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold">Custom Branding</h3>
 
         <div>
           <Label className="text-sm">Brand Color (HSL)</Label>

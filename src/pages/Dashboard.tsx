@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { useSubscription } from "@/hooks/useSubscription";
 import Navigation from "@/components/Navigation";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Share2 } from "lucide-react";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import UpcomingMeetings from "@/components/dashboard/UpcomingMeetings";
-import { UpgradePrompt } from "@/components/dashboard/UpgradePrompt";
 import EventTypesList from "@/components/dashboard/EventTypesList";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import ShareModal from "@/components/ShareModal";
@@ -21,8 +19,6 @@ import PopularTimesChart from "@/components/dashboard/PopularTimesChart";
 import TodaySchedule from "@/components/dashboard/TodaySchedule";
 import AIChatbot from "@/components/dashboard/AIChatbot";
 import { SkeletonDashboard } from "@/components/ui/skeleton-card";
-import { useSearchParams } from "react-router-dom";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 function getGreeting(): string {
@@ -34,28 +30,12 @@ function getGreeting(): string {
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [hasAvailability, setHasAvailability] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
 
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: eventTypes, isLoading: eventTypesLoading } = useEventTypes();
-  const { refreshSubscription, isPro } = useSubscription();
-
-  // Handle checkout success
-  useEffect(() => {
-    const checkoutStatus = searchParams.get("checkout");
-    if (checkoutStatus === "success") {
-      refreshSubscription().then(() => {
-        toast.success("Welcome to Pro! Your subscription is now active.", {
-          duration: 5000,
-        });
-      });
-      searchParams.delete("checkout");
-      setSearchParams(searchParams, { replace: true });
-    }
-  }, [searchParams, setSearchParams, refreshSubscription]);
 
   useEffect(() => {
     if (user) {
@@ -70,7 +50,6 @@ const Dashboard = () => {
         .select("id")
         .eq("user_id", user?.id)
         .limit(1);
-      
       setHasAvailability((data?.length || 0) > 0);
     } catch (error) {
       console.error("Error checking availability:", error);
@@ -123,8 +102,6 @@ const Dashboard = () => {
             onDismiss={() => setShowOnboarding(false)}
           />
         )}
-
-        <UpgradePrompt />
         
         <QuickActions 
           username={profile?.username} 
@@ -155,12 +132,10 @@ const Dashboard = () => {
           <BookingAnalytics />
         </div>
 
-        {isPro && (
-          <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
-            <ConversionFunnel />
-            <PopularTimesChart />
-          </div>
-        )}
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
+          <ConversionFunnel />
+          <PopularTimesChart />
+        </div>
       </div>
 
       {profile?.username && (
@@ -172,7 +147,6 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Mobile FAB */}
       {profile?.username && (
         <button
           onClick={() => setShowShareModal(true)}

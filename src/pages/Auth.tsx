@@ -31,6 +31,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
@@ -91,6 +92,33 @@ const Auth = () => {
       toast.error("Username is already taken");
       return;
     }
+    
+    // Validate invite code for sign-up
+    if (!isLogin) {
+      if (!inviteCode.trim()) {
+        toast.error("Please enter an invitation code");
+        return;
+      }
+      try {
+        const { data: codeResult, error: codeError } = await supabase.functions.invoke("validate-invite-code", {
+          body: { code: inviteCode.trim() },
+        });
+        if (codeError || !codeResult?.valid) {
+          const reason = codeResult?.reason || "invalid";
+          const messages: Record<string, string> = {
+            not_found: "Invalid invitation code",
+            already_used: "This code has already been used",
+            expired: "This invitation code has expired",
+          };
+          toast.error(messages[reason] || "Invalid invitation code");
+          return;
+        }
+      } catch {
+        toast.error("Failed to validate invitation code");
+        return;
+      }
+    }
+    
     setLoading(true);
     try {
       authSchema.parse({
@@ -142,6 +170,10 @@ const Auth = () => {
             .from("profiles")
             .update({ username: username.trim(), full_name: fullName.trim() })
             .eq("user_id", data.user.id);
+          // Redeem the invite code
+          await supabase.functions.invoke("validate-invite-code", {
+            body: { code: inviteCode.trim(), action: "redeem", userId: data.user.id },
+          });
         }
         toast.success("Account created! Let's set up your profile.");
         navigate("/onboarding");
@@ -160,6 +192,7 @@ const Auth = () => {
   const toggleMode = () => {
     setIsLogin(!isLogin);
     setPassword("");
+    setInviteCode("");
     setUsernameAvailable(null);
     setAcceptedTerms(false);
   };

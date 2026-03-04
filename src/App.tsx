@@ -56,6 +56,7 @@ const AdminBlockedLogs = lazy(() => import("./pages/admin/AdminBlockedLogs"));
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const AdminOGImages = lazy(() => import("./pages/admin/AdminOGImages"));
+const AdminInviteCodes = lazy(() => import("./pages/admin/AdminInviteCodes"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -207,6 +208,7 @@ const App = () => (
                       <Route path="analytics" element={<AdminAnalytics />} />
                       <Route path="settings" element={<AdminSettings />} />
                       <Route path="og-images" element={<AdminOGImages />} />
+                      <Route path="invite-codes" element={<AdminInviteCodes />} />
                     </Route>
 
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

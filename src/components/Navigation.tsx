@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Menu, Sun, Moon, X, Shield, Crown, LayoutDashboard, CalendarCheck, Calendar, CreditCard, Settings, Users } from "lucide-react";
+import { Menu, Sun, Moon, X, Shield, LayoutDashboard, CalendarCheck, Calendar, Settings, Users } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 import { useAdminRole } from "@/hooks/useAdminRole";
-import { useSubscription } from "@/hooks/useSubscription";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
 import ThemeLogo from "@/components/ThemeLogo";
@@ -23,7 +21,6 @@ const Navigation = () => {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const { data: isAdmin } = useAdminRole();
-  const { isPro } = useSubscription();
   const { data: profile } = useProfile();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -34,35 +31,25 @@ const Navigation = () => {
     ? profile.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : user?.email?.slice(0, 2).toUpperCase() ?? "U";
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
-  // Scroll-based transparency for public pages
   const isPublicPage = !user && (location.pathname === "/" || location.pathname === "/pricing" || location.pathname === "/support");
 
   useEffect(() => {
-    if (!isPublicPage) {
-      setScrolled(true);
-      return;
-    }
+    if (!isPublicPage) { setScrolled(true); return; }
     const handleScroll = () => setScrolled(window.scrollY > 20);
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isPublicPage]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    window.location.href = "/";
-  };
+  const handleSignOut = async () => { await signOut(); window.location.href = "/"; };
 
   const baseUserLinks: NavLink[] = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/bookings", label: "Bookings", icon: CalendarCheck },
     { href: "/availability", label: "Availability", icon: Calendar },
-    ...(isPro ? [{ href: "/clients", label: "Clients", icon: Users }] : []),
-    { href: "/subscription", label: "Plan", icon: CreditCard },
+    { href: "/clients", label: "Clients", icon: Users },
     { href: "/settings", label: "Settings", icon: Settings },
   ];
 
@@ -90,22 +77,11 @@ const Navigation = () => {
         : "bg-transparent border-transparent"
     )}>
       <div className="container flex h-14 md:h-16 items-center justify-between px-4">
-        {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <ThemeLogo width={140} height={36} className="h-7 md:h-9 w-auto object-contain" />
-          {isPro && (
-            <Badge variant="secondary" className="hidden sm:flex text-xs gap-1">
-              <Crown className="w-3 h-3" />
-              Pro
-            </Badge>
-          )}
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className={cn(
-          "hidden items-center gap-1",
-          user ? "lg:flex" : "md:flex"
-        )}>
+        <nav className={cn("hidden items-center gap-1", user ? "lg:flex" : "md:flex")}>
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -126,59 +102,32 @@ const Navigation = () => {
           ))}
         </nav>
 
-        {/* Right side actions */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Theme toggle */}
           {mounted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="h-9 w-9"
-            >
-              {theme === "dark" ? (
-                <Sun className="h-4 w-4" />
-              ) : (
-                <Moon className="h-4 w-4" />
-              )}
+            <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="h-9 w-9">
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               <span className="sr-only">Toggle theme</span>
             </Button>
           )}
-
-          {/* Notification bell (authenticated only) */}
           {user && <NotificationBell />}
-
-          {/* Desktop auth buttons */}
           {user ? (
             <div className="hidden md:flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-semibold text-primary select-none">
                 {userInitials}
               </div>
-              <Button 
-                variant="ghost" 
-                onClick={handleSignOut}
-                size="sm"
-              >
-                Sign Out
-              </Button>
+              <Button variant="ghost" onClick={handleSignOut} size="sm">Sign Out</Button>
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-2">
-              <Link to="/auth">
-                <Button variant="ghost" size="sm">Sign In</Button>
-              </Link>
-              <Link to="/auth">
-                <Button size="sm">Get Started</Button>
-              </Link>
+              <Link to="/auth"><Button variant="ghost" size="sm">Sign In</Button></Link>
+              <Link to="/auth"><Button size="sm">Get Started</Button></Link>
             </div>
           )}
 
-          {/* Mobile menu */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden h-9 w-9">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Open menu</span>
+                <Menu className="h-5 w-5" /><span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[280px] sm:w-[320px]">
@@ -190,64 +139,37 @@ const Navigation = () => {
                     <ThemeLogo width={24} height={24} className="h-6 w-6 rounded-lg object-contain" />
                   </Link>
                   <SheetClose asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8"><X className="h-4 w-4" /></Button>
                   </SheetClose>
                 </div>
-
                 <nav className="flex flex-col gap-1 py-4 flex-1">
                   {navLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      to={link.href}
-                      onClick={() => setOpen(false)}
+                    <Link key={link.href} to={link.href} onClick={() => setOpen(false)}
                       className={cn(
                         "flex items-center gap-3 px-3 py-3 text-sm font-medium rounded-lg transition-colors touch-target",
-                        isActiveLink(link.href)
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
-                      )}
-                    >
+                        isActiveLink(link.href) ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      )}>
                       {link.icon && <link.icon className="h-4 w-4" />}
                       {link.label}
                     </Link>
                   ))}
                 </nav>
-
-                {/* Mobile theme toggle */}
                 <div className="py-3 border-t">
                   {mounted && (
-                    <button
-                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                      className="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg transition-colors touch-target"
-                    >
+                    <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                      className="flex items-center gap-3 w-full px-3 py-3 text-sm font-medium text-muted-foreground hover:text-foreground rounded-lg transition-colors touch-target">
                       {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                       {theme === "dark" ? "Light Mode" : "Dark Mode"}
                     </button>
                   )}
                 </div>
-
                 <div className="pt-4 border-t space-y-3">
                   {user ? (
-                    <Button 
-                      variant="outline" 
-                      className="w-full" 
-                      onClick={() => {
-                        setOpen(false);
-                        handleSignOut();
-                      }}
-                    >
-                      Sign Out
-                    </Button>
+                    <Button variant="outline" className="w-full" onClick={() => { setOpen(false); handleSignOut(); }}>Sign Out</Button>
                   ) : (
                     <>
-                      <Link to="/auth" onClick={() => setOpen(false)} className="block">
-                        <Button variant="outline" className="w-full">Sign In</Button>
-                      </Link>
-                      <Link to="/auth" onClick={() => setOpen(false)} className="block">
-                        <Button className="w-full">Get Started</Button>
-                      </Link>
+                      <Link to="/auth" onClick={() => setOpen(false)} className="block"><Button variant="outline" className="w-full">Sign In</Button></Link>
+                      <Link to="/auth" onClick={() => setOpen(false)} className="block"><Button className="w-full">Get Started</Button></Link>
                     </>
                   )}
                 </div>

@@ -3,8 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Crown, DollarSign } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import {
   FormControl,
   FormDescription,
@@ -16,7 +15,6 @@ import {
 import AIGenerateButton from "./AIGenerateButton";
 import BufferTimeSettings from "./BufferTimeSettings";
 import { EVENT_COLORS, type EventFormValues } from "./types";
-import { useSubscription } from "@/hooks/useSubscription";
 
 function getLocationLabel(type: string) {
   return type === "video" ? "video call" : type === "phone" ? "phone call" : "in-person meeting";
@@ -27,8 +25,6 @@ interface EventFormFieldsProps {
 }
 
 const EventFormFields = ({ form }: EventFormFieldsProps) => {
-  const { isPro } = useSubscription();
-
   return (
     <>
       {/* Title */}
@@ -202,16 +198,11 @@ const EventFormFields = ({ form }: EventFormFieldsProps) => {
         />
       </div>
 
-      {/* Pricing (Pro only) */}
-      <div className={`space-y-4 p-3 sm:p-4 rounded-lg border border-border ${!isPro ? "opacity-50" : ""}`}>
+      {/* Pricing */}
+      <div className="space-y-4 p-3 sm:p-4 rounded-lg border border-border">
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4" />
           <span className="font-medium text-sm">Session Pricing</span>
-          {!isPro && (
-            <Badge variant="secondary" className="text-xs gap-1">
-              <Crown className="w-3 h-3" /> Pro
-            </Badge>
-          )}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <FormField
@@ -225,7 +216,6 @@ const EventFormFields = ({ form }: EventFormFieldsProps) => {
                     type="number"
                     min="0"
                     placeholder="0"
-                    disabled={!isPro}
                     {...field}
                     className="h-10"
                   />
@@ -246,7 +236,6 @@ const EventFormFields = ({ form }: EventFormFieldsProps) => {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  disabled={!isPro}
                 >
                   <FormControl>
                     <SelectTrigger className="h-10">
@@ -264,9 +253,6 @@ const EventFormFields = ({ form }: EventFormFieldsProps) => {
             )}
           />
         </div>
-        {!isPro && (
-          <p className="text-xs text-muted-foreground">Upgrade to Pro to charge for sessions.</p>
-        )}
       </div>
     </>
   );
