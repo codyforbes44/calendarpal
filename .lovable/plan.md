@@ -1,68 +1,70 @@
 
 
-## Strategic Advice & Implementation Plan
+## Strategy: "Try Before You Sign Up"
 
-### Pricing Strategy Recommendation
+The current flow forces users to create an account before seeing any value. The proposed change flips this: let visitors **experience the full platform as a guest** — create a profile, set up event types, configure availability — and only ask them to register when they want to **save their work**.
 
-Your current setup has a **Free (limited) → Pro ($8/mo) → Enterprise** funnel. For a mass-adoption SaaS strategy, this should change to:
+This is the "product-led growth" approach used by tools like Canva and Figma. It dramatically reduces signup friction because users are already invested by the time they hit the registration wall.
 
-**New model: Single free tier with all current features → Future paid add-ons/upgrades**
+### How It Works
 
-This means:
-- **Remove the paywall entirely for now.** Every user gets everything currently labeled "Pro" — unlimited event types, Google Calendar sync, Slack notifications, payment collection, AI features, client directory, custom branding, analytics.
-- **Remove the Free/Pro/Enterprise pricing page** and replace it with a simple "CalendarPal is free" messaging page that highlights all features.
-- **Remove all `isPro` gates** across the codebase (event form pricing, clients page, conversion funnel, custom branding, bottom nav conditionals, upgrade prompts).
-- **Keep the Stripe infrastructure intact** but dormant — you'll re-enable it when add-ons are ready.
+1. **Landing page CTA → `/get-started`** (already exists, no auth required)
+2. **Steps 1-3 remain identical** — profile, event type, availability — all stored in localStorage via `OnboardingContext`
+3. **Step 4 changes from "Account" to "Save Your Setup"** — reframed messaging: "Create an account to save everything you just built" instead of "Create Account"
+4. **Add a "Preview Dashboard" step** — after step 3, show users a realistic preview of what their dashboard/booking page will look like with the data they entered, then prompt registration
+5. **Allow guest exploration of dashboard pages** — protected routes show a "save banner" instead of redirecting to `/auth`
 
-This is the right approach for early-stage mass adoption: reduce friction to zero, build a user base, then monetize with premium add-ons later.
+### Implementation Plan
 
-### Invitation Code System
+#### 1. Reframe the GetStarted flow (Step 4)
+- Change `StepAccount` heading from "Create your account" to **"Save your setup"**
+- Update messaging to emphasize they'll lose their work without registering
+- Add a live preview of their booking page URL and configured schedule before the registration fields
+- Keep invite code + terms + email/password as-is
 
-Since "most people don't have the confidence to sign up," an invite-only system creates exclusivity and trust. Here's the plan:
+#### 2. Create a "Guest Mode" for dashboard pages
+- Modify `ProtectedRoute` to support a `guestAllowed` prop
+- When `guestAllowed=true` and no user is logged in, render children but show a persistent **"Sign up to save" banner** at the top
+- Apply `guestAllowed` to: `/dashboard`, `/events`, `/availability`, `/settings`
+- Guest mode reads data from `OnboardingContext` / localStorage instead of database
+- All write operations (save, create, update) trigger a registration prompt modal
 
-#### Database
-- New `invitation_codes` table: `id`, `code` (unique 8-char alphanumeric), `created_by` (admin user_id), `used_by` (nullable user_id), `used_at`, `expires_at`, `created_at`, `batch_id` (to group codes generated together).
-- RLS: Admins can SELECT/INSERT all codes. Public can SELECT a single code by value (for validation). Used codes get UPDATE when redeemed.
+#### 3. Add a registration prompt modal
+- New `SavePromptModal` component that appears when a guest tries to save anything
+- Shows a summary of what they've configured so far
+- Contains the registration form (email, password, invite code, terms)
+- On success: persists all localStorage data to database, redirects to dashboard
 
-#### Admin UI — Bulk Code Generation
-- New section in Admin Settings or a dedicated admin page.
-- Input: "How many codes?" (1-100), optional expiry date.
-- Generates codes via a backend function, displays them in a table with copy-all and CSV export.
-- Shows usage stats: total generated, used, remaining.
+#### 4. Update CTAs and navigation
+- Landing page "Get Started" → still goes to `/get-started`
+- Add "Try it free" button that goes directly to `/dashboard` in guest mode
+- Navigation shows "Sign up to save" instead of user avatar when in guest mode
+- Bottom navigation works in guest mode
 
-#### Auth Flow — Require Invite Code
-- Add an "Invitation Code" field to the sign-up form (both `/auth` and `/get-started`).
-- Validate the code against the database before allowing registration.
-- Mark the code as used after successful sign-up.
+#### 5. Update Auth flow
+- `/auth` sign-up form checks for existing onboarding data in localStorage
+- If found, auto-persist after successful registration (same as current GetStarted step 4)
+- This handles users who explore as guest, leave, come back, and sign up from `/auth`
 
-#### Edge Function — `validate-invite-code`
-- Accepts a code string, returns valid/invalid/expired/already-used.
-- On sign-up success, marks the code as consumed.
+### Files to create/modify
 
-### Changes Summary
+| File | Change |
+|------|--------|
+| `src/components/ProtectedRoute.tsx` | Add `guestAllowed` prop, show save banner for guests |
+| `src/components/GuestSaveBanner.tsx` | **New** — persistent banner for guest users |
+| `src/components/SavePromptModal.tsx` | **New** — registration modal triggered on save attempts |
+| `src/components/get-started/StepAccount.tsx` | Reframe copy to "Save your setup" |
+| `src/pages/Dashboard.tsx` | Support guest mode with localStorage data |
+| `src/pages/Events.tsx` | Support guest mode |
+| `src/pages/Availability.tsx` | Support guest mode |
+| `src/App.tsx` | Add `guestAllowed` to select protected routes |
+| `src/components/Navigation.tsx` | Show guest CTA when not authenticated |
+| `src/contexts/OnboardingContext.tsx` | Add helper to check if guest has unsaved data |
+| `src/hooks/useGuestMode.ts` | **New** — hook to detect guest state and trigger save prompts |
 
-| Area | What changes |
-|------|-------------|
-| **Pricing page** | Replace with "All features free" marketing page |
-| **All `isPro` checks** (~10 files) | Remove gates, give everyone full access |
-| **UpgradePrompt component** | Remove or repurpose |
-| **Subscription page** | Simplify to show "You have full access" |
-| **Navigation** | Remove Pro badge logic |
-| **Database** | New `invitation_codes` table |
-| **Auth pages** | Add invite code field |
-| **Admin portal** | Add invite code management page |
-| **Edge function** | New `validate-invite-code` function |
-| **Stripe checkout/subscription hooks** | Keep code but disable checkout flow |
-
-### Files to modify/create
-
-**Remove Pro gates (~12 files):** `EventFormFields.tsx`, `ThemePicker.tsx`, `Clients.tsx`, `Dashboard.tsx`, `BottomNavigation.tsx`, `UpgradePrompt.tsx`, `Navigation.tsx`, `DocumentationSection.tsx`, `BookingAnalytics.tsx`, `useSubscription.ts`, `Pricing.tsx`, `Subscription.tsx`
-
-**Invitation system (~6 new/modified files):**
-- `supabase/migrations/` — new `invitation_codes` table + RLS
-- `supabase/functions/validate-invite-code/index.ts` — validate & redeem
-- `src/pages/admin/AdminInviteCodes.tsx` — generate & manage codes
-- `src/pages/Auth.tsx` — add invite code field
-- `src/pages/GetStarted.tsx` — add invite code field
-- `src/App.tsx` + `AdminSidebar.tsx` — route & nav for admin invite page
+### Key technical decisions
+- **localStorage as guest storage** — already in use via `OnboardingContext`, just needs to be read by dashboard components
+- **No database writes without auth** — all guest interactions are client-side only
+- **Invite code still required at registration** — maintains exclusivity while removing exploration friction
+- **Graceful degradation** — features requiring server data (bookings, analytics) show empty states with sample/demo data in guest mode
 
