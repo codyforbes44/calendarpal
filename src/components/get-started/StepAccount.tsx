@@ -13,6 +13,7 @@ interface StepAccountProps {
   showPassword: boolean;
   acceptedTerms: boolean;
   loading: boolean;
+  inviteCode: string;
   fullName: string;
   username: string;
   eventTitle: string;
@@ -24,6 +25,7 @@ interface StepAccountProps {
   onPasswordChange: (v: string) => void;
   onToggleShowPassword: () => void;
   onAcceptedTermsChange: (v: boolean) => void;
+  onInviteCodeChange: (v: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   onBack: () => void;
   onEditStep: (step: number) => void;
@@ -35,6 +37,7 @@ const StepAccount = ({
   showPassword,
   acceptedTerms,
   loading,
+  inviteCode,
   fullName,
   username,
   eventTitle,
@@ -46,6 +49,7 @@ const StepAccount = ({
   onPasswordChange,
   onToggleShowPassword,
   onAcceptedTermsChange,
+  onInviteCodeChange,
   onSubmit,
   onBack,
   onEditStep,
@@ -107,6 +111,23 @@ const StepAccount = ({
       </div>
 
       {password && <PasswordStrengthMeter password={password} />}
+
+      <div className="space-y-2">
+        <Label htmlFor="inviteCode">Invitation Code</Label>
+        <Input
+          id="inviteCode"
+          type="text"
+          placeholder="Enter your invite code"
+          value={inviteCode}
+          onChange={(e) => onInviteCodeChange(e.target.value.toUpperCase())}
+          required
+          className="h-12 font-mono tracking-widest"
+          maxLength={20}
+        />
+        <p className="text-xs text-muted-foreground">
+          Don't have a code? <a href="mailto:support@bookme.bet" className="text-primary hover:underline">Request one</a>
+        </p>
+      </div>
 
       <div className="flex items-start space-x-3 py-1">
         <Checkbox

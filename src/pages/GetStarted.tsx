@@ -33,6 +33,7 @@ const GetStarted = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [inviteCode, setInviteCode] = useState("");
   const [registeredViaForm, setRegisteredViaForm] = useState(false);
 
   // Refs for cleanup
@@ -131,12 +132,32 @@ const GetStarted = () => {
       toast.error("Please accept the Terms of Service and Privacy Policy");
       return;
     }
+    if (!inviteCode.trim()) {
+      toast.error("Please enter an invitation code");
+      return;
+    }
     setLoading(true);
     try {
       z.object({
         email: z.string().email("Invalid email address"),
         password: z.string().min(6, "Password must be at least 6 characters"),
       }).parse({ email, password });
+
+      // Validate invite code
+      const { data: codeResult, error: codeError } = await supabase.functions.invoke("validate-invite-code", {
+        body: { code: inviteCode.trim() },
+      });
+      if (codeError || !codeResult?.valid) {
+        const reason = codeResult?.reason || "invalid";
+        const messages: Record<string, string> = {
+          not_found: "Invalid invitation code",
+          already_used: "This code has already been used",
+          expired: "This invitation code has expired",
+        };
+        toast.error(messages[reason] || "Invalid invitation code");
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
@@ -160,6 +181,10 @@ const GetStarted = () => {
       }
 
       if (data.user) {
+        // Redeem the invite code
+        await supabase.functions.invoke("validate-invite-code", {
+          body: { code: inviteCode.trim(), action: "redeem", userId: data.user.id },
+        });
         setRegisteredViaForm(true);
         await persistAndRedirect(data.user.id);
       }
@@ -306,6 +331,7 @@ const GetStarted = () => {
                 showPassword={showPassword}
                 acceptedTerms={acceptedTerms}
                 loading={loading}
+                inviteCode={inviteCode}
                 fullName={onboarding.fullName}
                 username={onboarding.username}
                 eventTitle={onboarding.eventTitle}
@@ -317,6 +343,7 @@ const GetStarted = () => {
                 onPasswordChange={setPassword}
                 onToggleShowPassword={() => setShowPassword(!showPassword)}
                 onAcceptedTermsChange={setAcceptedTerms}
+                onInviteCodeChange={setInviteCode}
                 onSubmit={handleRegister}
                 onBack={() => setStep(3)}
                 onEditStep={(s) => setStep(s)}
