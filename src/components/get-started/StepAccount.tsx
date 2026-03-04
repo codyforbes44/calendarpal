@@ -59,8 +59,8 @@ const StepAccount = ({
       <div className="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center mx-auto mb-4">
         <Shield className="w-7 h-7 text-primary-foreground" />
       </div>
-      <h1 className="text-2xl font-bold mb-1">Create your account</h1>
-      <p className="text-muted-foreground text-sm">Review your setup, then sign up</p>
+      <h1 className="text-2xl font-bold mb-1">Save your setup</h1>
+      <p className="text-muted-foreground text-sm">Create an account to save everything you've built and start receiving bookings</p>
     </div>
 
     <OnboardingSummary
@@ -151,7 +151,7 @@ const StepAccount = ({
         className="w-full h-12"
         disabled={loading || !acceptedTerms}
       >
-        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account & Go to Dashboard"}
+        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save & Create Account"}
       </Button>
     </form>
 

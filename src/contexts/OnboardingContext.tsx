@@ -27,6 +27,7 @@ interface OnboardingContextType extends OnboardingData {
   setStartTime: (v: string) => void;
   setEndTime: (v: string) => void;
   clearOnboardingData: () => void;
+  hasUnsavedData: boolean;
 }
 
 export const DEFAULT_AVAILABILITY: DayAvailability[] = [
@@ -75,6 +76,8 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     } catch { /* quota exceeded — ignore */ }
   }, [fullName, username, eventTitle, eventDescription, eventDuration, availability, startTime, endTime]);
 
+  const hasUnsavedData = !!(fullName || username || eventTitle !== "30 Minute Meeting");
+
   const clearOnboardingData = useCallback(() => {
     setFullName("");
     setUsername("");
@@ -99,6 +102,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
         startTime, setStartTime,
         endTime, setEndTime,
         clearOnboardingData,
+        hasUnsavedData,
       }}
     >
       {children}
