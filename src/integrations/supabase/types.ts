@@ -418,6 +418,39 @@ export type Database = {
         }
         Relationships: []
       }
+      invitation_codes: {
+        Row: {
+          batch_id: string
+          code: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          batch_id?: string
+          code: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          batch_id?: string
+          code?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           booking_id: string | null

@@ -2,19 +2,16 @@ import { Home, Calendar, Settings, CalendarCheck, CreditCard, Shield, Users } fr
 import { useLocation, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAdminRole } from "@/hooks/useAdminRole";
-import { useSubscription } from "@/hooks/useSubscription";
 
 const BottomNavigation = () => {
   const location = useLocation();
   const { data: isAdmin } = useAdminRole();
-  const { isPro } = useSubscription();
 
-const baseNavItems = [
+  const baseNavItems = [
     { href: "/dashboard", label: "Home", icon: Home },
     { href: "/bookings", label: "Bookings", icon: CalendarCheck },
     { href: "/availability", label: "Availability", icon: Calendar },
-    ...(isPro ? [{ href: "/clients", label: "Clients", icon: Users }] : []),
-    { href: "/subscription", label: "Plan", icon: CreditCard },
+    { href: "/clients", label: "Clients", icon: Users },
     { href: "/settings", label: "Settings", icon: Settings },
   ];
 
@@ -42,16 +39,10 @@ const baseNavItems = [
                   : "text-muted-foreground active:text-foreground active:scale-95"
               )}
             >
-              <div className={cn(
-                "transition-transform duration-200",
-                active && "scale-110"
-              )}>
+              <div className={cn("transition-transform duration-200", active && "scale-110")}>
                 <item.icon className={cn("w-5 h-5", active && "text-primary")} />
               </div>
-              <span className={cn(
-                "text-[10px] font-medium leading-tight",
-                active && "text-primary"
-              )}>
+              <span className={cn("text-[10px] font-medium leading-tight", active && "text-primary")}>
                 {item.label}
               </span>
               {active && (

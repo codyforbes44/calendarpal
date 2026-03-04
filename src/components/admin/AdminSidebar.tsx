@@ -11,6 +11,7 @@ import {
   ChevronDown,
   LogOut,
   ImageIcon,
+  Ticket,
 } from "lucide-react";
 import {
   Sidebar,
@@ -92,6 +93,11 @@ const insightsNavItems: NavItem[] = [
 ];
 
 const settingsNavItems: NavItem[] = [
+  {
+    title: "Invite Codes",
+    href: "/admin/invite-codes",
+    icon: Ticket,
+  },
   {
     title: "Settings",
     href: "/admin/settings",

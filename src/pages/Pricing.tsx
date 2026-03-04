@@ -1,750 +1,134 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEO from "@/components/SEO";
 import { pageSEO, siteConfig } from "@/lib/seo-config";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Check, X, Minus, Quote, ShieldCheck, Lock, CreditCard, Star, Loader2 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { Check, ShieldCheck, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 import HeroBackground from "@/components/HeroBackground";
 
-const plans = [
-  {
-    name: "Free",
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    description: "Perfect for getting started",
-    features: [
-      "1 event type",
-      "Unlimited bookings",
-      "Basic calendar integration",
-      "Email notifications",
-      "7-day scheduling window",
-    ],
-    cta: "Get Started",
-    popular: false,
-  },
-  {
-    name: "Pro",
-    monthlyPrice: 8,
-    yearlyPrice: 7,
-    description: "For professionals and small teams",
-    features: [
-      "Unlimited event types",
-      "Unlimited bookings",
-      "Google Calendar two-way sync",
-      "Slack booking notifications",
-      "Payment collection via Stripe",
-      "Embeddable booking widget",
-      "AI event generation & chatbot",
-      "Client directory / CRM",
-      "Custom branding",
-      "Popular times & conversion analytics",
-      "Priority support",
-      "Team scheduling",
-    ],
-    cta: "Start Free Trial",
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    monthlyPrice: null,
-    yearlyPrice: null,
-    description: "For large organizations",
-    features: [
-      "Everything in Pro",
-      "SSO authentication",
-      "Advanced security",
-      "Dedicated support",
-      "Custom integrations",
-      "SLA guarantee",
-      "API access",
-      "White-label solution",
-    ],
-    cta: "Contact Sales",
-    popular: false,
-  },
+const allFeatures = [
+  "Unlimited event types",
+  "Unlimited bookings",
+  "Google Calendar two-way sync",
+  "Slack booking notifications",
+  "Payment collection via Stripe",
+  "Embeddable booking widget",
+  "AI event generation & chatbot",
+  "Client directory / CRM",
+  "Custom branding & themes",
+  "Popular times & conversion analytics",
+  "Buffer times & recurring bookings",
+  "Timezone auto-detection",
+  "Email confirmations & reminders",
+  "Guest self-service (reschedule/cancel)",
+  "QR code sharing",
+];
+
+const faqs = [
+  { question: "Is CalendarPal really free?", answer: "Yes! All features are completely free during our early access period. We'll introduce optional premium add-ons in the future." },
+  { question: "Do I need an invitation code?", answer: "Yes, CalendarPal is currently invite-only. You'll need a valid invitation code to create an account." },
+  { question: "Will I lose access when paid plans launch?", answer: "No. Early users will always have access to core features. Future premium add-ons will be optional upgrades." },
+  { question: "How do I get an invitation code?", answer: "Invitation codes are distributed by existing users and through our community channels. Ask a friend who already uses CalendarPal!" },
 ];
 
 const Pricing = () => {
-  const [isYearly, setIsYearly] = useState(false);
-  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
-  const handleCheckout = async (planName: string) => {
-    if (planName === "Free") {
-      navigate("/auth");
-      return;
-    }
-
-    if (planName === "Enterprise") {
-      window.location.href = "mailto:sales@bookme.bet?subject=Enterprise%20Plan%20Inquiry";
-      return;
-    }
-
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    setLoadingPlan(planName);
-
-    try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { isYearly },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        window.location.href = data.url;
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      toast.error("Failed to start checkout. Please try again.");
-    } finally {
-      setLoadingPlan(null);
-    }
-  };
-
-  const getPrice = (plan: typeof plans[0]) => {
-    if (plan.monthlyPrice === null) return "Custom";
-    if (plan.monthlyPrice === 0) return "$0";
-    const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
-    return `$${price}`;
-  };
-
-  const getPeriod = (plan: typeof plans[0]) => {
-    if (plan.monthlyPrice === null) return null;
-    return isYearly ? "/month" : "/month";
-  };
-
-  const getYearlySavings = (plan: typeof plans[0]) => {
-    if (plan.monthlyPrice === null || plan.yearlyPrice === null || plan.monthlyPrice === 0) return 0;
-    return Math.round(((plan.monthlyPrice - plan.yearlyPrice) / plan.monthlyPrice) * 100);
-  };
-
-  const pricingFaqs = [
-    { question: "Can I switch plans anytime?", answer: "Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately." },
-    { question: "Is there a free trial?", answer: "Yes, the Pro plan comes with a 14-day free trial. No credit card required." },
-    { question: "What payment methods do you accept?", answer: "We accept all major credit cards, PayPal, and bank transfers for annual plans." },
-    { question: "Can I cancel anytime?", answer: "Absolutely. You can cancel your subscription at any time with no questions asked." },
-  ];
-
-  const pricingSchema = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ Pro",
-    "description": "Professional scheduling software with unlimited bookings, calendar sync, and custom branding.",
-    "brand": { "@type": "Brand", "name": "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ" },
-    "offers": [
-      {
-        "@type": "Offer",
-        "name": "Free Plan",
-        "price": "0",
-        "priceCurrency": "USD",
-        "priceValidUntil": "2026-12-31"
-      },
-      {
-        "@type": "Offer",
-        "name": "Pro Monthly",
-        "price": "8",
-        "priceCurrency": "USD",
-        "priceValidUntil": "2026-12-31",
-        "billingIncrement": 1,
-        "billingDuration": { "@type": "QuantitativeValue", "value": 1, "unitCode": "MON" }
-      },
-      {
-        "@type": "Offer",
-        "name": "Pro Yearly",
-        "price": "84",
-        "priceCurrency": "USD",
-        "priceValidUntil": "2026-12-31",
-        "billingIncrement": 1,
-        "billingDuration": { "@type": "QuantitativeValue", "value": 1, "unitCode": "ANN" }
-      }
-    ]
-  };
-
-  const pricingFaqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": pricingFaqs.map(faq => ({
-      "@type": "Question",
-      "name": faq.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.answer
-      }
-    }))
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <SEO
         title={pageSEO.pricing.title}
-        description={pageSEO.pricing.description}
+        description="CalendarPal is free for everyone. All features included."
         keywords={pageSEO.pricing.keywords}
         canonical={`${siteConfig.url}/pricing`}
         ogImage={siteConfig.ogImages.pricing}
-        structuredData={[pricingSchema, pricingFaqSchema]}
       />
       <Navigation />
       
       <main className="pt-24 sm:pt-32 pb-16 sm:pb-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className="relative text-center max-w-3xl mx-auto mb-8 py-10 sm:py-14 lg:py-16 overflow-hidden rounded-2xl">
+          <div className="relative text-center max-w-3xl mx-auto mb-12 py-10 sm:py-14 lg:py-16 overflow-hidden rounded-2xl">
             <HeroBackground page="pricing" opacity={0.3} />
             <h1 className="relative z-10 font-display text-4xl md:text-5xl font-bold mb-6">
-              Simple, transparent pricing
+              Everything you need. Completely free.
             </h1>
-            <p className="relative z-10 text-lg text-foreground/80">
-              Choose the plan that fits your needs. Start with a free trial and scale as you grow.
+            <p className="relative z-10 text-lg text-foreground/80 max-w-xl mx-auto">
+              CalendarPal gives you professional scheduling tools with zero cost. No hidden fees, no feature limits, no credit card required.
             </p>
           </div>
 
-          {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-16">
-            <span className={`text-sm font-medium ${!isYearly ? "text-foreground" : "text-muted-foreground"}`}>
-              Monthly
-            </span>
-            <Switch
-              checked={isYearly}
-              onCheckedChange={setIsYearly}
-            />
-            <span className={`text-sm font-medium ${isYearly ? "text-foreground" : "text-muted-foreground"}`}>
-              Yearly
-            </span>
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-0">
-              Save up to 21%
-            </Badge>
+          {/* Single Plan Card */}
+          <div className="max-w-lg mx-auto mb-16">
+            <Card className="border-primary shadow-lg shadow-primary/10">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 relative">
+                <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                  Early Access
+                </span>
+              </div>
+              <CardHeader className="text-center pb-2">
+                <CardTitle className="text-2xl">CalendarPal</CardTitle>
+                <p className="text-muted-foreground">All features included</p>
+              </CardHeader>
+              <CardContent className="text-center">
+                <div className="mb-6">
+                  <span className="text-5xl font-bold">$0</span>
+                  <span className="text-muted-foreground">/forever</span>
+                </div>
+                <Button asChild size="lg" className="w-full mb-6">
+                  <Link to="/auth">Get Started Free</Link>
+                </Button>
+                <ul className="space-y-3 text-left">
+                  {allFeatures.map((feature) => (
+                    <li key={feature} className="flex items-start gap-3">
+                      <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-sm text-muted-foreground">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
-            {plans.map((plan) => (
-              <Card 
-                key={plan.name}
-                className={`relative flex flex-col ${
-                  plan.popular 
-                    ? "border-primary shadow-lg shadow-primary/10 md:scale-105" 
-                    : "border-border"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                
-                <CardHeader className="text-center pb-2">
-                  <CardTitle className="text-xl">{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
-                </CardHeader>
-                
-                <CardContent className="text-center flex-1">
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold">{getPrice(plan)}</span>
-                    {getPeriod(plan) && (
-                      <span className="text-muted-foreground">{getPeriod(plan)}</span>
-                    )}
-                    {isYearly && plan.monthlyPrice !== null && (
-                      <div className="mt-2">
-                        <span className="text-xs text-muted-foreground line-through mr-2">
-                          ${plan.monthlyPrice}/mo
-                        </span>
-                        <Badge variant="secondary" className="bg-success/10 text-success border-0 text-xs">
-                          Save {getYearlySavings(plan)}%
-                        </Badge>
-                      </div>
-                    )}
-                    {isYearly && plan.monthlyPrice !== null && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Billed ${(plan.yearlyPrice ?? 0) * 12}/year
-                      </p>
-                    )}
-                  </div>
-                  
-                  <ul className="space-y-3 text-left">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                        <span className="text-sm text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                
-                <CardFooter>
-                  <Button 
-                    className="w-full" 
-                    variant={plan.popular ? "default" : "outline"}
-                    onClick={() => handleCheckout(plan.name)}
-                    disabled={loadingPlan === plan.name}
-                  >
-                    {loadingPlan === plan.name ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      plan.cta
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-
-          {/* Money-Back Guarantee */}
-          <div className="mt-12 flex justify-center">
+          {/* Trust */}
+          <div className="flex justify-center mb-16">
             <div className="inline-flex items-center gap-3 px-6 py-4 bg-primary/5 border border-primary/20 rounded-2xl">
               <div className="flex items-center justify-center w-12 h-12 bg-primary/10 rounded-full">
                 <ShieldCheck className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="font-semibold text-foreground">30-Day Money-Back Guarantee</p>
-                <p className="text-sm text-muted-foreground">Not satisfied? Get a full refund, no questions asked.</p>
+                <p className="font-semibold text-foreground">No Credit Card Required</p>
+                <p className="text-sm text-muted-foreground">Sign up with just an invitation code and start scheduling.</p>
               </div>
             </div>
           </div>
 
-          {/* Trust Badges */}
-          <div className="mt-16 grid grid-cols-2 gap-6 max-w-2xl mx-auto">
-            <div className="group flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 hover:bg-muted/50">
-              <div className="w-12 h-12 flex items-center justify-center bg-success/10 rounded-full mb-3 transition-transform duration-300 group-hover:scale-110">
-                <Lock className="w-5 h-5 text-success" />
-              </div>
-              <p className="font-semibold text-sm">SSL Encrypted</p>
-              <p className="text-xs text-muted-foreground">256-bit security</p>
+          {/* Future Add-ons teaser */}
+          <div className="max-w-2xl mx-auto mb-16 text-center">
+            <div className="inline-flex items-center gap-2 mb-4">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h2 className="font-display text-xl font-bold">Premium Add-ons Coming Soon</h2>
             </div>
-            
-            <div className="group flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 hover:bg-muted/50">
-              <div className="w-12 h-12 flex items-center justify-center bg-info/10 rounded-full mb-3 transition-transform duration-300 group-hover:scale-110">
-                <CreditCard className="w-5 h-5 text-info" />
-              </div>
-              <p className="font-semibold text-sm">Secure Payments</p>
-              <p className="text-xs text-muted-foreground">Powered by Stripe</p>
-            </div>
-          </div>
-
-          {/* Feature Comparison Table */}
-          <div className="mt-16 sm:mt-24 max-w-5xl mx-auto">
-            <h2 className="font-display text-xl sm:text-2xl font-bold text-center mb-8 sm:mb-12">
-              Compare Plans
-            </h2>
-            
-            <div className="border border-border rounded-lg overflow-hidden overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead className="w-[280px] font-semibold">Features</TableHead>
-                    <TableHead className="text-center font-semibold">Free</TableHead>
-                    <TableHead className="text-center font-semibold bg-primary/5">Pro</TableHead>
-                    <TableHead className="text-center font-semibold">Enterprise</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {/* Scheduling */}
-                  <TableRow className="bg-muted/30">
-                    <TableCell colSpan={4} className="font-semibold text-sm">Scheduling</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Event types</TableCell>
-                    <TableCell className="text-center">1</TableCell>
-                    <TableCell className="text-center bg-primary/5">Unlimited</TableCell>
-                    <TableCell className="text-center">Unlimited</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Bookings per month</TableCell>
-                    <TableCell className="text-center">Unlimited</TableCell>
-                    <TableCell className="text-center bg-primary/5">Unlimited</TableCell>
-                    <TableCell className="text-center">Unlimited</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Scheduling window</TableCell>
-                    <TableCell className="text-center">7 days</TableCell>
-                    <TableCell className="text-center bg-primary/5">Unlimited</TableCell>
-                    <TableCell className="text-center">Unlimited</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Buffer times</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Minimum notice</TableCell>
-                    <TableCell className="text-center">24 hours</TableCell>
-                    <TableCell className="text-center bg-primary/5">Custom</TableCell>
-                    <TableCell className="text-center">Custom</TableCell>
-                  </TableRow>
-
-                  {/* Integrations */}
-                  <TableRow className="bg-muted/30">
-                    <TableCell colSpan={4} className="font-semibold text-sm">Integrations</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Google Calendar</TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Outlook Calendar</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Zoom integration</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Custom integrations</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Slack notifications</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Stripe payment collection</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Embeddable booking widget</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>API access</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-
-                  {/* Customization */}
-                  <TableRow className="bg-muted/30">
-                    <TableCell colSpan={4} className="font-semibold text-sm">Customization</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Custom branding</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Remove Bᴏᴏᴋᴍᴇ.ʙᴇᴛ branding</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>White-label solution</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-
-                  {/* Team Features */}
-                  <TableRow className="bg-muted/30">
-                    <TableCell colSpan={4} className="font-semibold text-sm">Team Features</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Team members</TableCell>
-                    <TableCell className="text-center">1</TableCell>
-                    <TableCell className="text-center bg-primary/5">Up to 10</TableCell>
-                    <TableCell className="text-center">Unlimited</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Round-robin scheduling</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Collective scheduling</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-
-                  {/* Analytics & Reporting */}
-                  <TableRow className="bg-muted/30">
-                    <TableCell colSpan={4} className="font-semibold text-sm">Analytics & Reporting</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Basic analytics</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Popular times & conversion funnel</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>AI assistant & event generation</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Client directory / CRM</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Advanced reporting</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-
-                  {/* Support & Security */}
-                  <TableRow className="bg-muted/30">
-                    <TableCell colSpan={4} className="font-semibold text-sm">Support & Security</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Email support</TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Priority support</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Dedicated support</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>SSO authentication</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>SLA guarantee</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center bg-primary/5"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-
-          {/* Competitor Comparison */}
-          <div className="mt-16 sm:mt-24 max-w-4xl mx-auto">
-            <h2 className="font-display text-xl sm:text-2xl font-bold text-center mb-4">
-              Why choose Bᴏᴏᴋᴍᴇ.ʙᴇᴛ?
-            </h2>
-            <p className="text-muted-foreground text-center mb-8 sm:mb-12">
-              See how we stack up against the competition
+            <p className="text-muted-foreground">
+              We're building optional premium features like team scheduling, advanced analytics dashboards, white-label solutions, and API access. Early adopters will get exclusive pricing when they launch.
             </p>
-            
-            <div className="border border-border rounded-lg overflow-hidden overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted/50">
-                    <TableHead className="w-[200px] font-semibold">Feature</TableHead>
-                    <TableHead className="text-center font-semibold bg-primary/10">
-                      <span className="text-primary">Bᴏᴏᴋᴍᴇ.ʙᴇᴛ</span>
-                    </TableHead>
-                    <TableHead className="text-center font-semibold">Calendly</TableHead>
-                    <TableHead className="text-center font-semibold">Cal.com</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium">Starting Price</TableCell>
-                    <TableCell className="text-center bg-primary/5 font-semibold text-primary">$8/mo</TableCell>
-                    <TableCell className="text-center">$12/mo</TableCell>
-                    <TableCell className="text-center">$12/mo</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Free Trial</TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Unlimited Bookings</TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Custom Branding</TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center text-xs text-muted-foreground">Pro plan only</TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Team Scheduling</TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center text-xs text-muted-foreground">Teams plan</TableCell>
-                    <TableCell className="text-center"><Check className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Modern UI/UX</TableCell>
-                    <TableCell className="text-center bg-primary/5">
-                      <div className="flex items-center justify-center gap-1">
-                        <Star className="w-4 h-4 text-warning fill-warning" />
-                        <Star className="w-4 h-4 text-warning fill-warning" />
-                        <Star className="w-4 h-4 text-warning fill-warning" />
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Star className="w-4 h-4 text-muted-foreground fill-muted-foreground" />
-                        <Star className="w-4 h-4 text-muted-foreground fill-muted-foreground" />
-                        <Star className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Star className="w-4 h-4 text-muted-foreground fill-muted-foreground" />
-                        <Star className="w-4 h-4 text-muted-foreground fill-muted-foreground" />
-                        <Star className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Priority Support</TableCell>
-                    <TableCell className="text-center bg-primary/5"><Check className="w-4 h-4 text-primary mx-auto" /></TableCell>
-                    <TableCell className="text-center text-xs text-muted-foreground">Enterprise only</TableCell>
-                    <TableCell className="text-center text-xs text-muted-foreground">Enterprise only</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium">Money-Back Guarantee</TableCell>
-                    <TableCell className="text-center bg-primary/5 font-medium text-primary">30 days</TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                    <TableCell className="text-center"><X className="w-4 h-4 text-muted-foreground mx-auto" /></TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
           </div>
 
-          {/* Testimonials Section */}
-          <div className="mt-24 max-w-6xl mx-auto">
-            <h2 className="font-display text-2xl font-bold text-center mb-4">
-              Loved by thousands of professionals
-            </h2>
-            <p className="text-muted-foreground text-center mb-12">
-              See what our customers have to say about Bᴏᴏᴋᴍᴇ.ʙᴇᴛ
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* Testimonial 1 */}
-              <Card className="bg-muted/30 border-border">
-                <CardContent className="pt-6">
-                  <Quote className="w-8 h-8 text-primary/30 mb-4" />
-                  <p className="text-foreground mb-6">
-                    "Bᴏᴏᴋᴍᴇ.ʙᴇᴛ has completely transformed how I manage client meetings. The interface is intuitive and the calendar sync works flawlessly. I've saved hours every week."
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarFallback className="bg-primary/10 text-primary">SK</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold text-sm">Sarah Kim</p>
-                      <p className="text-xs text-muted-foreground">Marketing Consultant</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Testimonial 2 */}
-              <Card className="bg-muted/30 border-border">
-                <CardContent className="pt-6">
-                  <Quote className="w-8 h-8 text-primary/30 mb-4" />
-                  <p className="text-foreground mb-6">
-                    "As a freelancer, time is money. Bᴏᴏᴋᴍᴇ.ʙᴇᴛ eliminated the back-and-forth emails for scheduling. The Pro plan's custom branding makes me look more professional."
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarFallback className="bg-primary/10 text-primary">MR</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold text-sm">Marcus Rodriguez</p>
-                      <p className="text-xs text-muted-foreground">Freelance Designer</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Testimonial 3 */}
-              <Card className="bg-muted/30 border-border">
-                <CardContent className="pt-6">
-                  <Quote className="w-8 h-8 text-primary/30 mb-4" />
-                  <p className="text-foreground mb-6">
-                    "We switched our entire sales team to Bᴏᴏᴋᴍᴇ.ʙᴇᴛ. The team scheduling and analytics features have improved our booking rates by 40%. Highly recommend!"
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarFallback className="bg-primary/10 text-primary">JC</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold text-sm">Jennifer Chen</p>
-                      <p className="text-xs text-muted-foreground">Sales Director, TechCorp</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* FAQ Section */}
-          <div className="mt-24 max-w-3xl mx-auto">
-            <h2 className="font-display text-2xl font-bold text-center mb-12">
-              Frequently Asked Questions
-            </h2>
-            
-            <div className="space-y-6">
-              {pricingFaqs.map((faq, index) => (
-                <div key={index} className={index < pricingFaqs.length - 1 ? "border-b border-border pb-6" : "pb-6"}>
+          {/* FAQ */}
+          <div className="max-w-2xl mx-auto">
+            <h2 className="font-display text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+            <div className="space-y-4">
+              {faqs.map((faq) => (
+                <Card key={faq.question} className="p-5">
                   <h3 className="font-semibold mb-2">{faq.question}</h3>
-                  <p className="text-muted-foreground text-sm">{faq.answer}</p>
-                </div>
+                  <p className="text-sm text-muted-foreground">{faq.answer}</p>
+                </Card>
               ))}
             </div>
           </div>
         </div>
       </main>
-
+      
       <Footer />
     </div>
   );
