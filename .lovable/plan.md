@@ -1,110 +1,68 @@
 
 
-# Add Google Calendar and Outlook Deep-Link Buttons to Emails
+## Strategic Advice & Implementation Plan
 
-## Overview
-Add one-click "Add to Google Calendar" and "Add to Outlook" buttons to all **confirmation** and **reschedule** emails (both guest and host) in both `send-booking-email` and `send-reminders` edge functions. Cancellation emails are excluded since there's nothing to add.
+### Pricing Strategy Recommendation
 
-## How Calendar Deep Links Work
+Your current setup has a **Free (limited) → Pro ($8/mo) → Enterprise** funnel. For a mass-adoption SaaS strategy, this should change to:
 
-Both Google Calendar and Outlook.com accept URL parameters to pre-fill a new calendar event:
+**New model: Single free tier with all current features → Future paid add-ons/upgrades**
 
-- **Google Calendar**: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=...&dates=START/END&details=...`
-- **Outlook Web**: `https://outlook.live.com/calendar/0/action/compose?subject=...&startdt=ISO&enddt=ISO&body=...`
+This means:
+- **Remove the paywall entirely for now.** Every user gets everything currently labeled "Pro" — unlimited event types, Google Calendar sync, Slack notifications, payment collection, AI features, client directory, custom branding, analytics.
+- **Remove the Free/Pro/Enterprise pricing page** and replace it with a simple "CalendarPal is free" messaging page that highlights all features.
+- **Remove all `isPro` gates** across the codebase (event form pricing, clients page, conversion funnel, custom branding, bottom nav conditionals, upgrade prompts).
+- **Keep the Stripe infrastructure intact** but dormant — you'll re-enable it when add-ons are ready.
 
-The start/end times must be in UTC ISO format (already computed by the existing `toUtcIcsString`/`convertTimeBetweenZones` logic).
+This is the right approach for early-stage mass adoption: reduce friction to zero, build a user base, then monetize with premium add-ons later.
 
-## What Changes
+### Invitation Code System
 
-### File 1: `supabase/functions/send-booking-email/index.ts`
+Since "most people don't have the confidence to sign up," an invite-only system creates exclusivity and trust. Here's the plan:
 
-**1. Add a `calendarLinks()` helper function** (after `icsNote`):
-- Takes: event title, scheduled date, start time, end time, host timezone, meeting link, description
-- Computes UTC start/end timestamps
-- Returns an HTML block with two side-by-side styled buttons:
-  - Google Calendar icon + "Google Calendar" link
-  - Outlook icon + "Outlook" link
-- Styled as a row of two pill buttons below the ICS note
+#### Database
+- New `invitation_codes` table: `id`, `code` (unique 8-char alphanumeric), `created_by` (admin user_id), `used_by` (nullable user_id), `used_at`, `expires_at`, `created_at`, `batch_id` (to group codes generated together).
+- RLS: Admins can SELECT/INSERT all codes. Public can SELECT a single code by value (for validation). Used codes get UPDATE when redeemed.
 
-**2. Add a `toUtcIso()` utility** (reuses the existing timezone-to-UTC conversion logic already in `generateICS`):
-- Converts a local date + time + timezone into a UTC ISO string (`YYYYMMDDTHHmmssZ` for Google, `YYYY-MM-DDTHH:mm:ssZ` for Outlook)
+#### Admin UI — Bulk Code Generation
+- New section in Admin Settings or a dedicated admin page.
+- Input: "How many codes?" (1-100), optional expiry date.
+- Generates codes via a backend function, displays them in a table with copy-all and CSV export.
+- Shows usage stats: total generated, used, remaining.
 
-**3. Insert `calendarLinks()` into confirmation emails** (both guest and host):
-- Placed after the ICS note, before the closing of `bodyHtml`
-- Replaces the static ICS note text with the ICS note + calendar buttons
+#### Auth Flow — Require Invite Code
+- Add an "Invitation Code" field to the sign-up form (both `/auth` and `/get-started`).
+- Validate the code against the database before allowing registration.
+- Mark the code as used after successful sign-up.
 
-**4. Insert `calendarLinks()` into reschedule emails** (both guest and host):
-- Same placement as confirmation emails
+#### Edge Function — `validate-invite-code`
+- Accepts a code string, returns valid/invalid/expired/already-used.
+- On sign-up success, marks the code as consumed.
 
-### File 2: `supabase/functions/send-reminders/index.ts`
+### Changes Summary
 
-**1. Add the same `calendarLinks()` and `toUtcIso()` helpers** (duplicated because edge functions are isolated).
+| Area | What changes |
+|------|-------------|
+| **Pricing page** | Replace with "All features free" marketing page |
+| **All `isPro` checks** (~10 files) | Remove gates, give everyone full access |
+| **UpgradePrompt component** | Remove or repurpose |
+| **Subscription page** | Simplify to show "You have full access" |
+| **Navigation** | Remove Pro badge logic |
+| **Database** | New `invitation_codes` table |
+| **Auth pages** | Add invite code field |
+| **Admin portal** | Add invite code management page |
+| **Edge function** | New `validate-invite-code` function |
+| **Stripe checkout/subscription hooks** | Keep code but disable checkout flow |
 
-**2. Insert calendar link buttons into the reminder template** (`buildReminderHtml`):
-- Added after the ICS note line
+### Files to modify/create
 
-## Button Design
+**Remove Pro gates (~12 files):** `EventFormFields.tsx`, `ThemePicker.tsx`, `Clients.tsx`, `Dashboard.tsx`, `BottomNavigation.tsx`, `UpgradePrompt.tsx`, `Navigation.tsx`, `DocumentationSection.tsx`, `BookingAnalytics.tsx`, `useSubscription.ts`, `Pricing.tsx`, `Subscription.tsx`
 
-```text
-+--------------------------------------------------+
-|  [G] Add to Google Calendar  |  [O] Add to Outlook |
-+--------------------------------------------------+
-```
-
-- Two buttons side-by-side in a centered table row
-- Google button: white background, `#4285f4` border/text, Google "G" favicon
-- Outlook button: white background, `#0078d4` border/text, Outlook icon
-- Both 13px font, rounded corners, consistent with the existing `secondaryButton` style
-- Wrapped in a subtle container below the ICS attachment note
-
-## Visual Placement in Emails
-
-For **confirmation** (guest and host):
-1. Details card (date, time, duration, guest/host)
-2. "Join Meeting" button (if meeting link exists)
-3. "Reschedule or Cancel" button (guest only)
-4. ICS attachment note
-5. **NEW: "Add to Google Calendar" + "Add to Outlook" buttons**
-
-For **reschedule** (guest and host):
-1. Old time card (strikethrough)
-2. New details card
-3. "Reschedule or Cancel" button (guest only)
-4. ICS attachment note
-5. **NEW: Calendar buttons**
-
-For **reminders**:
-1. Details card
-2. "Join Meeting" button
-3. "Reschedule or Cancel" button (guest only)
-4. ICS attachment note
-5. **NEW: Calendar buttons**
-
-## Technical Details
-
-### Google Calendar URL format
-```
-https://calendar.google.com/calendar/render?action=TEMPLATE
-  &text={URL-encoded title}
-  &dates={YYYYMMDDTHHmmssZ}/{YYYYMMDDTHHmmssZ}
-  &details={URL-encoded description}
-```
-
-### Outlook URL format
-```
-https://outlook.live.com/calendar/0/action/compose
-  ?subject={URL-encoded title}
-  &startdt={YYYY-MM-DDTHH:mm:ssZ}
-  &enddt={YYYY-MM-DDTHH:mm:ssZ}
-  &body={URL-encoded description}
-```
-
-### UTC Conversion
-The existing `toUtcIcsString` in `generateICS` already handles DST-aware timezone-to-UTC conversion. The new `toUtcIso` will reuse the same Intl-based iterative offset approach, returning the timestamp in both formats needed (compact for Google, ISO for Outlook).
-
-## Files Modified
-- `supabase/functions/send-booking-email/index.ts` -- add helpers + insert buttons in 4 email templates (guest/host confirmation, guest/host reschedule)
-- `supabase/functions/send-reminders/index.ts` -- add helpers + insert buttons in reminder template
-
-No database changes, no new files, no dependency changes.
+**Invitation system (~6 new/modified files):**
+- `supabase/migrations/` — new `invitation_codes` table + RLS
+- `supabase/functions/validate-invite-code/index.ts` — validate & redeem
+- `src/pages/admin/AdminInviteCodes.tsx` — generate & manage codes
+- `src/pages/Auth.tsx` — add invite code field
+- `src/pages/GetStarted.tsx` — add invite code field
+- `src/App.tsx` + `AdminSidebar.tsx` — route & nav for admin invite page
 
