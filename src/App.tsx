@@ -106,7 +106,7 @@ const App = () => (
                     <Route
                       path="/dashboard"
                       element={
-                        <ProtectedRoute>
+                        <ProtectedRoute guestAllowed>
                           <Dashboard />
                         </ProtectedRoute>
                       }
@@ -122,7 +122,7 @@ const App = () => (
                     <Route
                       path="/availability"
                       element={
-                        <ProtectedRoute>
+                        <ProtectedRoute guestAllowed>
                           <Availability />
                         </ProtectedRoute>
                       }
@@ -130,7 +130,7 @@ const App = () => (
                     <Route
                       path="/settings"
                       element={
-                        <ProtectedRoute>
+                        <ProtectedRoute guestAllowed>
                           <ProfileSettings />
                         </ProtectedRoute>
                       }
@@ -162,7 +162,7 @@ const App = () => (
                     <Route
                       path="/events"
                       element={
-                        <ProtectedRoute>
+                        <ProtectedRoute guestAllowed>
                           <Events />
                         </ProtectedRoute>
                       }

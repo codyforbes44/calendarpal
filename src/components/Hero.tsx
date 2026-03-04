@@ -44,6 +44,11 @@ const Hero = () => {
                 </a>
               </Button>
               <Button variant="outline" size="lg" className="text-sm sm:text-base group w-full sm:w-auto" asChild>
+                <a href="/dashboard">
+                  Try it — no signup needed
+                </a>
+              </Button>
+              <Button variant="outline" size="lg" className="text-sm sm:text-base group w-full sm:w-auto" asChild>
                 <a href="#preview" onClick={(e) => {
                   e.preventDefault();
                   document.getElementById("preview")?.scrollIntoView({ behavior: "smooth" });

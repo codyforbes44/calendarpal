@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Menu, Sun, Moon, X, Shield, LayoutDashboard, CalendarCheck, Calendar, Settings, Users } from "lucide-react";
+import { Menu, Sun, Moon, X, Shield, LayoutDashboard, CalendarCheck, Calendar, Settings, Users, Sparkles } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
+import { useOnboarding } from "@/contexts/OnboardingContext";
 import ThemeLogo from "@/components/ThemeLogo";
 
 interface NavLink {
@@ -22,10 +23,13 @@ const Navigation = () => {
   const { theme, setTheme } = useTheme();
   const { data: isAdmin } = useAdminRole();
   const { data: profile } = useProfile();
+  const { hasUnsavedData } = useOnboarding();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const isGuestExploring = !user && hasUnsavedData;
 
   const userInitials = profile?.full_name
     ? profile.full_name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
@@ -33,7 +37,7 @@ const Navigation = () => {
 
   useEffect(() => { setMounted(true); }, []);
 
-  const isPublicPage = !user && (location.pathname === "/" || location.pathname === "/pricing" || location.pathname === "/support");
+  const isPublicPage = !user && !isGuestExploring && (location.pathname === "/" || location.pathname === "/pricing" || location.pathname === "/support");
 
   useEffect(() => {
     if (!isPublicPage) { setScrolled(true); return; }
@@ -57,12 +61,19 @@ const Navigation = () => {
     ? isAdmin
       ? [...baseUserLinks, { href: "/admin", label: "Admin", icon: Shield }]
       : baseUserLinks
-    : [
-        { href: "/#features", label: "Features" },
-        { href: "/pricing", label: "Pricing" },
-        { href: "/about", label: "About" },
-        { href: "/support", label: "Support" },
-      ];
+    : isGuestExploring
+      ? [
+          { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+          { href: "/events", label: "Events", icon: CalendarCheck },
+          { href: "/availability", label: "Availability", icon: Calendar },
+          { href: "/settings", label: "Settings", icon: Settings },
+        ]
+      : [
+          { href: "/#features", label: "Features" },
+          { href: "/pricing", label: "Pricing" },
+          { href: "/about", label: "About" },
+          { href: "/support", label: "Support" },
+        ];
 
   const isActiveLink = (href: string) => {
     if (href.startsWith("/#")) return false;
@@ -117,10 +128,19 @@ const Navigation = () => {
               </div>
               <Button variant="ghost" onClick={handleSignOut} size="sm">Sign Out</Button>
             </div>
+          ) : isGuestExploring ? (
+            <div className="hidden md:flex items-center gap-2">
+              <Link to="/auth">
+                <Button size="sm" className="gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Sign Up to Save
+                </Button>
+              </Link>
+            </div>
           ) : (
             <div className="hidden md:flex items-center gap-2">
               <Link to="/auth"><Button variant="ghost" size="sm">Sign In</Button></Link>
-              <Link to="/auth"><Button size="sm">Get Started</Button></Link>
+              <Link to="/get-started"><Button size="sm">Get Started</Button></Link>
             </div>
           )}
 
@@ -166,10 +186,14 @@ const Navigation = () => {
                 <div className="pt-4 border-t space-y-3">
                   {user ? (
                     <Button variant="outline" className="w-full" onClick={() => { setOpen(false); handleSignOut(); }}>Sign Out</Button>
+                  ) : isGuestExploring ? (
+                    <Link to="/auth" onClick={() => setOpen(false)} className="block">
+                      <Button className="w-full gap-1.5"><Sparkles className="w-3.5 h-3.5" /> Sign Up to Save</Button>
+                    </Link>
                   ) : (
                     <>
                       <Link to="/auth" onClick={() => setOpen(false)} className="block"><Button variant="outline" className="w-full">Sign In</Button></Link>
-                      <Link to="/auth" onClick={() => setOpen(false)} className="block"><Button className="w-full">Get Started</Button></Link>
+                      <Link to="/get-started" onClick={() => setOpen(false)} className="block"><Button className="w-full">Get Started</Button></Link>
                     </>
                   )}
                 </div>
