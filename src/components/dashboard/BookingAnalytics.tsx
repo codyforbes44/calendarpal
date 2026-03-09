@@ -67,7 +67,7 @@ const BookingAnalytics = ({ isAdmin = false }: BookingAnalyticsProps) => {
       </div>
 
       {/* Email Delivery Stats */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         <Card>
           <CardContent className="pt-5 pb-4 px-4">
             <div className="flex items-center gap-3">
