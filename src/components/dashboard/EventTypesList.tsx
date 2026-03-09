@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Clock, MoreVertical, Plus, Link, Check, QrCode, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SkeletonEventType } from "@/components/ui/skeleton-card";
