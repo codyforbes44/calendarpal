@@ -67,7 +67,7 @@ const BookingAnalytics = ({ isAdmin = false }: BookingAnalyticsProps) => {
       </div>
 
       {/* Email Delivery Stats */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
         <Card>
           <CardContent className="pt-5 pb-4 px-4">
             <div className="flex items-center gap-3">
@@ -201,7 +201,7 @@ const BookingAnalytics = ({ isAdmin = false }: BookingAnalyticsProps) => {
                     outerRadius={80}
                     paddingAngle={4}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={false}
                     labelLine={false}
                   >
                     {statusBreakdown.map((entry, index) => (

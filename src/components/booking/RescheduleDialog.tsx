@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Button } from "@/components/ui/button";
 import CalendarGrid from "@/components/calendar/CalendarGrid";
 import TimeSlotPicker from "@/components/calendar/TimeSlotPicker";
@@ -159,54 +159,51 @@ const RescheduleDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            Reschedule {eventTitle} with {guestName}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="grid md:grid-cols-[1.5fr,1fr] gap-6 mt-4">
-          <div>
-            <CalendarGrid
-              selectedDate={selectedDate}
-              onSelectDate={(date) => {
-                setSelectedDate(date);
-                setSelectedTime(null);
-              }}
-              availableDates={availableDates}
-            />
-          </div>
-
-          <div className="bg-muted/30 rounded-lg p-4">
-            {slotsLoading ? (
-              <div className="flex items-center justify-center h-full min-h-[200px]">
-                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : (
-              <TimeSlotPicker
-                selectedDate={selectedDate}
-                selectedTime={selectedTime}
-                onSelectTime={setSelectedTime}
-                timeSlots={timeSlots}
-              />
-            )}
-          </div>
+    <ResponsiveModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title={`Reschedule ${eventTitle} with ${guestName}`}
+      className="sm:max-w-4xl"
+    >
+      <div className="grid md:grid-cols-[1.5fr,1fr] gap-6 mt-4">
+        <div>
+          <CalendarGrid
+            selectedDate={selectedDate}
+            onSelectDate={(date) => {
+              setSelectedDate(date);
+              setSelectedTime(null);
+            }}
+            availableDates={availableDates}
+          />
         </div>
 
-        {selectedDate && selectedTime && (
-          <div className="flex justify-end gap-3 mt-4 pt-4 border-t">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button variant="hero" onClick={handleReschedule} disabled={rescheduling}>
-              {rescheduling ? "Rescheduling..." : "Confirm New Time"}
-            </Button>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+        <div className="bg-muted/30 rounded-lg p-4">
+          {slotsLoading ? (
+            <div className="flex items-center justify-center h-full min-h-[200px]">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <TimeSlotPicker
+              selectedDate={selectedDate}
+              selectedTime={selectedTime}
+              onSelectTime={setSelectedTime}
+              timeSlots={timeSlots}
+            />
+          )}
+        </div>
+      </div>
+
+      {selectedDate && selectedTime && (
+        <div className="flex flex-col sm:flex-row justify-end gap-3 mt-4 pt-4 border-t">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="min-h-[44px]">
+            Cancel
+          </Button>
+          <Button variant="hero" onClick={handleReschedule} disabled={rescheduling} className="min-h-[44px]">
+            {rescheduling ? "Rescheduling..." : "Confirm New Time"}
+          </Button>
+        </div>
+      )}
+    </ResponsiveModal>
   );
 };
 

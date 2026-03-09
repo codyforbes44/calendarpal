@@ -231,7 +231,7 @@ const Notifications = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 shrink-0 mt-0.5"
+                          className="h-10 w-10 min-h-[44px] min-w-[44px] shrink-0 mt-0.5"
                           onClick={() => markAsRead(n.id)}
                           aria-label="Mark as read"
                         >

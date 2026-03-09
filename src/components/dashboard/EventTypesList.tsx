@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Clock, MoreVertical, Plus, Link, Check, QrCode, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { SkeletonEventType } from "@/components/ui/skeleton-card";
@@ -239,50 +239,50 @@ const EventTypesList = () => {
       )}
 
       {/* QR Code Modal */}
-      <Dialog open={!!qrModalEvent} onOpenChange={(open) => !open && setQrModalEvent(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center">{qrModalEvent?.title}</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col items-center gap-6 py-4">
-            {qrModalEvent && getBookingUrl(qrModalEvent) && (
-              <>
-                <div className="bg-white p-4 rounded-lg">
-                  <QRCodeSVG
-                    id="qr-code-svg"
-                    value={getBookingUrl(qrModalEvent)!}
-                    size={200}
-                    level="H"
-                    includeMargin
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground text-center max-w-xs break-all">
-                  {getBookingUrl(qrModalEvent)}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      const url = getBookingUrl(qrModalEvent);
-                      if (url) {
-                        navigator.clipboard.writeText(url);
-                        toast.success("Link copied!");
-                      }
-                    }}
-                  >
-                    <Link className="w-4 h-4 mr-2" />
-                    Copy Link
-                  </Button>
-                  <Button onClick={downloadQrCode}>
-                    <Download className="w-4 h-4 mr-2" />
-                    Download
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ResponsiveModal
+        open={!!qrModalEvent}
+        onOpenChange={(open) => !open && setQrModalEvent(null)}
+        title={<span className="text-center block">{qrModalEvent?.title}</span>}
+      >
+        <div className="flex flex-col items-center gap-6 py-4">
+          {qrModalEvent && getBookingUrl(qrModalEvent) && (
+            <>
+              <div className="bg-white p-4 rounded-lg">
+                <QRCodeSVG
+                  id="qr-code-svg"
+                  value={getBookingUrl(qrModalEvent)!}
+                  size={200}
+                  level="H"
+                  includeMargin
+                />
+              </div>
+              <p className="text-sm text-muted-foreground text-center max-w-xs break-all">
+                {getBookingUrl(qrModalEvent)}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="min-h-[44px]"
+                  onClick={() => {
+                    const url = getBookingUrl(qrModalEvent);
+                    if (url) {
+                      navigator.clipboard.writeText(url);
+                      toast.success("Link copied!");
+                    }
+                  }}
+                >
+                  <Link className="w-4 h-4 mr-2" />
+                  Copy Link
+                </Button>
+                <Button onClick={downloadQrCode} className="min-h-[44px]">
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </ResponsiveModal>
     </Card>
   );
 };
