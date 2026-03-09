@@ -1,70 +1,126 @@
 
 
-## Strategy: "Try Before You Sign Up"
+# Comprehensive Mobile-First Refactor & Best Practices Audit
 
-The current flow forces users to create an account before seeing any value. The proposed change flips this: let visitors **experience the full platform as a guest** — create a profile, set up event types, configure availability — and only ask them to register when they want to **save their work**.
+## Current State Assessment
 
-This is the "product-led growth" approach used by tools like Canva and Figma. It dramatically reduces signup friction because users are already invested by the time they hit the registration wall.
+The codebase is **already in good shape** for mobile responsiveness — most pages use mobile-first breakpoints (`px-4 sm:px-6 lg:px-8`), bottom navigation exists, and touch targets are generally adequate. However, there are specific areas that need improvement.
 
-### How It Works
+## Areas Requiring Changes
 
-1. **Landing page CTA → `/get-started`** (already exists, no auth required)
-2. **Steps 1-3 remain identical** — profile, event type, availability — all stored in localStorage via `OnboardingContext`
-3. **Step 4 changes from "Account" to "Save Your Setup"** — reframed messaging: "Create an account to save everything you just built" instead of "Create Account"
-4. **Add a "Preview Dashboard" step** — after step 3, show users a realistic preview of what their dashboard/booking page will look like with the data they entered, then prompt registration
-5. **Allow guest exploration of dashboard pages** — protected routes show a "save banner" instead of redirecting to `/auth`
+### 1. Dialogs/Modals → Bottom Sheet on Mobile
+**Files:** `SavePromptModal.tsx`, `ShareModal.tsx`, `BookingDetailModal.tsx`, `RescheduleDialog.tsx`, `EventTypesList.tsx` (QR modal)
 
-### Implementation Plan
+Currently all use `<Dialog>` which renders as a centered modal on all screen sizes. On mobile, these should use `<Drawer>` (vaul) for a bottom-sheet UX pattern. Implementation: create a `ResponsiveModal` wrapper that renders `Drawer` on mobile, `Dialog` on desktop.
 
-#### 1. Reframe the GetStarted flow (Step 4)
-- Change `StepAccount` heading from "Create your account" to **"Save your setup"**
-- Update messaging to emphasize they'll lose their work without registering
-- Add a live preview of their booking page URL and configured schedule before the registration fields
-- Keep invite code + terms + email/password as-is
+### 2. Tables → Card Layout on Mobile
+**Files:** `Clients.tsx`, `AdminInviteCodes.tsx`, `AdminBookings.tsx`, `AdminUsers.tsx`
 
-#### 2. Create a "Guest Mode" for dashboard pages
-- Modify `ProtectedRoute` to support a `guestAllowed` prop
-- When `guestAllowed=true` and no user is logged in, render children but show a persistent **"Sign up to save" banner** at the top
-- Apply `guestAllowed` to: `/dashboard`, `/events`, `/availability`, `/settings`
-- Guest mode reads data from `OnboardingContext` / localStorage instead of database
-- All write operations (save, create, update) trigger a registration prompt modal
+The Clients page uses `<Table>` which is hard to read on mobile. Convert to card-based layout on mobile with `md:hidden` / `hidden md:block` pattern.
 
-#### 3. Add a registration prompt modal
-- New `SavePromptModal` component that appears when a guest tries to save anything
-- Shows a summary of what they've configured so far
-- Contains the registration form (email, password, invite code, terms)
-- On success: persists all localStorage data to database, redirects to dashboard
+### 3. Analytics Email Stats Grid
+**File:** `BookingAnalytics.tsx`
 
-#### 4. Update CTAs and navigation
-- Landing page "Get Started" → still goes to `/get-started`
-- Add "Try it free" button that goes directly to `/dashboard` in guest mode
-- Navigation shows "Sign up to save" instead of user avatar when in guest mode
-- Bottom navigation works in guest mode
+The 6-column email stats grid (`grid-cols-2 lg:grid-cols-6`) cramts on small screens. Change to `grid-cols-2 sm:grid-cols-3 lg:grid-cols-6`.
 
-#### 5. Update Auth flow
-- `/auth` sign-up form checks for existing onboarding data in localStorage
-- If found, auto-persist after successful registration (same as current GetStarted step 4)
-- This handles users who explore as guest, leave, come back, and sign up from `/auth`
+### 4. OnboardingWizard Mobile Polish
+**File:** `OnboardingWizard.tsx`
 
-### Files to create/modify
+Action buttons should stack below text on small screens. The step items' flex layout can clip action buttons. Add `flex-wrap` and adjust gap/padding.
 
+### 5. GuestSaveBanner Mobile Layout
+**File:** `GuestSaveBanner.tsx`
+
+The banner uses `flex items-center` which can overflow on narrow screens. Stack vertically on mobile.
+
+### 6. Calendar Heatmap Overflow
+**File:** `CalendarHeatmap.tsx`
+
+28-day grid may overflow on narrow mobile. Ensure horizontal scroll or reduce cell sizes.
+
+### 7. Pie Chart Labels
+**File:** `BookingAnalytics.tsx`
+
+`label` on PieChart gets cut off on mobile. Hide labels on small screens, rely on Legend only.
+
+### 8. Input Font Size (iOS Zoom Prevention)
+**File:** `Input` component
+
+Already uses `text-base md:text-sm` which prevents iOS zoom. This is correct.
+
+### 9. Lazy Loading & Suspense
+Already implemented in `App.tsx` with `React.lazy` for all routes. No changes needed.
+
+### 10. Missing touch-target sizes
+**Files:** Various icon buttons (e.g., `BookingActionsDropdown`, sort buttons in `Clients.tsx`)
+
+Ensure all icon-only buttons use `min-h-[44px] min-w-[44px]`.
+
+## Implementation Plan (Grouped by Priority)
+
+### Phase 1: ResponsiveModal Component
+Create a `ResponsiveModal` component that wraps `Dialog` (desktop) and `Drawer` (mobile) using `useIsMobile()`. Apply it to:
+- `SavePromptModal.tsx`
+- `ShareModal.tsx`
+- `BookingDetailModal.tsx`
+- `RescheduleDialog.tsx`
+- `EventTypesList.tsx` QR modal
+
+### Phase 2: Table-to-Card Mobile Layouts
+- **`Clients.tsx`**: Render card list on `md:hidden`, table on `hidden md:block`
+- **`AdminInviteCodes.tsx`**: Same pattern
+- **`AdminBookings.tsx`**: Same pattern (already has some responsive handling but uses table)
+
+### Phase 3: Grid & Layout Fixes
+- `BookingAnalytics.tsx`: Fix 6-col grid to `grid-cols-2 sm:grid-cols-3 lg:grid-cols-6`
+- `OnboardingWizard.tsx`: Add responsive wrapping for step items
+- `GuestSaveBanner.tsx`: Stack layout on mobile
+- `CalendarHeatmap.tsx`: Add `overflow-x-auto` wrapper
+- `BookingAnalytics.tsx` PieChart: Conditionally hide labels on mobile
+
+### Phase 4: Touch Targets & Accessibility
+- Audit all icon buttons for 44px minimum
+- Add `aria-label` to icon-only buttons missing them
+- Ensure focus rings are visible on all interactive elements
+- Sort buttons in `Clients.tsx` need larger touch targets
+
+### Phase 5: Consistency Pass
+- Ensure all loading states use skeleton patterns (most already do)
+- Verify dark mode on all components (the design system handles this well already)
+- Standardize card padding to `p-4 sm:p-6` (most already follow this)
+
+## Files to Create
+| File | Purpose |
+|------|---------|
+| `src/components/ui/responsive-modal.tsx` | Dialog on desktop, Drawer on mobile |
+
+## Files to Modify (~15 files)
 | File | Change |
 |------|--------|
-| `src/components/ProtectedRoute.tsx` | Add `guestAllowed` prop, show save banner for guests |
-| `src/components/GuestSaveBanner.tsx` | **New** — persistent banner for guest users |
-| `src/components/SavePromptModal.tsx` | **New** — registration modal triggered on save attempts |
-| `src/components/get-started/StepAccount.tsx` | Reframe copy to "Save your setup" |
-| `src/pages/Dashboard.tsx` | Support guest mode with localStorage data |
-| `src/pages/Events.tsx` | Support guest mode |
-| `src/pages/Availability.tsx` | Support guest mode |
-| `src/App.tsx` | Add `guestAllowed` to select protected routes |
-| `src/components/Navigation.tsx` | Show guest CTA when not authenticated |
-| `src/contexts/OnboardingContext.tsx` | Add helper to check if guest has unsaved data |
-| `src/hooks/useGuestMode.ts` | **New** — hook to detect guest state and trigger save prompts |
+| `SavePromptModal.tsx` | Use ResponsiveModal |
+| `ShareModal.tsx` | Use ResponsiveModal |
+| `BookingDetailModal.tsx` | Use ResponsiveModal |
+| `RescheduleDialog.tsx` | Use ResponsiveModal |
+| `EventTypesList.tsx` | Use ResponsiveModal for QR |
+| `Clients.tsx` | Card layout on mobile |
+| `AdminInviteCodes.tsx` | Card layout on mobile |
+| `BookingAnalytics.tsx` | Fix grid, pie chart labels |
+| `OnboardingWizard.tsx` | Responsive step items |
+| `GuestSaveBanner.tsx` | Stack on mobile |
+| `CalendarHeatmap.tsx` | Overflow handling |
+| `Bookings.tsx` | Touch target audit |
+| `Notifications.tsx` | Touch target audit |
+| `ProfileSettings.tsx` | Minor spacing consistency |
 
-### Key technical decisions
-- **localStorage as guest storage** — already in use via `OnboardingContext`, just needs to be read by dashboard components
-- **No database writes without auth** — all guest interactions are client-side only
-- **Invite code still required at registration** — maintains exclusivity while removing exploration friction
-- **Graceful degradation** — features requiring server data (bookings, analytics) show empty states with sample/demo data in guest mode
+## What's Already Good (No Changes Needed)
+- Lazy loading with React.lazy + Suspense
+- Bottom navigation on mobile
+- Input font sizes (iOS zoom safe)
+- DashboardStats grid (already 2-col mobile, 4-col desktop)
+- QuickActions grid (already 2x2 mobile, 4-col desktop)
+- Consistent `pb-bottom-nav` usage
+- Empty states with CTAs throughout
+- Error boundary exists
+- Dark mode CSS variables properly set up
+- Skeleton loading on most data-fetching components
 
