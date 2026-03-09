@@ -99,39 +99,41 @@ const OnboardingWizard = ({
           return (
             <div
               key={step.id}
-              className={`flex items-center gap-4 p-4 rounded-lg border transition-all ${
+              className={`flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border transition-all ${
                 step.completed
                   ? "bg-primary/5 border-primary/20"
                   : "bg-card border-border hover:border-primary/40 hover:shadow-sm"
               }`}
             >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                  step.completed
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
-                }`}
-              >
-                {step.completed ? (
-                  <Check className="w-5 h-5" />
-                ) : (
-                  <Icon className="w-5 h-5 text-muted-foreground" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className={`font-medium ${step.completed ? "text-primary" : ""}`}>
-                  {step.title}
-                </h3>
-                <p className="text-sm text-muted-foreground truncate">
-                  {step.description}
-                </p>
+              <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                    step.completed
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
+                  }`}
+                >
+                  {step.completed ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    <Icon className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className={`font-medium text-sm sm:text-base ${step.completed ? "text-primary" : ""}`}>
+                    {step.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">
+                    {step.description}
+                  </p>
+                </div>
               </div>
               {!step.completed && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate(step.href)}
-                  className="shrink-0 group"
+                  className="shrink-0 group w-full sm:w-auto min-h-[44px]"
                 >
                   {step.action}
                   <ArrowRight className="w-3 h-3 ml-1 group-hover:translate-x-0.5 transition-transform" />

@@ -201,7 +201,7 @@ const BookingAnalytics = ({ isAdmin = false }: BookingAnalyticsProps) => {
                     outerRadius={80}
                     paddingAngle={4}
                     dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={false}
                     labelLine={false}
                   >
                     {statusBreakdown.map((entry, index) => (

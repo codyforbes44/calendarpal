@@ -104,23 +104,53 @@ const Clients = () => {
           <Input placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
         </div>
 
-        <Card>
+        {/* Mobile card layout */}
+        <div className="md:hidden space-y-3">
+          {isLoading ? (
+            <Card className="p-6 text-center text-muted-foreground">Loading clients...</Card>
+          ) : filtered.length === 0 ? (
+            <Card className="p-6 text-center text-muted-foreground">{search ? "No clients match your search" : "No clients yet"}</Card>
+          ) : (
+            filtered.map((client) => (
+              <Card key={client.email} className="p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary shrink-0">
+                    {client.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm truncate">{client.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{client.email}</p>
+                  </div>
+                  <Badge variant={client.total_meetings > 1 ? "default" : "secondary"} className="text-xs shrink-0">
+                    {client.total_meetings} {client.total_meetings === 1 ? "meeting" : "meetings"}
+                  </Badge>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Last meeting: {format(new Date(client.last_meeting), "MMM d, yyyy")}
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
+
+        {/* Desktop table layout */}
+        <Card className="hidden md:block">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <button className="flex items-center gap-1" onClick={() => toggleSort("name")}>
+                  <button className="flex items-center gap-1 min-h-[44px]" onClick={() => toggleSort("name")} aria-label="Sort by name">
                     Client <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </TableHead>
-                <TableHead className="hidden sm:table-cell">Email</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>
-                  <button className="flex items-center gap-1" onClick={() => toggleSort("total_meetings")}>
+                  <button className="flex items-center gap-1 min-h-[44px]" onClick={() => toggleSort("total_meetings")} aria-label="Sort by meetings">
                     Meetings <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </TableHead>
                 <TableHead>
-                  <button className="flex items-center gap-1" onClick={() => toggleSort("last_meeting")}>
+                  <button className="flex items-center gap-1 min-h-[44px]" onClick={() => toggleSort("last_meeting")} aria-label="Sort by last meeting">
                     Last Meeting <ArrowUpDown className="w-3 h-3" />
                   </button>
                 </TableHead>
@@ -139,13 +169,10 @@ const Clients = () => {
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
                           {client.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
                         </div>
-                        <div>
-                          <p className="font-medium text-sm">{client.name}</p>
-                          <p className="text-xs text-muted-foreground sm:hidden">{client.email}</p>
-                        </div>
+                        <p className="font-medium text-sm">{client.name}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell text-sm text-muted-foreground">{client.email}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{client.email}</TableCell>
                     <TableCell>
                       <Badge variant={client.total_meetings > 1 ? "default" : "secondary"} className="text-xs">{client.total_meetings}</Badge>
                     </TableCell>
