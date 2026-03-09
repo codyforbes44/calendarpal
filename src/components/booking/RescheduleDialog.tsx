@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsiveModal } from "@/components/ui/responsive-modal";
 import { Button } from "@/components/ui/button";
 import CalendarGrid from "@/components/calendar/CalendarGrid";
 import TimeSlotPicker from "@/components/calendar/TimeSlotPicker";
