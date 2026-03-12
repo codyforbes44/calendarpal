@@ -3,8 +3,44 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Plus, Phone, Building2, Megaphone, FileText, ChevronDown } from "lucide-react";
 import SortableQuestionCard from "./SortableQuestionCard";
+
+const QUESTION_TEMPLATES: { label: string; icon: typeof Phone; draft: Omit<QuestionDraft, "id"> }[] = [
+  {
+    label: "Phone Number",
+    icon: Phone,
+    draft: { label: "Phone number", type: "text", options: [], is_required: false, include_other: false },
+  },
+  {
+    label: "Company Name",
+    icon: Building2,
+    draft: { label: "Company name", type: "text", options: [], is_required: false, include_other: false },
+  },
+  {
+    label: "How did you hear about us?",
+    icon: Megaphone,
+    draft: {
+      label: "How did you hear about us?",
+      type: "select",
+      options: ["Google search", "Social media", "Friend / colleague", "Blog / article"],
+      is_required: false,
+      include_other: true,
+    },
+  },
+  {
+    label: "Purpose of Meeting",
+    icon: FileText,
+    draft: {
+      label: "What is the purpose of this meeting?",
+      type: "multiselect",
+      options: ["Initial consultation", "Follow-up", "Demo / walkthrough", "Technical support"],
+      is_required: false,
+      include_other: true,
+    },
+  },
+];
 
 export interface QuestionDraft {
   id: string;
