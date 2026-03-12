@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import AIGenerateButton from "./AIGenerateButton";
 import BufferTimeSettings from "./BufferTimeSettings";
+import CustomQuestionsEditor, { type QuestionDraft } from "./CustomQuestionsEditor";
 import { EVENT_COLORS, type EventFormValues } from "./types";
 
 function getLocationLabel(type: string) {
@@ -22,9 +23,11 @@ function getLocationLabel(type: string) {
 
 interface EventFormFieldsProps {
   form: UseFormReturn<EventFormValues>;
+  customQuestions: QuestionDraft[];
+  onCustomQuestionsChange: (questions: QuestionDraft[]) => void;
 }
 
-const EventFormFields = ({ form }: EventFormFieldsProps) => {
+const EventFormFields = ({ form, customQuestions, onCustomQuestionsChange }: EventFormFieldsProps) => {
   return (
     <>
       {/* Title */}
@@ -254,6 +257,12 @@ const EventFormFields = ({ form }: EventFormFieldsProps) => {
           />
         </div>
       </div>
+
+      {/* Custom Questions */}
+      <CustomQuestionsEditor
+        questions={customQuestions}
+        onChange={onCustomQuestionsChange}
+      />
     </>
   );
 };

@@ -18,6 +18,8 @@ import { getLocalTimezone, getTimezoneLabel } from "@/lib/timezones";
 import { getTimezoneAbbr } from "@/hooks/useTimezone";
 import { sendConfirmationEmail } from "@/lib/email-service";
 import { getThemeById, buildThemeCSSVars } from "@/lib/booking-themes";
+import CustomQuestionsForm from "@/components/booking/CustomQuestionsForm";
+import type { BookingQuestion } from "@/hooks/useBookingQuestions";
 
 interface Profile {
   id: string;
@@ -63,6 +65,11 @@ const EmbedBooking = () => {
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
   const [guestTimezone, setGuestTimezone] = useState(getLocalTimezone());
   const [formData, setFormData] = useState({ name: "", email: "", notes: "", meetingLink: "" });
+
+  // Custom questions state
+  const [customQuestions, setCustomQuestions] = useState<BookingQuestion[]>([]);
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string | string[]>>({});
+  const [otherValues, setOtherValues] = useState<Record<string, string>>({});
 
   const { timeSlots, loading: slotsLoading } = useTimeSlots({
     userId: profile?.user_id || "",
@@ -148,9 +155,55 @@ const EmbedBooking = () => {
     }
   };
 
+  // Fetch custom questions when event is selected
+  useEffect(() => {
+    if (!selectedEvent?.id) return;
+    supabase
+      .from("booking_questions")
+      .select("*")
+      .eq("event_type_id", selectedEvent.id)
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        const questions = (data || []).map((q: any) => ({
+          ...q,
+          options: Array.isArray(q.options) ? q.options : [],
+        })) as BookingQuestion[];
+        setCustomQuestions(questions);
+        setCustomAnswers({});
+        setOtherValues({});
+      });
+  }, [selectedEvent?.id]);
+
+  const resolveCustomAnswers = () => {
+    const resolved: Record<string, string | string[]> = {};
+    for (const [qId, val] of Object.entries(customAnswers)) {
+      if (typeof val === "string" && val === "__other__") {
+        resolved[qId] = otherValues[qId] || "Other";
+      } else if (Array.isArray(val)) {
+        resolved[qId] = val.map((v) => (v === "__other__" ? otherValues[qId] || "Other" : v));
+      } else {
+        resolved[qId] = val;
+      }
+    }
+    return resolved;
+  };
+
+  const validateCustomQuestions = (): boolean => {
+    for (const q of customQuestions) {
+      if (!q.is_required) continue;
+      const answer = customAnswers[q.id];
+      if (!answer || (typeof answer === "string" && !answer.trim()) || (Array.isArray(answer) && answer.length === 0)) {
+        toast.error(`Please answer: "${q.label}"`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate || !selectedTime || !selectedEvent || !profile) return;
+    if (!validateCustomQuestions()) return;
 
     setSubmitting(true);
     try {
@@ -237,6 +290,21 @@ const EmbedBooking = () => {
         meetingLink: formData.meetingLink.trim() || undefined,
         manageUrl,
       });
+
+      // Save custom question answers
+      if (customQuestions.length > 0) {
+        const resolved = resolveCustomAnswers();
+        const answerRows = customQuestions
+          .filter((q) => resolved[q.id] !== undefined && resolved[q.id] !== "")
+          .map((q) => ({
+            booking_id: booking.id,
+            question_id: q.id,
+            answer: JSON.stringify(resolved[q.id]),
+          }));
+        if (answerRows.length > 0) {
+          await supabase.from("booking_answers").insert(answerRows);
+        }
+      }
 
       setStep("confirmed");
 
@@ -493,6 +561,13 @@ const EmbedBooking = () => {
               <Label className="text-sm">Notes (optional)</Label>
               <Textarea value={formData.notes} onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))} rows={2} className="resize-none" />
             </div>
+            <CustomQuestionsForm
+              questions={customQuestions}
+              answers={customAnswers}
+              onChange={(qId, val) => setCustomAnswers((prev) => ({ ...prev, [qId]: val }))}
+              otherValues={otherValues}
+              onOtherChange={(qId, val) => setOtherValues((prev) => ({ ...prev, [qId]: val }))}
+            />
             <Button type="submit" variant="hero" className="w-full" disabled={submitting}>
               {submitting ? "Processing..." : selectedEvent?.price_amount && selectedEvent.price_amount > 0 ? "Continue to Payment" : "Confirm Booking"}
             </Button>

@@ -544,6 +544,33 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
   // Host email
   if (booking.hostEmail) {
     try {
+      // Fetch custom question answers for this booking
+      let customAnswersHtml = "";
+      try {
+        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const { data: answers } = await supabaseAdmin
+          .from("booking_answers")
+          .select("answer, booking_questions(label)")
+          .eq("booking_id", booking.id);
+        
+        if (answers && answers.length > 0) {
+          const answerRows = answers.map((a: any) => {
+            let displayAnswer: string;
+            try {
+              const parsed = JSON.parse(a.answer);
+              displayAnswer = Array.isArray(parsed) ? parsed.join(", ") : String(parsed);
+            } catch {
+              displayAnswer = String(a.answer);
+            }
+            const label = a.booking_questions?.label || "Question";
+            return detailRow("📋", label, displayAnswer);
+          }).join("");
+          customAnswersHtml = answerRows;
+        }
+      } catch (e) {
+        console.warn(`[Confirmation] Could not fetch custom answers: ${e}`);
+      }
+
       const bodyRows = detailRow("👤", "Guest", `${booking.guestName} (${booking.guestEmail})`)
         + detailRow("📅", "Date", formattedDate)
         + buildTimezoneBlock({
@@ -554,7 +581,8 @@ async function sendConfirmationEmails(booking: EmailRequest["booking"]): Promise
             secondaryLabel: "Guest's time",
             dateDiff: guestConverted.dateDiff,
           })
-        + detailRow("⏱️", "Duration", `${booking.duration} minutes`);
+        + detailRow("⏱️", "Duration", `${booking.duration} minutes`)
+        + customAnswersHtml;
 
       const meetingRow = booking.meetingLink
         ? detailRow("🔗", "Meeting Link", `<a href="${booking.meetingLink}" style="color:${BRAND_COLOR};text-decoration:none;">${booking.meetingLink}</a>`)

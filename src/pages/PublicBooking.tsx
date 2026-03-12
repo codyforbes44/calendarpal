@@ -22,6 +22,8 @@ import SEO from "@/components/SEO";
 import { siteConfig } from "@/lib/seo-config";
 import { sendConfirmationEmail } from "@/lib/email-service";
 import { getThemeById, buildThemeCSSVars } from "@/lib/booking-themes";
+import CustomQuestionsForm from "@/components/booking/CustomQuestionsForm";
+import type { BookingQuestion } from "@/hooks/useBookingQuestions";
 
 interface Profile {
   id: string;
@@ -77,6 +79,11 @@ const PublicBooking = () => {
     notes: "",
     meetingLink: "",
   });
+
+  // Custom questions state
+  const [customQuestions, setCustomQuestions] = useState<BookingQuestion[]>([]);
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string | string[]>>({});
+  const [otherValues, setOtherValues] = useState<Record<string, string>>({});
 
   // Recurring booking state
   const [isRecurring, setIsRecurring] = useState(false);
@@ -254,6 +261,25 @@ const PublicBooking = () => {
     }
   }, [profile?.user_id]);
 
+  // Fetch custom questions when event is selected
+  useEffect(() => {
+    if (!selectedEvent?.id) return;
+    supabase
+      .from("booking_questions")
+      .select("*")
+      .eq("event_type_id", selectedEvent.id)
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        const questions = (data || []).map((q: any) => ({
+          ...q,
+          options: Array.isArray(q.options) ? q.options : [],
+        })) as BookingQuestion[];
+        setCustomQuestions(questions);
+        setCustomAnswers({});
+        setOtherValues({});
+      });
+  }, [selectedEvent?.id]);
+
   const handleEventSelect = (event: EventType) => {
     setSelectedEvent(event);
     setStep("selection");
@@ -286,9 +312,37 @@ const PublicBooking = () => {
     }
   };
 
+  const resolveCustomAnswers = () => {
+    // Replace __other__ with actual text values
+    const resolved: Record<string, string | string[]> = {};
+    for (const [qId, val] of Object.entries(customAnswers)) {
+      if (typeof val === "string" && val === "__other__") {
+        resolved[qId] = otherValues[qId] || "Other";
+      } else if (Array.isArray(val)) {
+        resolved[qId] = val.map((v) => (v === "__other__" ? otherValues[qId] || "Other" : v));
+      } else {
+        resolved[qId] = val;
+      }
+    }
+    return resolved;
+  };
+
+  const validateCustomQuestions = (): boolean => {
+    for (const q of customQuestions) {
+      if (!q.is_required) continue;
+      const answer = customAnswers[q.id];
+      if (!answer || (typeof answer === "string" && !answer.trim()) || (Array.isArray(answer) && answer.length === 0)) {
+        toast.error(`Please answer: "${q.label}"`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate || !selectedTime || !selectedEvent || !profile) return;
+    if (!validateCustomQuestions()) return;
 
     setSubmitting(true);
     try {
@@ -453,6 +507,21 @@ const PublicBooking = () => {
               });
             })
           );
+        }
+      }
+
+      // Save custom question answers
+      if (customQuestions.length > 0) {
+        const resolved = resolveCustomAnswers();
+        const answerRows = customQuestions
+          .filter((q) => resolved[q.id] !== undefined && resolved[q.id] !== "")
+          .map((q) => ({
+            booking_id: parentBooking.id,
+            question_id: q.id,
+            answer: JSON.stringify(resolved[q.id]),
+          }));
+        if (answerRows.length > 0) {
+          await supabase.from("booking_answers").insert(answerRows);
         }
       }
 
@@ -981,6 +1050,15 @@ const PublicBooking = () => {
                   Paste a Google Meet, Zoom, or any video call link. This will be included in the confirmation email.
                 </p>
               </div>
+
+              {/* Custom Questions */}
+              <CustomQuestionsForm
+                questions={customQuestions}
+                answers={customAnswers}
+                onChange={(qId, val) => setCustomAnswers((prev) => ({ ...prev, [qId]: val }))}
+                otherValues={otherValues}
+                onOtherChange={(qId, val) => setOtherValues((prev) => ({ ...prev, [qId]: val }))}
+              />
 
               {selectedEvent?.allow_recurring && (
                 <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
