@@ -22,6 +22,8 @@ import SEO from "@/components/SEO";
 import { siteConfig } from "@/lib/seo-config";
 import { sendConfirmationEmail } from "@/lib/email-service";
 import { getThemeById, buildThemeCSSVars } from "@/lib/booking-themes";
+import CustomQuestionsForm from "@/components/booking/CustomQuestionsForm";
+import type { BookingQuestion } from "@/hooks/useBookingQuestions";
 
 interface Profile {
   id: string;
