@@ -228,34 +228,28 @@ const EventForm = () => {
 // Helper to save questions without hooks (called inside async handler)
 import { supabase } from "@/integrations/supabase/client";
 
-async function useSaveBookingQuestionsHelper(eventTypeId: string) {
-  // Returns a function that saves questions
-  return async (questions: QuestionDraft[]) => {
-    // Delete existing
-    await supabase
-      .from("booking_questions")
-      .delete()
-      .eq("event_type_id", eventTypeId);
+async function saveBookingQuestions(eventTypeId: string, questions: QuestionDraft[]) {
+  await supabase
+    .from("booking_questions")
+    .delete()
+    .eq("event_type_id", eventTypeId);
 
-    if (questions.length === 0) return;
+  const validQuestions = questions.filter((q) => q.label.trim());
+  if (validQuestions.length === 0) return;
 
-    const validQuestions = questions.filter((q) => q.label.trim());
-    if (validQuestions.length === 0) return;
-
-    await supabase
-      .from("booking_questions")
-      .insert(
-        validQuestions.map((q, i) => ({
-          event_type_id: eventTypeId,
-          label: q.label.trim(),
-          type: q.type,
-          options: q.options,
-          is_required: q.is_required,
-          include_other: q.include_other,
-          sort_order: i,
-        }))
-      );
-  };
+  await supabase
+    .from("booking_questions")
+    .insert(
+      validQuestions.map((q, i) => ({
+        event_type_id: eventTypeId,
+        label: q.label.trim(),
+        type: q.type,
+        options: q.options,
+        is_required: q.is_required,
+        include_other: q.include_other,
+        sort_order: i,
+      }))
+    );
 }
 
 export default EventForm;
