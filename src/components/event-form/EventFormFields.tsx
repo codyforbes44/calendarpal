@@ -27,8 +27,10 @@ interface EventFormFieldsProps {
   onCustomQuestionsChange: (questions: QuestionDraft[]) => void;
 }
 
-const EventFormFields = ({ form }: EventFormFieldsProps) => {
+const EventFormFields = ({ form, customQuestions, onCustomQuestionsChange }: EventFormFieldsProps) => {
   return (
+    <>
+
     <>
       {/* Title */}
       <FormField
