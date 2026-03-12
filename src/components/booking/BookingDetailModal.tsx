@@ -42,6 +42,8 @@ const BookingDetailModal = ({
   const { data: bookingAnswers } = useBookingAnswers(booking?.id);
 
   if (!booking) return null;
+
+  const formatTime = (time: string) => {
     const [hour, minute] = time.split(":");
     const h = parseInt(hour);
     const period = h >= 12 ? "PM" : "AM";
