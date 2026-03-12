@@ -155,9 +155,55 @@ const EmbedBooking = () => {
     }
   };
 
+  // Fetch custom questions when event is selected
+  useEffect(() => {
+    if (!selectedEvent?.id) return;
+    supabase
+      .from("booking_questions")
+      .select("*")
+      .eq("event_type_id", selectedEvent.id)
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        const questions = (data || []).map((q: any) => ({
+          ...q,
+          options: Array.isArray(q.options) ? q.options : [],
+        })) as BookingQuestion[];
+        setCustomQuestions(questions);
+        setCustomAnswers({});
+        setOtherValues({});
+      });
+  }, [selectedEvent?.id]);
+
+  const resolveCustomAnswers = () => {
+    const resolved: Record<string, string | string[]> = {};
+    for (const [qId, val] of Object.entries(customAnswers)) {
+      if (typeof val === "string" && val === "__other__") {
+        resolved[qId] = otherValues[qId] || "Other";
+      } else if (Array.isArray(val)) {
+        resolved[qId] = val.map((v) => (v === "__other__" ? otherValues[qId] || "Other" : v));
+      } else {
+        resolved[qId] = val;
+      }
+    }
+    return resolved;
+  };
+
+  const validateCustomQuestions = (): boolean => {
+    for (const q of customQuestions) {
+      if (!q.is_required) continue;
+      const answer = customAnswers[q.id];
+      if (!answer || (typeof answer === "string" && !answer.trim()) || (Array.isArray(answer) && answer.length === 0)) {
+        toast.error(`Please answer: "${q.label}"`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDate || !selectedTime || !selectedEvent || !profile) return;
+    if (!validateCustomQuestions()) return;
 
     setSubmitting(true);
     try {
