@@ -261,6 +261,25 @@ const PublicBooking = () => {
     }
   }, [profile?.user_id]);
 
+  // Fetch custom questions when event is selected
+  useEffect(() => {
+    if (!selectedEvent?.id) return;
+    supabase
+      .from("booking_questions")
+      .select("*")
+      .eq("event_type_id", selectedEvent.id)
+      .order("sort_order", { ascending: true })
+      .then(({ data }) => {
+        const questions = (data || []).map((q: any) => ({
+          ...q,
+          options: Array.isArray(q.options) ? q.options : [],
+        })) as BookingQuestion[];
+        setCustomQuestions(questions);
+        setCustomAnswers({});
+        setOtherValues({});
+      });
+  }, [selectedEvent?.id]);
+
   const handleEventSelect = (event: EventType) => {
     setSelectedEvent(event);
     setStep("selection");
