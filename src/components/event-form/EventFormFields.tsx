@@ -259,6 +259,12 @@ const EventFormFields = ({ form, customQuestions, onCustomQuestionsChange }: Eve
           />
         </div>
       </div>
+
+      {/* Custom Questions */}
+      <CustomQuestionsEditor
+        questions={customQuestions}
+        onChange={onCustomQuestionsChange}
+      />
     </>
   );
 };
