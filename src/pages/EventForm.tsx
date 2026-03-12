@@ -226,8 +226,8 @@ const EventForm = () => {
   );
 };
 
-// Helper to save questions without hooks (called inside async handler)
-import { supabase } from "@/integrations/supabase/client";
+
+
 
 async function saveBookingQuestions(eventTypeId: string, questions: QuestionDraft[]) {
   await supabase
