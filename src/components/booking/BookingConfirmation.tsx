@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { fireConfetti } from "@/lib/confetti";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -54,6 +56,12 @@ const BookingConfirmation = ({
   isPaid,
   icsData,
 }: BookingConfirmationProps) => {
+  useEffect(() => {
+    const cleanup = fireConfetti(2500);
+    return cleanup;
+  }, []);
+
+
   const formatTime = (time: string) => {
     if (time.includes("AM") || time.includes("PM")) return time;
     const [hour, minute] = time.split(":");
