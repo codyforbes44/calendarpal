@@ -74,6 +74,10 @@ const CustomQuestionsEditor = ({ questions, onChange }: CustomQuestionsEditorPro
     ]);
   };
 
+  const addFromTemplate = (draft: Omit<QuestionDraft, "id">) => {
+    onChange([...questions, { ...draft, id: genId() }]);
+  };
+
   const updateQuestion = (id: string, updates: Partial<QuestionDraft>) => {
     onChange(questions.map((q) => (q.id === id ? { ...q, ...updates } : q)));
   };
