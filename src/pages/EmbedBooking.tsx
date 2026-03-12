@@ -66,6 +66,11 @@ const EmbedBooking = () => {
   const [guestTimezone, setGuestTimezone] = useState(getLocalTimezone());
   const [formData, setFormData] = useState({ name: "", email: "", notes: "", meetingLink: "" });
 
+  // Custom questions state
+  const [customQuestions, setCustomQuestions] = useState<BookingQuestion[]>([]);
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string | string[]>>({});
+  const [otherValues, setOtherValues] = useState<Record<string, string>>({});
+
   const { timeSlots, loading: slotsLoading } = useTimeSlots({
     userId: profile?.user_id || "",
     eventTypeId: selectedEvent?.id || "",
