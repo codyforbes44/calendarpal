@@ -108,8 +108,7 @@ const EventForm = () => {
       }
 
       // Save custom questions
-      const saveQuestions = useSaveBookingQuestionsHelper(eventId);
-      await saveQuestions(customQuestions);
+      await saveBookingQuestions(eventId, customQuestions);
 
       navigate("/events");
     } catch {
