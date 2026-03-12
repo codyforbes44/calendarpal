@@ -39,9 +39,9 @@ const BookingDetailModal = ({
   onComplete,
   onReschedule,
 }: BookingDetailModalProps) => {
-  if (!booking) return null;
+  const { data: bookingAnswers } = useBookingAnswers(booking?.id);
 
-  const formatTime = (time: string) => {
+  if (!booking) return null;
     const [hour, minute] = time.split(":");
     const h = parseInt(hour);
     const period = h >= 12 ? "PM" : "AM";
