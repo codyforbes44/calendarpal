@@ -101,6 +101,45 @@ export type Database = {
         }
         Relationships: []
       }
+      booking_answers: {
+        Row: {
+          answer: Json
+          booking_id: string
+          created_at: string
+          id: string
+          question_id: string
+        }
+        Insert: {
+          answer?: Json
+          booking_id: string
+          created_at?: string
+          id?: string
+          question_id: string
+        }
+        Update: {
+          answer?: Json
+          booking_id?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_answers_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "booking_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       booking_page_views: {
         Row: {
           created_at: string
@@ -129,6 +168,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "booking_page_views_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_questions: {
+        Row: {
+          created_at: string
+          event_type_id: string
+          id: string
+          include_other: boolean
+          is_required: boolean
+          label: string
+          options: Json | null
+          sort_order: number
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          event_type_id: string
+          id?: string
+          include_other?: boolean
+          is_required?: boolean
+          label: string
+          options?: Json | null
+          sort_order?: number
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          event_type_id?: string
+          id?: string
+          include_other?: boolean
+          is_required?: boolean
+          label?: string
+          options?: Json | null
+          sort_order?: number
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_questions_event_type_id_fkey"
             columns: ["event_type_id"]
             isOneToOne: false
             referencedRelation: "event_types"
