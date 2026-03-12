@@ -1051,7 +1051,15 @@ const PublicBooking = () => {
                 </p>
               </div>
 
-              {selectedEvent?.allow_recurring && (
+              {/* Custom Questions */}
+              <CustomQuestionsForm
+                questions={customQuestions}
+                answers={customAnswers}
+                onChange={(qId, val) => setCustomAnswers((prev) => ({ ...prev, [qId]: val }))}
+                otherValues={otherValues}
+                onOtherChange={(qId, val) => setOtherValues((prev) => ({ ...prev, [qId]: val }))}
+              />
+
                 <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
