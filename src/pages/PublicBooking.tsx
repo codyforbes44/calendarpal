@@ -514,11 +514,17 @@ const PublicBooking = () => {
       if (customQuestions.length > 0) {
         const resolved = resolveCustomAnswers();
         const answerRows = customQuestions
-          .filter((q) => resolved[q.id] !== undefined && resolved[q.id] !== "")
+          .filter((q) => {
+            const val = resolved[q.id];
+            if (val === undefined || val === null) return false;
+            if (typeof val === "string" && !val.trim()) return false;
+            if (Array.isArray(val) && val.length === 0) return false;
+            return true;
+          })
           .map((q) => ({
             booking_id: parentBooking.id,
             question_id: q.id,
-            answer: JSON.stringify(resolved[q.id]),
+            answer: resolved[q.id] as any,
           }));
         if (answerRows.length > 0) {
           await supabase.from("booking_answers").insert(answerRows);

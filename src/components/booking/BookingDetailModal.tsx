@@ -177,11 +177,19 @@ const BookingDetailModal = ({
               </h4>
               {bookingAnswers.map((a) => {
                 let displayAnswer: string;
-                try {
-                  const parsed = JSON.parse(a.answer as string);
-                  displayAnswer = Array.isArray(parsed) ? parsed.join(", ") : String(parsed);
-                } catch {
-                  displayAnswer = String(a.answer);
+                const raw = a.answer;
+                if (typeof raw === "string") {
+                  // Legacy double-serialized data
+                  try {
+                    const parsed = JSON.parse(raw);
+                    displayAnswer = Array.isArray(parsed) ? parsed.join(", ") : String(parsed);
+                  } catch {
+                    displayAnswer = raw;
+                  }
+                } else if (Array.isArray(raw)) {
+                  displayAnswer = raw.join(", ");
+                } else {
+                  displayAnswer = String(raw);
                 }
                 return (
                   <div key={a.id} className="p-2.5 bg-muted/50 rounded-lg">
