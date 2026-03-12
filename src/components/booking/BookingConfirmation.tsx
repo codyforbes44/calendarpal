@@ -108,6 +108,14 @@ const BookingConfirmation = ({
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${encodeURIComponent("Booked via Bᴏᴏᴋᴍᴇ.ʙᴇᴛ")}`;
   };
 
+  const getOutlookCalendarUrl = () => {
+    if (!icsData) return "#";
+    const start = `${icsData.dateISO}T${icsData.startTime24}:00`;
+    const end = `${icsData.dateISO}T${icsData.endTime24}:00`;
+    const title = encodeURIComponent(`${eventTitle} with ${hostName || "Host"}`);
+    return `https://outlook.live.com/calendar/0/action/compose?subject=${title}&startdt=${start}&enddt=${end}&body=${encodeURIComponent("Booked via Bᴏᴏᴋᴍᴇ.ʙᴇᴛ")}`;
+  };
+
   const shareBooking = async () => {
     const text = `I just booked "${eventTitle}" with ${hostName || "someone"} on ${displayDate} at ${formatTime(startTime)}!`;
     if (navigator.share) {
