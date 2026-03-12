@@ -115,10 +115,28 @@ const CustomQuestionsEditor = ({ questions, onChange }: CustomQuestionsEditorPro
             Add questions guests must answer when booking
           </p>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={addQuestion}>
-          <Plus className="w-4 h-4 mr-1" />
-          Add
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button type="button" variant="outline" size="sm">
+              <Plus className="w-4 h-4 mr-1" />
+              Add
+              <ChevronDown className="w-3 h-3 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem onClick={addQuestion}>
+              <Plus className="w-4 h-4 mr-2" />
+              Blank question
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {QUESTION_TEMPLATES.map((t) => (
+              <DropdownMenuItem key={t.label} onClick={() => addFromTemplate(t.draft)}>
+                <t.icon className="w-4 h-4 mr-2" />
+                {t.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {questions.length === 0 && (
