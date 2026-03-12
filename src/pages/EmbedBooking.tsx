@@ -561,6 +561,13 @@ const EmbedBooking = () => {
               <Label className="text-sm">Notes (optional)</Label>
               <Textarea value={formData.notes} onChange={(e) => setFormData((p) => ({ ...p, notes: e.target.value }))} rows={2} className="resize-none" />
             </div>
+            <CustomQuestionsForm
+              questions={customQuestions}
+              answers={customAnswers}
+              onChange={(qId, val) => setCustomAnswers((prev) => ({ ...prev, [qId]: val }))}
+              otherValues={otherValues}
+              onOtherChange={(qId, val) => setOtherValues((prev) => ({ ...prev, [qId]: val }))}
+            />
             <Button type="submit" variant="hero" className="w-full" disabled={submitting}>
               {submitting ? "Processing..." : selectedEvent?.price_amount && selectedEvent.price_amount > 0 ? "Continue to Payment" : "Confirm Booking"}
             </Button>
