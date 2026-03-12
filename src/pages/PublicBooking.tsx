@@ -80,6 +80,11 @@ const PublicBooking = () => {
     meetingLink: "",
   });
 
+  // Custom questions state
+  const [customQuestions, setCustomQuestions] = useState<BookingQuestion[]>([]);
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string | string[]>>({});
+  const [otherValues, setOtherValues] = useState<Record<string, string>>({});
+
   // Recurring booking state
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrencePattern, setRecurrencePattern] = useState<"weekly" | "biweekly" | "monthly">("weekly");
