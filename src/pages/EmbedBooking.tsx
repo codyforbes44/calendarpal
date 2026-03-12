@@ -213,6 +213,8 @@ const EmbedBooking = () => {
 
       // If paid event, redirect to Stripe Checkout
       if (selectedEvent.price_amount && selectedEvent.price_amount > 0) {
+        if (!validateCustomQuestions()) { setSubmitting(false); return; }
+        const resolved = resolveCustomAnswers();
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-booking-payment`,
           {
@@ -234,6 +236,7 @@ const EmbedBooking = () => {
               priceCurrency: selectedEvent.price_currency || "USD",
               eventTitle: selectedEvent.title,
               duration: selectedEvent.duration,
+              customAnswers: Object.keys(resolved).length > 0 ? resolved : undefined,
             }),
           }
         );
