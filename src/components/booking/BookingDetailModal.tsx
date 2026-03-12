@@ -164,6 +164,36 @@ const BookingDetailModal = ({
           )}
         </div>
 
+        {/* Custom question answers */}
+        {bookingAnswers && bookingAnswers.length > 0 && (
+          <>
+            <Separator />
+            <div className="space-y-2.5 sm:space-y-3">
+              <h4 className="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                <ClipboardList className="w-3.5 h-3.5" />
+                Custom Responses
+              </h4>
+              {bookingAnswers.map((a) => {
+                let displayAnswer: string;
+                try {
+                  const parsed = JSON.parse(a.answer as string);
+                  displayAnswer = Array.isArray(parsed) ? parsed.join(", ") : String(parsed);
+                } catch {
+                  displayAnswer = String(a.answer);
+                }
+                return (
+                  <div key={a.id} className="p-2.5 bg-muted/50 rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-0.5">
+                      {a.booking_questions?.label || "Question"}
+                    </p>
+                    <p className="text-sm font-medium">{displayAnswer}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
         {/* Meeting link */}
         {booking.meeting_link && (
           <>
