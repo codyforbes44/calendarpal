@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { fireConfetti } from "@/lib/confetti";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
