@@ -291,6 +291,21 @@ const EmbedBooking = () => {
         manageUrl,
       });
 
+      // Save custom question answers
+      if (customQuestions.length > 0) {
+        const resolved = resolveCustomAnswers();
+        const answerRows = customQuestions
+          .filter((q) => resolved[q.id] !== undefined && resolved[q.id] !== "")
+          .map((q) => ({
+            booking_id: booking.id,
+            question_id: q.id,
+            answer: JSON.stringify(resolved[q.id]),
+          }));
+        if (answerRows.length > 0) {
+          await supabase.from("booking_answers").insert(answerRows);
+        }
+      }
+
       setStep("confirmed");
 
       // Notify parent window
