@@ -23,6 +23,7 @@ import { siteConfig } from "@/lib/seo-config";
 import { sendConfirmationEmail } from "@/lib/email-service";
 import { getThemeById, buildThemeCSSVars } from "@/lib/booking-themes";
 import CustomQuestionsForm from "@/components/booking/CustomQuestionsForm";
+import BookingConfirmation from "@/components/booking/BookingConfirmation";
 import type { BookingQuestion } from "@/hooks/useBookingQuestions";
 
 interface Profile {
@@ -657,52 +658,6 @@ const PublicBooking = () => {
     );
   }
 
-  // Generate .ics calendar file content
-  const generateIcsContent = () => {
-    if (!selectedDate || !selectedTime || !selectedEvent || !profile) return null;
-    const startTime24 = convertTo24Hour(selectedTime);
-    const endTime24 = calculateEndTime(startTime24, selectedEvent.duration);
-    const dateStr = format(selectedDate, "yyyyMMdd");
-    const start = `${dateStr}T${startTime24.replace(":", "")}00`;
-    const end = `${dateStr}T${endTime24.replace(":", "")}00`;
-    
-    return [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//BookMe.Bet//EN",
-      "BEGIN:VEVENT",
-      `DTSTART;TZID=${profile.timezone || "UTC"}:${start}`,
-      `DTEND;TZID=${profile.timezone || "UTC"}:${end}`,
-      `SUMMARY:${selectedEvent.title} with ${profile.full_name || "Host"}`,
-      `DESCRIPTION:Booked via Bᴏᴏᴋᴍᴇ.ʙᴇᴛ`,
-      "STATUS:CONFIRMED",
-      "END:VEVENT",
-      "END:VCALENDAR",
-    ].join("\r\n");
-  };
-
-  const downloadIcs = () => {
-    const content = generateIcsContent();
-    if (!content) return;
-    const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `booking-${selectedEvent?.title?.replace(/\s+/g, "-").toLowerCase()}.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const getGoogleCalendarUrl = () => {
-    if (!selectedDate || !selectedTime || !selectedEvent || !profile) return "#";
-    const startTime24 = convertTo24Hour(selectedTime);
-    const endTime24 = calculateEndTime(startTime24, selectedEvent.duration);
-    const dateStr = format(selectedDate, "yyyyMMdd");
-    const start = `${dateStr}T${startTime24.replace(":", "")}00`;
-    const end = `${dateStr}T${endTime24.replace(":", "")}00`;
-    const title = encodeURIComponent(`${selectedEvent.title} with ${profile.full_name || "Host"}`);
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${encodeURIComponent("Booked via Bᴏᴏᴋᴍᴇ.ʙᴇᴛ")}`;
-  };
 
   // Confirmed step
   if (step === "confirmed") {
@@ -710,70 +665,32 @@ const PublicBooking = () => {
       ? `${window.location.origin}/booking/${createdBookingId}/manage?token=${cancellationToken}`
       : null;
 
+    const startTime24 = selectedTime ? convertTo24Hour(selectedTime) : "";
+    const endTime24 = selectedEvent ? calculateEndTime(startTime24, selectedEvent.duration) : "";
+
     return (
       <>
         <SEO title={dynamicTitle} description={dynamicDescription} />
-        <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-6">
-          <Card className="max-w-lg w-full p-8 text-center animate-scale-in">
-          <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-8 h-8 text-success" />
-          </div>
-          <h1 className="font-display text-2xl font-bold mb-2">Booking Confirmed!</h1>
-          <p className="text-muted-foreground mb-6">
-            Your meeting with {profile?.full_name} has been scheduled.
-          </p>
-          <div className="bg-muted rounded-lg p-4 mb-6 text-left space-y-2">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-primary" />
-              <span>{selectedDate && format(selectedDate, "EEEE, MMMM d, yyyy")}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-accent" />
-              <span>{selectedTime}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Video className="w-4 h-4 text-muted-foreground" />
-              <span>{selectedEvent?.title}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm">{getTimezoneLabel(guestTimezone)}</span>
-            </div>
-          </div>
-
-          {/* Add to calendar buttons */}
-          <div className="flex gap-2 mb-4">
-            <Button variant="outline" size="sm" className="flex-1" onClick={downloadIcs}>
-              <Calendar className="w-4 h-4 mr-1.5" />
-              Download .ics
-            </Button>
-            <Button variant="outline" size="sm" className="flex-1" asChild>
-              <a href={getGoogleCalendarUrl()} target="_blank" rel="noopener noreferrer">
-                <Calendar className="w-4 h-4 mr-1.5" />
-                Google Calendar
-              </a>
-            </Button>
-          </div>
-
-          <p className="text-sm text-muted-foreground mb-4">
-            A confirmation email has been sent to {formData.email}
-          </p>
-          {manageUrl && (
-            <div className="pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground mb-2">
-                Need to make changes?
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.open(manageUrl, "_blank")}
-              >
-                Reschedule or Cancel
-              </Button>
-            </div>
-          )}
-        </Card>
-      </div>
+        <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4 sm:p-6">
+          <BookingConfirmation
+            hostName={profile?.full_name || null}
+            eventTitle={selectedEvent?.title || "Meeting"}
+            scheduledDate={selectedDate ? format(selectedDate, "EEEE, MMMM d, yyyy") : ""}
+            startTime={selectedTime || ""}
+            endTime={endTime24}
+            duration={selectedEvent?.duration}
+            guestTimezone={guestTimezone}
+            guestEmail={formData.email}
+            meetingLink={formData.meetingLink || null}
+            manageUrl={manageUrl}
+            icsData={selectedDate && profile ? {
+              dateISO: format(selectedDate, "yyyy-MM-dd"),
+              startTime24,
+              endTime24,
+              hostTimezone: profile.timezone || "UTC",
+            } : undefined}
+          />
+        </div>
       </>
     );
   }

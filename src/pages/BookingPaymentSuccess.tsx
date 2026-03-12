@@ -3,9 +3,9 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Calendar, Clock, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { sendConfirmationEmail } from "@/lib/email-service";
+import BookingConfirmation from "@/components/booking/BookingConfirmation";
 
 const BookingPaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -24,7 +24,6 @@ const BookingPaymentSuccess = () => {
 
   const finalizeBooking = async (sessionId: string) => {
     try {
-      // Call edge function to verify payment and create booking
       const { data, error } = await supabase.functions.invoke("verify-booking-payment", {
         body: { sessionId },
       });
@@ -75,34 +74,23 @@ const BookingPaymentSuccess = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-6">
-      <Card className="max-w-md w-full p-8 text-center animate-scale-in">
-        <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Check className="w-8 h-8 text-success" />
-        </div>
-        <h1 className="font-display text-2xl font-bold mb-2">Payment & Booking Confirmed!</h1>
-        <p className="text-muted-foreground mb-6">
-          Your payment was successful and your meeting has been scheduled.
-        </p>
-        {bookingInfo && (
-          <div className="bg-muted rounded-lg p-4 mb-6 text-left space-y-2 text-sm">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-primary" />
-              <span>{bookingInfo.scheduledDate}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-primary" />
-              <span>{bookingInfo.startTime} - {bookingInfo.endTime}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Event: {bookingInfo.eventTitle}</span>
-            </div>
-          </div>
-        )}
-        <p className="text-sm text-muted-foreground">
-          A confirmation email has been sent to you.
-        </p>
-      </Card>
+    <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4 sm:p-6">
+      <BookingConfirmation
+        hostName={bookingInfo?.hostName || null}
+        eventTitle={bookingInfo?.eventTitle || "Session"}
+        scheduledDate={bookingInfo?.scheduledDate || ""}
+        startTime={bookingInfo?.startTime || ""}
+        endTime={bookingInfo?.endTime}
+        guestTimezone={bookingInfo?.guestTimezone}
+        guestEmail={bookingInfo?.guestEmail}
+        isPaid
+        icsData={bookingInfo?.scheduledDate && bookingInfo?.startTime && bookingInfo?.endTime ? {
+          dateISO: bookingInfo.scheduledDate,
+          startTime24: bookingInfo.startTime,
+          endTime24: bookingInfo.endTime,
+          hostTimezone: bookingInfo.hostTimezone || "UTC",
+        } : undefined}
+      />
     </div>
   );
 };

@@ -196,6 +196,11 @@ serve(async (req) => {
           startTime: meta.startTime,
           endTime: meta.endTime,
           eventTitle: eventType?.title || "Session",
+          hostName: hostProfile?.full_name || null,
+          guestEmail: meta.guestEmail,
+          guestTimezone: meta.guestTimezone || null,
+          hostTimezone: meta.hostTimezone || null,
+          duration: eventType?.duration || null,
         },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
