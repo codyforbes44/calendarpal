@@ -14,10 +14,12 @@ import {
   XCircle,
   CheckCircle,
   CalendarClock,
+  ClipboardList,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { getTimezoneLabel } from "@/lib/timezones";
 import type { Booking } from "@/hooks/useBookings";
+import { useBookingAnswers } from "@/hooks/useBookingQuestions";
 import { cn } from "@/lib/utils";
 
 interface BookingDetailModalProps {
