@@ -30,8 +30,6 @@ interface EventFormFieldsProps {
 const EventFormFields = ({ form, customQuestions, onCustomQuestionsChange }: EventFormFieldsProps) => {
   return (
     <>
-
-    <>
       {/* Title */}
       <FormField
         control={form.control}
