@@ -199,15 +199,21 @@ const BookingConfirmation = ({
             <CalendarPlus className="w-3.5 h-3.5" />
             Add to Calendar
           </p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Button variant="outline" size="sm" className="w-full h-10" onClick={downloadIcs}>
               <Download className="w-4 h-4 mr-1.5" />
-              Download .ics
+              .ics File
             </Button>
             <Button variant="outline" size="sm" className="w-full h-10" asChild>
               <a href={getGoogleCalendarUrl()} target="_blank" rel="noopener noreferrer">
                 <Calendar className="w-4 h-4 mr-1.5" />
-                Google Calendar
+                Google
+              </a>
+            </Button>
+            <Button variant="outline" size="sm" className="w-full h-10" asChild>
+              <a href={getOutlookCalendarUrl()} target="_blank" rel="noopener noreferrer">
+                <Mail className="w-4 h-4 mr-1.5" />
+                Outlook
               </a>
             </Button>
           </div>
