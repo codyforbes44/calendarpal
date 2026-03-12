@@ -1060,6 +1060,7 @@ const PublicBooking = () => {
                 onOtherChange={(qId, val) => setOtherValues((prev) => ({ ...prev, [qId]: val }))}
               />
 
+              {selectedEvent?.allow_recurring && (
                 <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
