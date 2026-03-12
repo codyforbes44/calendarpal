@@ -658,52 +658,6 @@ const PublicBooking = () => {
     );
   }
 
-  // Generate .ics calendar file content
-  const generateIcsContent = () => {
-    if (!selectedDate || !selectedTime || !selectedEvent || !profile) return null;
-    const startTime24 = convertTo24Hour(selectedTime);
-    const endTime24 = calculateEndTime(startTime24, selectedEvent.duration);
-    const dateStr = format(selectedDate, "yyyyMMdd");
-    const start = `${dateStr}T${startTime24.replace(":", "")}00`;
-    const end = `${dateStr}T${endTime24.replace(":", "")}00`;
-    
-    return [
-      "BEGIN:VCALENDAR",
-      "VERSION:2.0",
-      "PRODID:-//BookMe.Bet//EN",
-      "BEGIN:VEVENT",
-      `DTSTART;TZID=${profile.timezone || "UTC"}:${start}`,
-      `DTEND;TZID=${profile.timezone || "UTC"}:${end}`,
-      `SUMMARY:${selectedEvent.title} with ${profile.full_name || "Host"}`,
-      `DESCRIPTION:Booked via Bᴏᴏᴋᴍᴇ.ʙᴇᴛ`,
-      "STATUS:CONFIRMED",
-      "END:VEVENT",
-      "END:VCALENDAR",
-    ].join("\r\n");
-  };
-
-  const downloadIcs = () => {
-    const content = generateIcsContent();
-    if (!content) return;
-    const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `booking-${selectedEvent?.title?.replace(/\s+/g, "-").toLowerCase()}.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const getGoogleCalendarUrl = () => {
-    if (!selectedDate || !selectedTime || !selectedEvent || !profile) return "#";
-    const startTime24 = convertTo24Hour(selectedTime);
-    const endTime24 = calculateEndTime(startTime24, selectedEvent.duration);
-    const dateStr = format(selectedDate, "yyyyMMdd");
-    const start = `${dateStr}T${startTime24.replace(":", "")}00`;
-    const end = `${dateStr}T${endTime24.replace(":", "")}00`;
-    const title = encodeURIComponent(`${selectedEvent.title} with ${profile.full_name || "Host"}`);
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${encodeURIComponent("Booked via Bᴏᴏᴋᴍᴇ.ʙᴇᴛ")}`;
-  };
 
   // Confirmed step
   if (step === "confirmed") {
