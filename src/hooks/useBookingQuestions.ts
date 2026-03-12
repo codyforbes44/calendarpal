@@ -112,7 +112,7 @@ export function useInsertBookingAnswers() {
         .insert(answers.map(a => ({
           booking_id: a.booking_id,
           question_id: a.question_id,
-          answer: JSON.stringify(a.answer),
+          answer: a.answer as any,
         })));
       if (error) throw error;
     },
