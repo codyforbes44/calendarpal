@@ -11,6 +11,24 @@ const log = (step: string, details?: unknown) => {
   console.log(`[VERIFY-BOOKING-PAYMENT] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
 };
 
+/** Reconstruct custom answers from Stripe metadata (may be split across keys) */
+function extractCustomAnswers(meta: Record<string, string>): Record<string, unknown> | null {
+  // Single key
+  if (meta.customAnswers) {
+    try { return JSON.parse(meta.customAnswers); } catch { return null; }
+  }
+  // Chunked keys
+  const countStr = meta.customAnswers_count;
+  if (!countStr) return null;
+  const count = parseInt(countStr, 10);
+  if (isNaN(count) || count <= 0) return null;
+  let combined = "";
+  for (let i = 0; i < count; i++) {
+    combined += meta[`customAnswers_${i}`] || "";
+  }
+  try { return JSON.parse(combined); } catch { return null; }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -36,7 +54,7 @@ serve(async (req) => {
 
     log("Payment verified", { paymentStatus: session.payment_status });
 
-    const meta = session.metadata || {};
+    const meta = (session.metadata || {}) as Record<string, string>;
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -90,18 +108,53 @@ serve(async (req) => {
     if (bookingError) throw bookingError;
     log("Booking created", { bookingId: booking.id });
 
+    // Save custom question answers if present
+    const customAnswers = extractCustomAnswers(meta);
+    if (customAnswers && Object.keys(customAnswers).length > 0) {
+      // Fetch question IDs for this event type to validate
+      const { data: questions } = await supabaseAdmin
+        .from("booking_questions")
+        .select("id")
+        .eq("event_type_id", meta.eventTypeId);
+
+      const validQuestionIds = new Set((questions || []).map((q: { id: string }) => q.id));
+      
+      const answerRows = Object.entries(customAnswers)
+        .filter(([qId]) => validQuestionIds.has(qId))
+        .filter(([, val]) => {
+          if (val === undefined || val === null) return false;
+          if (typeof val === "string" && !val.trim()) return false;
+          if (Array.isArray(val) && val.length === 0) return false;
+          return true;
+        })
+        .map(([qId, val]) => ({
+          booking_id: booking.id,
+          question_id: qId,
+          answer: val,
+        }));
+
+      if (answerRows.length > 0) {
+        const { error: answerError } = await supabaseAdmin
+          .from("booking_answers")
+          .insert(answerRows);
+        if (answerError) {
+          log("Failed to save custom answers (non-blocking)", { error: answerError.message });
+        } else {
+          log("Custom answers saved", { count: answerRows.length });
+        }
+      }
+    }
+
     // Send confirmation email via existing function
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
     
-    // Fetch host profile for email
     const { data: hostProfile } = await supabaseAdmin
       .from("profiles")
       .select("email, full_name")
       .eq("user_id", meta.hostUserId)
       .single();
 
-    // Fetch event title
     const { data: eventType } = await supabaseAdmin
       .from("event_types")
       .select("title, duration")

@@ -352,6 +352,8 @@ const PublicBooking = () => {
 
       // If event has a price, redirect to Stripe Checkout instead of creating booking directly
       if (selectedEvent.price_amount && selectedEvent.price_amount > 0) {
+        if (!validateCustomQuestions()) { setSubmitting(false); return; }
+        const resolved = resolveCustomAnswers();
         const { data, error } = await supabase.functions.invoke("create-booking-payment", {
           body: {
             eventTypeId: selectedEvent.id,
@@ -369,6 +371,7 @@ const PublicBooking = () => {
             priceCurrency: selectedEvent.price_currency || "usd",
             eventTitle: selectedEvent.title,
             username: profile.username,
+            customAnswers: Object.keys(resolved).length > 0 ? resolved : undefined,
           },
         });
 
