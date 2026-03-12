@@ -56,6 +56,12 @@ const BookingConfirmation = ({
   isPaid,
   icsData,
 }: BookingConfirmationProps) => {
+  useEffect(() => {
+    const cleanup = fireConfetti(2500);
+    return cleanup;
+  }, []);
+
+
   const formatTime = (time: string) => {
     if (time.includes("AM") || time.includes("PM")) return time;
     const [hour, minute] = time.split(":");
