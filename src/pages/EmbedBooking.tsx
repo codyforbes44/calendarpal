@@ -268,21 +268,15 @@ const EmbedBooking = () => {
 
       if (error) throw error;
 
-      // Send confirmation email
-      const { data: hostProfile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("user_id", profile.user_id)
-        .single();
-
+      // Host email is resolved server-side by the send-booking-email function
       const manageUrl = `${window.location.origin}/booking/${booking.id}/manage?token=${booking.cancellation_token}`;
-      
+
       await sendConfirmationEmail({
         id: booking.id,
         guestName: formData.name,
         guestEmail: formData.email,
         hostName: profile.full_name || "Host",
-        hostEmail: hostProfile?.email || undefined,
+        hostEmail: undefined,
         eventTitle: selectedEvent.title,
         scheduledDate: format(selectedDate, "yyyy-MM-dd"),
         startTime,
