@@ -108,7 +108,7 @@ const EmbedBooking = () => {
   const loadProfileAndEvents = async () => {
     try {
       const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("*")
         .eq("username", username)
         .maybeSingle();
