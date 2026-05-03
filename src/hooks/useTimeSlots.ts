@@ -57,23 +57,21 @@ export const useTimeSlots = ({
         return;
       }
 
-      // Fetch existing bookings for this date with their event type buffer settings
+      // Fetch existing busy slots via secure RPC (no PII exposed)
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      const { data: bookingsData, error: bookingsError } = await supabase
-        .from("bookings")
-        .select(`
-          start_time, 
-          end_time,
-          event_types (
-            buffer_before,
-            buffer_after
-          )
-        `)
-        .eq("host_user_id", userId)
-        .eq("scheduled_date", dateStr)
-        .neq("status", "cancelled");
+      const { data: rawBusy, error: bookingsError } = await supabase
+        .rpc("get_booked_slots", { p_user_id: userId, p_date: dateStr });
 
       if (bookingsError) throw bookingsError;
+
+      const bookingsData = (rawBusy || []).map((b: any) => ({
+        start_time: b.start_time,
+        end_time: b.end_time,
+        event_types: {
+          buffer_before: b.buffer_before ?? 0,
+          buffer_after: b.buffer_after ?? 0,
+        },
+      }));
 
       // Fetch Google Calendar busy times (if connected)
       let googleBusyTimes: { start: string; end: string }[] = [];
