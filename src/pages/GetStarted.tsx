@@ -90,7 +90,7 @@ const GetStarted = () => {
     setCheckingUsername(true);
     try {
       const { data, error } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("username")
         .eq("username", value)
         .maybeSingle();
