@@ -429,14 +429,8 @@ const PublicBooking = () => {
 
       if (parentError) throw parentError;
 
-      // Fetch host email from profiles table
-      const { data: hostProfile } = await supabase
-        .from("profiles")
-        .select("email")
-        .eq("user_id", profile.user_id)
-        .single();
-
-      const hostEmail = hostProfile?.email || undefined;
+      // Host email is resolved server-side by the send-booking-email function
+      const hostEmail = undefined;
       const hostName = profile.full_name || "Host";
 
       // Send confirmation email for parent booking
