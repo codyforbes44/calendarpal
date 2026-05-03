@@ -78,41 +78,36 @@ const GuestBookingManage = () => {
 
   const loadBooking = async () => {
     try {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(`
-          id,
-          guest_name,
-          guest_email,
-          scheduled_date,
-          start_time,
-          end_time,
-          status,
-          host_user_id,
-          event_type_id,
-          event_types (
-            title,
-            duration,
-            color,
-            location_type
-          ),
-          profiles:host_user_id (
-            full_name
-          )
-        `)
-        .eq("id", bookingId)
-        .eq("cancellation_token", token)
-        .maybeSingle();
+      // Use secure edge function — guests can no longer read bookings directly via RLS
+      const { data, error } = await supabase.functions.invoke("manage-guest-booking", {
+        body: {
+          action: "view",
+          bookingId,
+          cancellationToken: token,
+        },
+      });
 
       if (error) throw error;
 
-      if (!data) {
+      const b = data?.booking;
+      if (!b) {
         toast.error("Booking not found or invalid token");
         return;
       }
 
-      const profileData = data.profiles as any;
-      setBooking({ ...(data as any), host_full_name: profileData?.full_name ?? null });
+      setBooking({
+        id: b.id,
+        guest_name: b.guest_name,
+        guest_email: b.guest_email,
+        scheduled_date: b.scheduled_date,
+        start_time: b.start_time,
+        end_time: b.end_time,
+        status: b.status,
+        host_user_id: b.host_user_id,
+        event_type_id: b.event_type_id,
+        event_types: b.event_types,
+        host_full_name: b.profiles?.full_name ?? null,
+      });
     } catch (error) {
       console.error("Error loading booking:", error);
       toast.error("Failed to load booking");
