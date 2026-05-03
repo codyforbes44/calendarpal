@@ -182,9 +182,9 @@ const PublicBooking = () => {
 
   const loadProfileAndEvents = async () => {
     try {
-      // Load profile by username
+      // Load profile by username via the public-safe view (no PII)
       const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("*")
         .eq("username", username)
         .maybeSingle();
@@ -197,7 +197,7 @@ const PublicBooking = () => {
         return;
       }
 
-      setProfile(profileData);
+      setProfile(profileData as Profile);
 
       // Load active event types for this user
       const { data: eventsData, error: eventsError } = await supabase
