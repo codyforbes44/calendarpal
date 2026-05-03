@@ -1,70 +1,101 @@
 
+# Mobile-First Best-in-Class Refactor
 
-## Strategy: "Try Before You Sign Up"
+This is a broad request, so the plan is structured as a phased audit-and-refactor. Each phase is independently shippable so you can approve all of it or stop after any phase.
 
-The current flow forces users to create an account before seeing any value. The proposed change flips this: let visitors **experience the full platform as a guest** — create a profile, set up event types, configure availability — and only ask them to register when they want to **save their work**.
+## Goals
 
-This is the "product-led growth" approach used by tools like Canva and Figma. It dramatically reduces signup friction because users are already invested by the time they hit the registration wall.
+- Mobile-first, accessible, fast, and consistent across every page
+- Tighten security (RLS, input validation, edge function hardening)
+- Remove dead code, unify patterns, raise polish
+- Keep behavior identical unless a defect is found
 
-### How It Works
+## Scope (what gets touched)
 
-1. **Landing page CTA → `/get-started`** (already exists, no auth required)
-2. **Steps 1-3 remain identical** — profile, event type, availability — all stored in localStorage via `OnboardingContext`
-3. **Step 4 changes from "Account" to "Save Your Setup"** — reframed messaging: "Create an account to save everything you just built" instead of "Create Account"
-4. **Add a "Preview Dashboard" step** — after step 3, show users a realistic preview of what their dashboard/booking page will look like with the data they entered, then prompt registration
-5. **Allow guest exploration of dashboard pages** — protected routes show a "save banner" instead of redirecting to `/auth`
+Public pages, auth, dashboard, bookings, events, availability, clients, settings, admin, public booking + embed, confirmation, edge functions, shared UI primitives.
 
-### Implementation Plan
+## Phase 1 — Audit & Baseline (no code changes shipped)
 
-#### 1. Reframe the GetStarted flow (Step 4)
-- Change `StepAccount` heading from "Create your account" to **"Save your setup"**
-- Update messaging to emphasize they'll lose their work without registering
-- Add a live preview of their booking page URL and configured schedule before the registration fields
-- Keep invite code + terms + email/password as-is
+1. Run security scan + linter; capture findings.
+2. Read every page/component listed under `src/pages` and `src/components` to catalog:
+   - Inconsistent breakpoints / non-mobile-first classes
+   - Touch targets <44px
+   - Modals not using `ResponsiveModal`
+   - Tables without mobile card fallback
+   - Forms without zod validation
+   - Direct `supabase` calls that should be React Query hooks
+   - Duplicate logic (e.g. `PublicBooking` vs `EmbedBooking`)
+3. Produce a short defect list and confirm priorities before Phase 2 ships.
 
-#### 2. Create a "Guest Mode" for dashboard pages
-- Modify `ProtectedRoute` to support a `guestAllowed` prop
-- When `guestAllowed=true` and no user is logged in, render children but show a persistent **"Sign up to save" banner** at the top
-- Apply `guestAllowed` to: `/dashboard`, `/events`, `/availability`, `/settings`
-- Guest mode reads data from `OnboardingContext` / localStorage instead of database
-- All write operations (save, create, update) trigger a registration prompt modal
+## Phase 2 — Foundation & Shared Primitives
 
-#### 3. Add a registration prompt modal
-- New `SavePromptModal` component that appears when a guest tries to save anything
-- Shows a summary of what they've configured so far
-- Contains the registration form (email, password, invite code, terms)
-- On success: persists all localStorage data to database, redirects to dashboard
+- Standardize container: `container mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-bottom-nav` via a `<PageShell>` wrapper.
+- Add `<PageHeader>` (title, description, actions) used on every authenticated page.
+- Ensure every interactive element meets the 44x44 touch target rule (audit `Button size="icon"` usages).
+- Centralize zod schemas in `src/lib/schemas/` (booking, profile, event, auth) and wire them into existing forms.
+- Add `useDebouncedValue`, `useMediaQuery` helpers if missing; consolidate `use-mobile`.
+- Confetti, share, calendar utils → move to `src/lib/` if duplicated.
 
-#### 4. Update CTAs and navigation
-- Landing page "Get Started" → still goes to `/get-started`
-- Add "Try it free" button that goes directly to `/dashboard` in guest mode
-- Navigation shows "Sign up to save" instead of user avatar when in guest mode
-- Bottom navigation works in guest mode
+## Phase 3 — Mobile-First Page Refactors
 
-#### 5. Update Auth flow
-- `/auth` sign-up form checks for existing onboarding data in localStorage
-- If found, auto-persist after successful registration (same as current GetStarted step 4)
-- This handles users who explore as guest, leave, come back, and sign up from `/auth`
+For each page below: convert to mobile-first classes, add skeletons, empty states, error states, safe-area padding, and ResponsiveModal where needed.
 
-### Files to create/modify
+- `Index`, `Pricing`, `About`, `Support` (public marketing)
+- `Auth`, `ResetPassword`, `UpdatePassword`
+- `Dashboard` (already strong; tighten card stacking on <375px)
+- `Bookings` + `BookingsCalendarView` (mobile calendar fallback to agenda list)
+- `Events`, `EventForm` (sticky save bar on mobile)
+- `Availability` (collapsible day rows on mobile)
+- `Clients` (already has card mode; verify)
+- `Settings`, `ProfileSettings`, `Subscription`, `Notifications`
+- `PublicBooking`, `EmbedBooking`, `BookingPaymentSuccess`, `GuestBookingManage`
+- Admin pages: ensure each table has a mobile card layout + sticky filter bar.
 
-| File | Change |
-|------|--------|
-| `src/components/ProtectedRoute.tsx` | Add `guestAllowed` prop, show save banner for guests |
-| `src/components/GuestSaveBanner.tsx` | **New** — persistent banner for guest users |
-| `src/components/SavePromptModal.tsx` | **New** — registration modal triggered on save attempts |
-| `src/components/get-started/StepAccount.tsx` | Reframe copy to "Save your setup" |
-| `src/pages/Dashboard.tsx` | Support guest mode with localStorage data |
-| `src/pages/Events.tsx` | Support guest mode |
-| `src/pages/Availability.tsx` | Support guest mode |
-| `src/App.tsx` | Add `guestAllowed` to select protected routes |
-| `src/components/Navigation.tsx` | Show guest CTA when not authenticated |
-| `src/contexts/OnboardingContext.tsx` | Add helper to check if guest has unsaved data |
-| `src/hooks/useGuestMode.ts` | **New** — hook to detect guest state and trigger save prompts |
+Extract shared logic from `PublicBooking` and `EmbedBooking` into a single `useBookingFlow` hook + `<BookingFlow>` component to remove drift.
 
-### Key technical decisions
-- **localStorage as guest storage** — already in use via `OnboardingContext`, just needs to be read by dashboard components
-- **No database writes without auth** — all guest interactions are client-side only
-- **Invite code still required at registration** — maintains exclusivity while removing exploration friction
-- **Graceful degradation** — features requiring server data (bookings, analytics) show empty states with sample/demo data in guest mode
+## Phase 4 — Performance
 
+- Route-level `React.lazy` + `Suspense` for admin, settings, embed, and confirmation routes.
+- Image lazy loading + `loading="lazy"` on all `<img>` tags; switch hero to responsive `srcSet`.
+- Memoize heavy chart components and gate analytics queries on viewport visibility (`IntersectionObserver`).
+- Audit React Query: set sensible `staleTime` defaults globally, dedupe overlapping queries.
+- Trim `index.css` font import to only weights actually used.
+
+## Phase 5 — Accessibility
+
+- Add `aria-label` to all icon-only buttons (audit `lucide-react` usages).
+- Verify focus-visible rings on custom buttons/cards.
+- Skip-to-content link in `Navigation`.
+- Run color-contrast check on success/warning/info tokens in dark mode.
+- Forms: associate every input with a `<Label htmlFor>` and surface zod errors via `aria-describedby`.
+
+## Phase 6 — Security & Backend Hygiene
+
+- Re-run security scan; fix any RLS gaps.
+- Validate all edge function inputs with zod (`create-booking-payment`, `verify-booking-payment`, `manage-guest-booking`, `geo-appeal`, `bulk-send-emails`, etc.).
+- Ensure no edge function logs PII or secrets.
+- Confirm `verify_jwt` settings per function are correct.
+- Add rate-limit notes to `security-memory` for public endpoints.
+
+## Phase 7 — Polish & QA
+
+- Consistent toasts (single source, success/error/info variants).
+- Loading skeletons everywhere a spinner currently exists.
+- Empty states with CTA on every list view.
+- Manual QA at 320, 375, 414, 768, 1024, 1280 widths for every route.
+- Lighthouse pass target: ≥90 mobile on public pages.
+
+## Technical notes
+
+- Keep all design tokens; no new colors. Reuse `--primary`, `--accent`, etc.
+- No framework swaps. Stay on React 18 + Vite + Tailwind v3 + shadcn.
+- No DB schema changes unless Phase 1 audit surfaces a real bug.
+- `src/integrations/supabase/{client,types}.ts` and `.env` remain untouched.
+
+## Deliverable cadence
+
+Each phase ships as its own change set so you can review incrementally. Phase 1 produces a written defect list; you approve which items proceed.
+
+## Open question
+
+Do you want me to execute all 7 phases sequentially without stopping, or pause after Phase 1 so you can review the defect list before any code changes ship? (Recommended: pause after Phase 1.)
