@@ -329,6 +329,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "bookings_host_user_id_profiles_fkey"
+            columns: ["host_user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "bookings_parent_booking_id_fkey"
             columns: ["parent_booking_id"]
             isOneToOne: false
@@ -670,9 +677,56 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          booking_theme: string | null
+          custom_brand_color: string | null
+          custom_brand_logo: string | null
+          custom_welcome_message: string | null
+          full_name: string | null
+          timezone: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          booking_theme?: string | null
+          custom_brand_color?: string | null
+          custom_brand_logo?: string | null
+          custom_welcome_message?: string | null
+          full_name?: string | null
+          timezone?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          booking_theme?: string | null
+          custom_brand_color?: string | null
+          custom_brand_logo?: string | null
+          custom_welcome_message?: string | null
+          full_name?: string | null
+          timezone?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_booked_slots: {
+        Args: { p_date: string; p_user_id: string }
+        Returns: {
+          buffer_after: number
+          buffer_before: number
+          end_time: string
+          start_time: string
+        }[]
+      }
       get_client_directory: {
         Args: { p_user_id: string }
         Returns: {
